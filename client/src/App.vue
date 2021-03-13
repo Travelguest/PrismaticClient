@@ -1,15 +1,27 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <a-row :gutter="8">
+    <a-col :span="12">
+      <div class="frame">
+        <ControlPanel :msg="'Control Panel'"></ControlPanel>
+      </div>
+    </a-col>
+    <a-col :span="12">
+      <div class="frame">
+        <CorrelationMatrixView></CorrelationMatrixView>
+      </div>
+    </a-col>
+  </a-row>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import ControlPanel from '@/components/ControlPanel.vue'
+import CorrelationMatrixView from "@/components/CorrelationMatrixView";
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    CorrelationMatrixView,
+    ControlPanel
   }
 }
 </script>
@@ -20,7 +32,14 @@ export default {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  width: 1600px;
+  height: 900px;
+  margin: 10px;
+  border: 2px solid lightblue;
+}
+
+.frame {
+  border: 1px solid steelblue;
+  padding: 5px 0;
 }
 </style>
