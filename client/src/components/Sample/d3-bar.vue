@@ -1,5 +1,5 @@
 <template>
-    <div id="d3-bar"></div>
+    <div id="d3-bar" style="height: 100%"></div>
 </template>
 
 <script>

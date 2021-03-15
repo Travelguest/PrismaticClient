@@ -1,5 +1,5 @@
 <template>
-    <div id="echarts-bar"></div>
+    <div id="echarts-bar" style="height: 100%"></div>
 </template>
 
 <script>
