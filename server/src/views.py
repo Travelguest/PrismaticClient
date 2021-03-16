@@ -2,6 +2,7 @@ from src import app
 from src.models import Model
 from flask import request
 import simplejson
+import math
 
 # initialize the model
 CORR = Model()
@@ -51,10 +52,31 @@ def get_correlation_matrix():
     corr_matrix = CORR.two_phase_hierarchical_clustering(corr_matrix)
     corr_matrix = {
         'columns': corr_matrix.close.columns.to_list(),
-        'close': corr_matrix.close,
-        'vol': corr_matrix.vol,
-        'combined': corr_matrix.combined,
+        'close': corr_matrix.close.to_json(orient='values'),
+        'vol': corr_matrix.vol.to_json(orient='values'),
+        'combined': corr_matrix.combined.to_json(orient='values'),
     }
-    with open('../client/src/components/matrix.json', 'r+') as file:
-        simplejson.dump(corr_matrix, file)
+    # with open('../client/src/components/matrix.json', 'w+') as file:
+    #     simplejson.dump(corr_matrix, file)
     return json_dumps(corr_matrix)
+
+
+@app.route('/get_corr_tri_market', methods=['POST'])
+def get_corr_tri_market():
+    post_data = request.data.decode()
+    response = {}
+    if post_data != "":
+        post_data = simplejson.loads(post_data)
+        pinus = CORR.rolling_corr_market(
+            query_code=post_data[0],
+            start_date=post_data[1][:10],
+            end_date=post_data[2][:10]
+        )
+        response = {
+            'date': pinus.columns.to_list(),
+            'window': pinus.index.to_list(),
+            'corr': [i for num, row in pinus.iterrows() for i in row.fillna(2).to_list()[-(len(pinus)+2-num):]]
+        }
+        # with open('../client/src/components/pinus.json', 'w+') as file:
+        #     simplejson.dump(response, file)
+    return json_dumps(response)

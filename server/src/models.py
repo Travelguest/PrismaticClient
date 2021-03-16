@@ -12,6 +12,7 @@ import networkx as nx
 
 PATH_STOCK_LIST = './data/stock_list.ftr'
 PATH_STOCK_DAILY = './data/stock_daily.ftr'
+PATH_STOCK_DAILY_LOG = './data/stock_daily_log.pkl'
 PATH_TRADE_CAL = './data/trade_cal.ftr'
 
 PATH_INDUSTRY_LIST = './data/industry_list.ftr'
@@ -20,9 +21,11 @@ PATH_INDUSTRY_MEMBER_LIST = './data/industry_member_list.ftr'
 PATH_CONCEPT_LIST = './data/concept_list.ftr'
 PATH_CONCEPT_MEMBER_LIST = './data/concept_member_list.ftr'
 PATH_CONCEPT_DAILY = './data/concept_daily.ftr'
+PATH_CONCEPT_DAILY_LOG = './data/concept_daily_log.pkl'
 
 PATH_INDEX_INDUSTRY_LIST = './data/index_industry_list.ftr'
 PATH_INDEX_DAILY = './data/index_daily.ftr'
+PATH_INDEX_DAILY_LOG = './data/index_daily_log.pkl'
 
 PATH_DEFAULT_COMMUNITY = './data/default_community.pkl'
 
@@ -32,6 +35,7 @@ class Model:
         # Stocks related
         self.stock_list = pd.read_feather(PATH_STOCK_LIST)
         self.stock_daily = pd.read_feather(PATH_STOCK_DAILY)
+        self.stock_daily_log = pd.read_pickle(PATH_STOCK_DAILY_LOG)
         self.trade_cal = pd.read_feather(PATH_TRADE_CAL)
 
         # Industry related
@@ -42,30 +46,12 @@ class Model:
         self.concept_list = pd.read_feather(PATH_CONCEPT_LIST)
         self.concept_member_list = pd.read_feather(PATH_CONCEPT_MEMBER_LIST)
         self.concept_daily = pd.read_feather(PATH_CONCEPT_DAILY)
+        self.concept_daily_log = pd.read_pickle(PATH_CONCEPT_DAILY_LOG)
 
         # Index related
         self.index_industry_list = pd.read_feather(PATH_INDEX_INDUSTRY_LIST)
         self.index_daily = pd.read_feather(PATH_INDEX_DAILY)
-
-        # Calculate stock log change
-        self.stock_daily_log = self.stock_daily.pivot_table(values=['close', 'vol'], index='trade_date',
-                                                            columns='ts_code')
-        self.stock_daily_log = np.log(self.stock_daily_log)
-        self.stock_daily_log = self.stock_daily_log - self.stock_daily_log.shift(1)
-        self.stock_daily_log = self.stock_daily_log.loc['2011-01-01':]
-
-        # Calculate concept log change
-        self.concept_daily_log = self.concept_daily.pivot_table(values=['close'], index='trade_date',
-                                                                columns='concept_id')
-        self.concept_daily_log = np.log(self.concept_daily_log)
-        self.concept_daily_log = self.concept_daily_log - self.concept_daily_log.shift(1)
-        self.concept_daily_log = self.concept_daily_log.close.loc['2011-01-01':]
-
-        # Calculate index log change
-        self.index_daily_log = self.index_daily.pivot_table(values=['close'], index='trade_date', columns='in_code')
-        self.index_daily_log = np.log(self.index_daily_log)
-        self.index_daily_log = self.index_daily_log - self.index_daily_log.shift(1)
-        self.index_daily_log = self.index_daily_log.close.loc['2011-01-01':]
+        self.index_daily_log = pd.read_pickle(PATH_INDEX_DAILY_LOG)
 
         # Default
         self.community_default = pd.read_pickle(PATH_DEFAULT_COMMUNITY)
@@ -95,6 +81,7 @@ class Model:
                                  start_date='2020-01-01',
                                  end_date='2020-06-30',
                                  min_period=0.8):
+        # Default case for fast access
         if self.query_codes == ['000652', '000538'] and start_date == '2020-01-01' and end_date == '2020-06-30':
             self.corr_df = self.community_default
             return
@@ -128,7 +115,7 @@ class Model:
         corr_filtered = corr_filtered[corr_filter_right]
         self.community = list(corr_filtered.index.values) if len(corr_filtered) != 0 else None
         if self.community is None:
-            return None
+            return False
         else:
             return self.stock_list[['ts_code', 'name']].merge(pd.Series(self.community, name='ts_code')).merge(
                 self.industry_member_list.query('level == "L1"')[['ts_code', 'industry_name']]).to_dict('records')
@@ -193,6 +180,8 @@ class Model:
         stock_price = self.stock_daily_log.close[query_code].loc[start_date:end_date]
         trade_days = self.trade_cal.query('@start_date <= cal_date <= @end_date')['is_open'].sum()
 
-        # find individual corrlation with market
+        # find individual correlation with market
         pinus = {day: stock_price.rolling(day).corr(index_price) for day in range(trade_days, 1, -1)}
-        return pd.DataFrame(pinus).transpose()
+        pinus = pd.DataFrame(pinus).round(4).replace([np.inf, -np.inf], np.nan)
+        pinus.index = pinus.index.strftime("%Y-%m-%d")
+        return pinus.drop(index=pinus.index[0]).transpose()

@@ -13,6 +13,9 @@ export default {
   props: {
     correlationMatrix: Object
   },
+  emits: [
+    'selectedStockFromMatrix'
+  ],
   computed: {
     matrixColumn() {
       return !_.isEmpty(this.correlationMatrix)? this.correlationMatrix.columns: []
@@ -40,6 +43,17 @@ export default {
       height: 0,
       margin: {top: 40, right: 52, bottom: 50, left: 172},
       padding: 0.05,
+
+      colorScheme: d3.interpolateBrBG,
+      // colorScheme: d3.interpolateYlGnBu,
+      // colorScheme: d3.interpolateYlGn,
+      // colorScheme: d3.interpolateYlOrRd,
+
+    }
+  },
+  watch: {
+    correlationMatrix: function() {
+      this.renderMatrix();
     }
   },
   mounted() {
@@ -70,7 +84,7 @@ export default {
       // .call(g => g.select('.domain').remove());
       let colorScale = d3.scaleSequential()
           .domain([-1,1])
-          .interpolator(d3.interpolateBrBG);
+          .interpolator(this.colorScheme);
       let x = d3.scaleBand()
           .domain(this.matrixColumn)
           .padding(this.padding)
@@ -101,11 +115,9 @@ export default {
       // Heatmap interaction
       d3.selectAll('.cell')
           .on('mouseover', function(_, d){
-            d3.select(this).classed('selected', true);
-
-            d3.select('.tip')
-                .style('display', 'block')
-                .html(d.col + ', ' + d.row + ': ' + d.val.toFixed(2));
+            // d3.select('.tip')
+            //     .style('display', 'block')
+            //     .html(d.col + ', ' + d.row + ': ' + d.val.toFixed(2));
 
             d3.selectAll('.cell')
                 .filter(k => !(k.col === d.col || k.row === d.row))
@@ -117,6 +129,13 @@ export default {
           .on('mouseout', function(){
             d3.selectAll('.cell').style('opacity', 1).style("stroke-width", 0);
           });
+
+      d3.selectAll('.cell')
+          .filter(k => (k.col === k.row))
+          .style('fill', 'white')
+          .on('click', (_, d) => {
+            this.$emit('selectedStockFromMatrix', d.row);
+          })
 
 
       // legend scale
@@ -155,22 +174,4 @@ export default {
 
 
 <style scoped>
-.cell.selected {
-  stroke: #000;
-  stroke-width: 1px;
-  opacity: 0.3;
-  transform: scale(1.1, 1.1);
-}
-
-.axis .domain {
-  display: none;
-}
-.axis .tick text.selected {
-  font-weight: bold;
-  font-size: 1.2em;
-  fill: #47ff63;
-}
-.axis .tick line.selected {
-  stroke: #47ff63;
-}
 </style>

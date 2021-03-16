@@ -4,6 +4,7 @@
       <div class="upper_row">
         <ControlPanel
             @get-correlation-matrix="getCorrelationMatrix"
+            @update-period-range="updatePeriodRange"
         ></ControlPanel>
       </div>
     </a-col>
@@ -11,6 +12,7 @@
       <div class="upper_row">
         <CorrelationMatrixView
             :correlation-matrix="correlationMatrix"
+            @selected-stock-from-matrix="updateSelectedStock"
         ></CorrelationMatrixView>
       </div>
     </a-col>
@@ -28,7 +30,12 @@
     </a-col>
     <a-col :span="6">
       <div class="lower_row">
-        <View></View>
+        <PinusView
+            :selected-stock="selectedStock"
+            :period-range="selectedRange"
+            :correlation-triangle="correlationTriangle"
+            :loading-triangle="loadingTriangle"
+        ></PinusView>
       </div>
     </a-col>
   </a-row>
@@ -37,30 +44,68 @@
 <script>
 import ControlPanel from '@/components/ControlPanel.vue';
 import CorrelationMatrixView from "@/components/CorrelationMatrixView";
+import PinusView from "@/components/PinusView";
 import View from "@/components/View";
 
+import _ from 'lodash';
+import moment from "moment";
 import DataService from "@/utils/data-service";
 
 import matrix from './components/matrix.json'
+import pinus from './components/pinus.json'
 
 export default {
   name: 'App',
   components: {
+    PinusView,
     CorrelationMatrixView,
     ControlPanel,
     View
   },
+  computed: {
+    selectedRange() {
+      return this.periodRange === undefined || this.periodRange.length === 0?
+          [moment.utc('2020-01-01', 'YYYY-MM-DD'), moment.utc('2020-06-30', 'YYYY-MM-DD')]:
+          this.periodRange
+    }
+  },
   data() {
     return {
+      periodRange: [],
+      selectedStock: '000652',
+
       correlationMatrix: matrix,
+      correlationTriangle: pinus,
+
+      loadingTriangle: false,
     }
+  },
+  watch: {
+    selectedStock() {
+      this.getCorrelationTriangle()
+    },
   },
   mounted: function () {
   },
   methods: {
+    updatePeriodRange(range) {
+      this.periodRange = range;
+    },
+    updateSelectedStock(stock) {
+      this.selectedStock = stock;
+    },
     getCorrelationMatrix() {
       DataService.get('get_correlation_matrix', (data) => {
         this.correlationMatrix = data;
+      });
+    },
+    getCorrelationTriangle() {
+      this.loadingTriangle = true;
+      DataService.post('get_corr_tri_market',
+          _.flatten([this.selectedStock, this.selectedRange]),
+          (data) => {
+        this.correlationTriangle = data;
+        this.loadingTriangle = false;
       });
     }
   }

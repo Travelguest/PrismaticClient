@@ -130,12 +130,12 @@ export default {
     SearchOutlined,
     CalendarOutlined,
     FilterOutlined,
-
   },
   props: {
   },
   emits: [
-    'get-correlation-matrix'
+    'get-correlation-matrix',
+    'update-period-range'
   ],
   data() {
     return {
@@ -193,6 +193,11 @@ export default {
         return {text: x, value: x};
       });
     },
+  },
+  watch: {
+    periodRange: function() {
+      this.$emit('update-period-range', this.periodRange);
+    }
   },
   mounted: function () {
     DataService.get('get_stock_list', data => {
