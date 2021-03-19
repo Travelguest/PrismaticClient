@@ -1,8 +1,8 @@
 <template>
   <div style='height: 100%'>
-    <a-spin :spinning="loadingTriangle" :delay="500">
-      <div id='pinus' style='height: 100%'>
-        <div id="tooltip"></div>
+    <a-spin :spinning="loadingTriangle" :delay="100">
+      <div :id='`pinus_${id}`' style='height: 100%'>
+        <div :id='`tooltip_${id}`' class='tooltip'></div>
       </div>
     </a-spin>
   </div>
@@ -16,10 +16,14 @@ export default {
   name: 'PinusView',
   components: {},
   props: {
+    id: String,
     loadingTriangle: Boolean,
     correlationTriangle: Object,
   },
   computed: {
+    indexName() {
+      return !_.isEmpty(this.correlationTriangle)? this.correlationTriangle.name: ''
+    },
     matrixColumn() {
       return !_.isEmpty(this.correlationTriangle)? this.correlationTriangle.date: []
     },
@@ -29,15 +33,19 @@ export default {
     matrixCorr() {
       return !_.isEmpty(this.correlationTriangle)? this.correlationTriangle.corr: []
     },
+    squareLength() {
+      return (this.width-this.margin.left-this.margin.right);
+    }
   },
   data () {
     return {
       canvas: null,
       custom: null,
+      cellSize: null,
       width: 0,
       height: 0,
-      margin: {top: 40, right: 40, bottom: 40, left: 40},
-      padding: 0.01,
+      margin: {top: 0, right: 50, bottom: 0, left: 0},
+      padding: 0.0,
 
       // colorScheme: d3.interpolateBrBG,
       // colorScheme: d3.interpolateYlGnBu,
@@ -50,6 +58,8 @@ export default {
   watch: {
     correlationTriangle: function() {
       this.bindPinus();
+
+      this.initTooltip();
 
       let _this = this;
       let t = d3.timer(function(elapsed) {
@@ -66,15 +76,16 @@ export default {
       // Initialize canvas
       this.width = this.$el.clientWidth;
       this.height = this.$el.clientHeight;
-      this.canvas = d3.select('#pinus')
+      this.canvas = d3.select(`#pinus_${this.id}`)
           .append('canvas')
-          .classed('mainCanvas', true)
           .attr('width', this.width)
           .attr('height', this.height);
 
       this.custom = d3.select(document.createElement('custom'));
 
       this.bindPinus();
+
+      this.initTooltip();
 
       let _this = this;
       let t = d3.timer(function(elapsed) {
@@ -84,7 +95,12 @@ export default {
     },
     bindPinus() {
       let numRow = this.matrixRow.length,
-          cellSize = ((this.width-this.margin.left-this.margin.right) / numRow) - this.padding;
+          cellSize = (this.squareLength / numRow) - this.padding;
+      this.cellSize = cellSize;
+      this.margin.bottom = this.height - this.margin.top - this.squareLength;
+
+      console.log(this.correlationTriangle.date)
+      console.log(this.correlationTriangle.window)
 
       let colorScale = d3.scaleSequential()
           .domain([-1,1])
@@ -96,12 +112,11 @@ export default {
           .attr('class', 'rect')
           .attr('x', (_, i) => {
             let K = Math.floor((Math.sqrt(8*i+1)-1)/2);
-            return this.margin.left + (this.padding + cellSize) * // Math.floor(i/numRow) // Trivial sqaure
-                (numRow - 1 - (i - Math.floor(K*(K+1)/2)))
+            return this.margin.left + (this.padding + cellSize) * (numRow - 1 - K + i - Math.floor(K*(K+1)/2));
           })
           .attr('y', (_, i) => {
             let K = Math.floor((Math.sqrt(8*i+1)-1)/2);
-            return this.margin.top + (this.padding + cellSize) * K // (i%numRow) Trivial square
+            return this.margin.top + (this.padding + cellSize) * K;
           })
           .attr('width', 0)
           .attr('height', 0)
@@ -112,12 +127,11 @@ export default {
           .attr('height', cellSize)
           .attr('x', (_, i) => {
             let K = Math.floor((Math.sqrt(8*i+1)-1)/2);
-            return this.margin.left + (this.padding + cellSize) * // Math.floor(i/numRow) // Trivial sqaure
-                (numRow - 1 - (i - Math.floor(K*(K+1)/2)))
+            return this.margin.left + (this.padding + cellSize) * (numRow - 1 - K + i - Math.floor(K*(K+1)/2));
           })
           .attr('y', (_, i) => {
             let K = Math.floor((Math.sqrt(8*i+1)-1)/2);
-            return this.margin.top + (this.padding + cellSize) * K // (i%numRow) Trivial square
+            return this.margin.top + (this.padding + cellSize) * K;
           })
           .attr('fillStyle', (d) => (d === 2)? '#E6E6E6': colorScale(d) );
 
@@ -140,44 +154,42 @@ export default {
             context.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'))
           });
     },
-    tooltip() {
-      d3.select('.mainCanvas').on('mousemove', function() {
-        // // draw the hiddenCanvas
-        // draw(hiddenCanvas, true);
-        //
-        // // get mousePositions from the main canvas
-        // var mouseX = d3.event.layerX || d3.event.offsetX;
-        // var mouseY = d3.event.layerY || d3.event.offsetY;
-        //
-        //
-        // // get the toolbox for the hidden canvas
-        // var hiddenCtx = hiddenCanvas.node().getContext('2d');
-        //
-        // // Now to pick the colours from where our mouse is then stringify it in a way our map-object can read it
-        // var col = hiddenCtx.getImageData(mouseX, mouseY, 1, 1).data;
-        // var colKey = 'rgb(' + col[0] + ',' + col[1] + ',' + col[2] + ')';
-        //
-        // // get the data from our map !
-        // var nodeData = colourToNode[colKey];
-        //
-        // log(nodeData);
-        // if (nodeData) {
-        //
-        //   // Show the tooltip only when there is nodeData found by the mouse
-        //
-        //   d3.select('#tooltip')
-        //       .style('opacity', 0.8)
-        //       .style('top', d3.event.pageY + 5 + 'px')
-        //       .style('left', d3.event.pageX + 5 + 'px')
-        //       .html(nodeData.value);
-        //
-        // } else {
-        //
-        //   // Hide the tooltip when there our mouse doesn't find nodeData
-        //
-        //   d3.select('#tooltip')
-        //       .style('opacity', 0);
-        // }
+    initTooltip() {
+      let margin = this.margin,
+          id = this.id,
+          numRow = this.matrixRow.length,
+          _this = this;
+
+      d3.select(`#pinus_${id}`).on('mousemove', function(mouse) {
+        // get mousePositions from the main canvas
+        let mouseX = mouse.layerX;
+        let mouseY = mouse.layerY;
+
+        let x, y, corr = null;
+
+        // linear programming to determine in-triangle position
+        if ((mouseY <= (_this.height-margin.bottom)) &&
+            (mouseX <= (_this.width-margin.right)) &&
+            (mouseY >= (-mouseX+margin.left+margin.top+_this.squareLength))){
+          x = numRow-1-parseInt((mouseX-margin.left)/_this.cellSize);
+          y = parseInt((mouseY-margin.top)/_this.cellSize);
+          corr = Math.floor((y+1)*(y+2)/2)-1-x;
+          corr = _this.matrixCorr[corr];
+          corr = (corr === undefined || corr === 2)? 'suspended': corr.toFixed(4);
+          x = _this.matrixColumn[numRow-1-x];
+          y = _this.matrixRow[y];
+        }
+
+        if (x && y) {
+          d3.select(`#tooltip_${id}`)
+              .style('opacity', 0.8)
+              .style('top', mouseY + 5 + 'px')
+              .style('left', mouseX + 5 + 'px')
+              .html(`${_this.indexName}<br>${x}<br>${y} days corr: ${corr}`);
+        } else {
+          d3.select(`#tooltip_${id}`)
+              .style('opacity', 0);
+        }
       });
     }
   }
@@ -186,30 +198,18 @@ export default {
 
 
 <style scoped>
-div#tooltip {
+.tooltip {
   position: absolute;
   display: inline-block;
   padding: 10px;
   /*font-family: 'Open Sans' sans-serif;*/
-  color: #000;
+  width: 200px;
+  height: 85px;
   background-color: #fff;
   border: 1px solid #999;
   border-radius: 2px;
   pointer-events: none;
   opacity: 0;
   z-index: 1;
-}
-
-
-.axis .domain {
-  display: none;
-}
-.axis .tick text.selected {
-  font-weight: bold;
-  font-size: 1.2em;
-  fill: #47ff63;
-}
-.axis .tick line.selected {
-  stroke: #47ff63;
 }
 </style>

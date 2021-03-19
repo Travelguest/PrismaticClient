@@ -14,6 +14,7 @@ export default {
     correlationMatrix: Object
   },
   emits: [
+    'selectedStockFromMatrixDiagonal',
     'selectedStockFromMatrix'
   ],
   computed: {
@@ -32,6 +33,9 @@ export default {
                 val: d
               }
             })
+        _.flatten(JSON.parse(this.correlationMatrix.index_corr)).forEach((d, i)=>{
+          combined[i*length+i%length] = { row: this.matrixColumn[i], col: this.matrixColumn[i], val: d }
+        })
       }
       return combined;
     },
@@ -41,8 +45,9 @@ export default {
       svg: null,
       width: 0,
       height: 0,
-      margin: {top: 40, right: 52, bottom: 50, left: 172},
+      margin: {top: 100, right: 40, bottom: 100, left: 0},
       padding: 0.05,
+      legend: {yaxis: 40, xaxis: 20},
 
       colorScheme: d3.interpolateBrBG,
       // colorScheme: d3.interpolateYlGnBu,
@@ -66,6 +71,9 @@ export default {
       this.width = this.$el.clientWidth;
       this.height = this.$el.clientHeight;
 
+      if (this.margin.left === 0 ){
+        this.margin.left = this.width - (this.height - this.margin.top - this.margin.bottom);
+      }
       this.svg = d3.select(this.$el).append('svg').attr('viewBox', [0, 0, this.width, this.height]);
     },
     renderMatrix() {
@@ -74,7 +82,7 @@ export default {
 
       let heatmapContainer = this.svg
           .append('g')
-          .attr('transform', `translate(${this.margin.left},${this.margin.top})`)
+          .attr('transform', `translate(${this.margin.left - this.margin.right},${this.margin.top})`)
 
       // Configuration
       let xAxis = g => g
@@ -88,11 +96,12 @@ export default {
       let x = d3.scaleBand()
           .domain(this.matrixColumn)
           .padding(this.padding)
-          .range([0, this.width - this.margin.right - this.margin.left]);
+          .range([0, this.width - this.margin.right - this.margin.left + this.legend.xaxis]);
       let y = d3.scaleBand()
           .domain(this.matrixColumn)
           .padding(this.padding)
           .range([0, this.height - this.margin.bottom - this.margin.top]);
+      let r = (x(this.matrixColumn[1])-x(this.matrixColumn[0]))/2;
 
       // Heatmap
       heatmapContainer.append('g').call(xAxis);
@@ -103,11 +112,11 @@ export default {
           .enter()
           .append('rect')
           .attr('class', 'cell')
-          .attr('x', function(d) { return x(d.col) })
-          .attr('y', function(d) { return y(d.row) })
+          .attr('x', d => x(d.col) )
+          .attr('y', d => y(d.row) )
           .attr('width', x.bandwidth() )
           .attr('height', y.bandwidth() )
-          .style('fill', function(d) { return colorScale(d.val)} )
+          .style('fill', d => colorScale(d.val) )
           .style('opacity', 1e-6)
           .transition()
           .style('opacity', 1);
@@ -115,36 +124,46 @@ export default {
       // Heatmap interaction
       d3.selectAll('.cell')
           .on('mouseover', function(_, d){
-            // d3.select('.tip')
-            //     .style('display', 'block')
-            //     .html(d.col + ', ' + d.row + ': ' + d.val.toFixed(2));
-
             d3.selectAll('.cell')
-                .filter(k => !(k.col === d.col || k.row === d.row))
+                .filter(k => !(k.col === d.col || k.row === d.row)) // when not in the same row or column
                 .style('opacity', 0.3);
             d3.selectAll('.cell')
-                .filter(k => k.col === d.col || k.row === d.row)
-                .style("stroke", "black").style("stroke-width", 1);
+                .filter(k => (k.col === d.col || k.row === d.row) && (k.col !== k.row)) // when in the same row or column
+                .style("stroke", "black")
+                .style("stroke-width", 1);
           })
           .on('mouseout', function(){
-            d3.selectAll('.cell').style('opacity', 1).style("stroke-width", 0);
+            d3.selectAll('.cell')
+                .style('opacity', 1)
+                .filter(k => k.col !== k.row)
+                .style("stroke-width", 0);
+          });
+
+      // The diagonal cells
+      d3.selectAll('.cell')
+          .filter(k => (k.col === k.row))
+          // .style('fill', 'white')
+          .attr("rx", r)
+          .attr("ry", r)
+          .style("fill", "white")
+          .style("stroke", d => colorScale(d.val))
+          .style("stroke-width", 4)
+          .on('click', (_, d) => {
+            this.$emit('selectedStockFromMatrixDiagonal', d.row);
           });
 
       d3.selectAll('.cell')
-          .filter(k => (k.col === k.row))
-          .style('fill', 'white')
+          .filter(k => (k.col !== k.row))
           .on('click', (_, d) => {
-            this.$emit('selectedStockFromMatrix', d.row);
-          })
-
+            this.$emit('selectedStockFromMatrix', d.row, d.col);
+          });
 
       // legend scale
-      let legendWidth = this.margin.left/8,
-          legendHeight = this.height - this.margin.top - this.margin.bottom,
+      let legendHeight = this.height - this.margin.top - this.margin.bottom,
           legend = this.svg.append('g')
-              .attr('width', legendWidth)
+              .attr('width', this.legend.xaxis)
               .attr('height', legendHeight)
-              .attr('transform', `translate(${legendWidth*4},${this.margin.top})`);
+              .attr('transform', `translate(${this.margin.left - this.margin.right*2 - this.legend.xaxis*2},${this.margin.top})`);
 
       let stops = d3.range(-1, 1.01, 0.2).map(d => {return {offset: (d+1)/2, color: colorScale(-d), value: -d}});
       legend.append('linearGradient')
@@ -157,7 +176,7 @@ export default {
           .attr('offset', function(d){ return (100 * d.offset) + '%'; })
           .attr('stop-color', function(d){ return d.color; });
       legend.append('rect')
-          .attr('width', legendWidth)
+          .attr('width', this.legend.xaxis)
           .attr('height', legendHeight)
           .style('fill', 'url(#linear-gradient)');
       legend.selectAll('text')
@@ -166,7 +185,7 @@ export default {
           .attr('dx', -5)
           .attr('y', function(d){ return legendHeight * d.offset; })
           .style('text-anchor', 'end')
-          .text(function(d){ return d.value.toFixed(1)})
+          .text(function(d){ return d.value.toFixed(1)});
     }
   }
 }

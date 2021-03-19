@@ -2,8 +2,12 @@
 node_modules
 /dist
 
-data
 venv
+
+raw
+.ipynb_checkpoints
+*.ftr
+*.pkl
 
 # local env files
 .env.local

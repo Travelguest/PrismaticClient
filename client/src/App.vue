@@ -1,6 +1,6 @@
 <template>
   <a-row :gutter="[5, 10]">
-    <a-col :span="6">
+    <a-col :span="5">
       <div class="upper_row">
         <ControlPanel
             @get-correlation-matrix="getCorrelationMatrix"
@@ -12,30 +12,41 @@
       <div class="upper_row">
         <CorrelationMatrixView
             :correlation-matrix="correlationMatrix"
-            @selected-stock-from-matrix="updateSelectedStock"
+            @selected-stock-from-matrix-diagonal="updateSelectedStockMarket"
+            @selected-stock-from-matrix="updateSelectedStockAgainst"
         ></CorrelationMatrixView>
       </div>
     </a-col>
-    <a-col :span="9">
+    <a-col :span="5">
       <div class="upper_row">
-        <View></View>
+        <PinusView
+            :id="'market'"
+            :period-range="selectedRange"
+            :correlation-triangle="correlationTriangleMarket"
+            :loading-triangle="loadingTriangleMarket"
+        ></PinusView>
+      </div>
+    </a-col>
+    <a-col :span="5">
+      <div class="upper_row">
+        <PinusView
+            :id="'sector'"
+            :period-range="selectedRange"
+            :correlation-triangle="correlationTriangleSector"
+            :loading-triangle="loadingTriangleSector"
+        ></PinusView>
       </div>
     </a-col>
   </a-row>
   <a-row :gutter="[5, 10]">
-    <a-col :span="18">
+    <a-col :span="5">
       <div class="lower_row">
         <View></View>
       </div>
     </a-col>
-    <a-col :span="6">
+    <a-col :span="19">
       <div class="lower_row">
-        <PinusView
-            :selected-stock="selectedStock"
-            :period-range="selectedRange"
-            :correlation-triangle="correlationTriangle"
-            :loading-triangle="loadingTriangle"
-        ></PinusView>
+        <View></View>
       </div>
     </a-col>
   </a-row>
@@ -52,7 +63,8 @@ import moment from "moment";
 import DataService from "@/utils/data-service";
 
 import matrix from './components/matrix.json'
-import pinus from './components/pinus.json'
+import pinus_market from './components/pinus_market.json'
+import pinus_sector from './components/pinus_sector.json'
 
 export default {
   name: 'App',
@@ -73,17 +85,17 @@ export default {
     return {
       periodRange: [],
       selectedStock: '000652',
+      selectedStockAgainst: '000538',
 
       correlationMatrix: matrix,
-      correlationTriangle: pinus,
+      correlationTriangleMarket: pinus_market,
+      correlationTriangleSector: pinus_sector,
 
-      loadingTriangle: false,
+      loadingTriangleMarket: false,
+      loadingTriangleSector: false,
     }
   },
   watch: {
-    selectedStock() {
-      this.getCorrelationTriangle()
-    },
   },
   mounted: function () {
   },
@@ -91,22 +103,53 @@ export default {
     updatePeriodRange(range) {
       this.periodRange = range;
     },
-    updateSelectedStock(stock) {
+    updateSelectedStockMarket(stock) {
       this.selectedStock = stock;
+      this.getCorrelationTriangleMarket();
+    },
+    updateSelectedStockAgainst(stock_left, stock_right) {
+      this.selectedStock = stock_left;
+      this.selectedStockAgainst = stock_right;
+      this.getCorrelationTriangleStock();
     },
     getCorrelationMatrix() {
       DataService.get('get_correlation_matrix', (data) => {
-        this.correlationMatrix = data;
+        this.correlationMatrix = data? data: [];
       });
     },
-    getCorrelationTriangle() {
-      this.loadingTriangle = true;
+    getCorrelationTriangleMarket() {
+      this.loadingTriangleMarket = true;
       DataService.post('get_corr_tri_market',
           _.flatten([this.selectedStock, this.selectedRange]),
           (data) => {
-        this.correlationTriangle = data;
-        this.loadingTriangle = false;
-      });
+            this.correlationTriangleMarket = data;
+            this.loadingTriangleMarket = false;
+          });
+
+      this.loadingTriangleSector = true;
+      DataService.post('get_corr_tri_sector',
+          _.flatten([this.selectedStock, this.selectedRange]),
+          (data) => {
+            this.correlationTriangleSector = data;
+            this.loadingTriangleSector = false;
+          });
+    },
+    getCorrelationTriangleStock() {
+      this.loadingTriangleMarket = true;
+      DataService.post('get_corr_tri_market',
+          _.flatten([this.selectedStock, this.selectedRange]),
+          (data) => {
+            this.correlationTriangleMarket = data;
+            this.loadingTriangleMarket = false;
+          });
+
+      this.loadingTriangleSector = true;
+      DataService.post('get_corr_tri_stock',
+          _.flatten([this.selectedStock, this.selectedStockAgainst, this.selectedRange]),
+          (data) => {
+            this.correlationTriangleSector = data;
+            this.loadingTriangleSector = false;
+          });
     }
   }
 }
@@ -127,12 +170,12 @@ export default {
 .upper_row {
   border: 1px solid steelblue;
   width: 100%;
-  height: 600px;
+  height: 715px;
 }
 
 .lower_row {
   border: 1px solid steelblue;
   width: 100%;
-  height: 515px;
+  height: 400px;
 }
 </style>
