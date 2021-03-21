@@ -4,10 +4,10 @@ node_modules
 
 venv
 
-raw
 .ipynb_checkpoints
 *.ftr
 *.pkl
+*.csv
 
 # local env files
 .env.local
