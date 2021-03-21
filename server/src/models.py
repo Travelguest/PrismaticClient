@@ -1,14 +1,8 @@
 import pandas as pd
 import numpy as np
+import networkx as nx
 
 import scipy.cluster.hierarchy as sch
-
-from datetime import datetime, timedelta
-import dateutil.parser
-import time
-import re
-
-import networkx as nx
 
 PATH_STOCK_LIST = './data/stock_list.ftr'
 PATH_STOCK_DAILY = './data/stock_daily.ftr'
@@ -16,16 +10,16 @@ PATH_STOCK_DAILY_LOG = './data/stock_daily_log.pkl'
 PATH_TRADE_CAL = './data/trade_cal.ftr'
 
 PATH_INDUSTRY_LIST = './data/industry_list.ftr'
-PATH_INDUSTRY_MEMBER_LIST = './data/industry_member_list.ftr'
 
 PATH_CONCEPT_LIST = './data/concept_list.ftr'
-PATH_CONCEPT_MEMBER_LIST = './data/concept_member_list.ftr'
 PATH_CONCEPT_DAILY = './data/concept_daily.ftr'
 PATH_CONCEPT_DAILY_LOG = './data/concept_daily_log.pkl'
 
 PATH_INDEX_INDUSTRY_LIST = './data/index_industry_list.ftr'
 PATH_INDEX_DAILY = './data/index_daily.ftr'
 PATH_INDEX_DAILY_LOG = './data/index_daily_log.pkl'
+
+PATH_KNOWLEDGE_GRAPH = './data/knowledge_graph.pkl'
 
 PATH_DEFAULT_COMMUNITY = './data/default_community.pkl'
 
@@ -42,11 +36,9 @@ class Model:
 
         # Industry related
         self.industry_list = pd.read_feather(PATH_INDUSTRY_LIST)
-        self.industry_member_list = pd.read_feather(PATH_INDUSTRY_MEMBER_LIST)
 
         # Concept related
         self.concept_list = pd.read_feather(PATH_CONCEPT_LIST)
-        self.concept_member_list = pd.read_feather(PATH_CONCEPT_MEMBER_LIST)
         self.concept_daily = pd.read_feather(PATH_CONCEPT_DAILY)
         self.concept_daily_log = pd.read_pickle(PATH_CONCEPT_DAILY_LOG)
 
@@ -54,6 +46,9 @@ class Model:
         self.index_industry_list = pd.read_feather(PATH_INDEX_INDUSTRY_LIST)
         self.index_daily = pd.read_feather(PATH_INDEX_DAILY)
         self.index_daily_log = pd.read_pickle(PATH_INDEX_DAILY_LOG)
+
+        # Knowledge graph
+        self.knowledge_graph = nx.read_gpickle(PATH_KNOWLEDGE_GRAPH)
 
         # Default
         self.community_default = pd.read_pickle(PATH_DEFAULT_COMMUNITY)
@@ -68,7 +63,7 @@ class Model:
 
     def get_stock_list(self):
         return self.stock_list[['ts_code', 'name']].merge(
-            self.industry_member_list.query('level == "L1"')[['ts_code', 'industry_name']]
+            self.industry_list.query('level == "L1"')[['ts_code', 'industry_name']]
         ).to_dict('records')
 
     def set_query_codes(self, query_codes):
@@ -126,7 +121,7 @@ class Model:
             return False
         else:
             return self.stock_list[['ts_code', 'name']].merge(pd.Series(self.community, name='ts_code')).merge(
-                self.industry_member_list.query('level == "L1"')[['ts_code', 'industry_name']]).to_dict('records')
+                self.industry_list.query('level == "L1"')[['ts_code', 'industry_name']]).to_dict('records')
 
     def list_to_corr_matrix(self,
                             method='pearson',
@@ -191,7 +186,7 @@ class Model:
         return pd.concat(corr_dfs + [corr_df] + [index_corr_df], axis=1, keys=self.features + ['combined'] + ['index_corr'])
 
     def find_index_code(self, query_code='000652'):
-        industry_code = self.industry_member_list.query(
+        industry_code = self.industry_list.query(
             'ts_code == @query_code and level == "L1"').industry_code.to_list()[0]
         return self.index_industry_list.query('industry_code == @industry_code').iloc[0]
 
