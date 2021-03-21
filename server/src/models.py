@@ -48,7 +48,7 @@ class Model:
         self.index_daily_log = pd.read_pickle(PATH_INDEX_DAILY_LOG)
 
         # Knowledge graph
-        self.knowledge_graph = nx.read_gpickle(PATH_KNOWLEDGE_GRAPH)
+        # self.knowledge_graph = nx.read_gpickle(PATH_KNOWLEDGE_GRAPH)
 
         # Default
         self.community_default = pd.read_pickle(PATH_DEFAULT_COMMUNITY)
