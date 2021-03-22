@@ -1,6 +1,6 @@
 <template>
-  <a-row :gutter="[5, 10]">
-    <a-col :span="5">
+  <a-row :gutter="[5, 5]">
+    <a-col :span="6">
       <div class="upper_row">
         <ControlPanel
             @get-correlation-matrix="getCorrelationMatrix"
@@ -27,7 +27,7 @@
         ></PinusView>
       </div>
     </a-col>
-    <a-col :span="5">
+    <a-col :span="4">
       <div class="upper_row">
         <PinusView
             :id="'sector'"
@@ -38,7 +38,7 @@
       </div>
     </a-col>
   </a-row>
-  <a-row :gutter="[5, 10]">
+  <a-row :gutter="[5, 5]">
     <a-col :span="5">
       <div class="lower_row">
         <View></View>
@@ -164,18 +164,18 @@ export default {
   width: 2000px;
   height: 1125px;
   margin: 2px;
-  border: 2px solid lightblue;
+  border: 1px solid lightblue;
 }
 
 .upper_row {
-  border: 1px solid steelblue;
+  border: 1px dotted steelblue;
   width: 100%;
-  height: 715px;
+  height: 600px;
 }
 
 .lower_row {
-  border: 1px solid steelblue;
+  border: 1px dotted steelblue;
   width: 100%;
-  height: 400px;
+  height: 520px;
 }
 </style>
