@@ -21,24 +21,8 @@ export default {
     matrixColumn() {
       return !_.isEmpty(this.correlationMatrix)? this.correlationMatrix.columns: []
     },
-    matrixCombined() {
-      let combined = []
-      if (!_.isEmpty(this.correlationMatrix)) {
-        let length = this.matrixColumn.length;
-        combined = _.flatten(JSON.parse(this.correlationMatrix.combined))
-            .map((d, i)=>{
-              return {
-                row: this.matrixColumn[Math.floor(i/length)],
-                col: this.matrixColumn[i%length],
-                val: d
-              }
-            })
-        _.flatten(JSON.parse(this.correlationMatrix.index_corr)).forEach((d, i)=>{
-          combined[i*length+i%length] = { row: this.matrixColumn[i], col: this.matrixColumn[i], val: d }
-        })
-      }
-      console.log("matrixCombined:",combined);
-      return combined;
+    matrixCorr() {
+      return !_.isEmpty(this.correlationMatrix)? this.correlationMatrix.corr: []
     },
   },
   data () {
@@ -110,7 +94,7 @@ export default {
       heatmapContainer.append('g').call(yAxis);
       heatmapContainer
           .selectAll('.cell')
-          .data(this.matrixCombined)
+          .data(this.matrixCorr)
           .enter()
           .append('rect')
           .attr('class', 'cell')

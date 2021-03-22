@@ -55,11 +55,8 @@ def get_correlation_matrix():
     corr_matrix = CORR.two_phase_hierarchical_clustering(corr_matrix)
     if corr_matrix is not False:
         corr_matrix = {
-            'columns': corr_matrix.close.columns.to_list(),
-            'close': corr_matrix.close.to_json(orient='values'),
-            'vol': corr_matrix.vol.to_json(orient='values'),
-            'combined': corr_matrix.combined.to_json(orient='values'),
-            'index_corr': corr_matrix.index_corr.to_json(orient='values'),
+            'columns': corr_matrix[0],
+            'corr': corr_matrix[1],
         }
         # with open('../client/src/components/matrix.json', 'w+') as file:
         #     simplejson.dump(corr_matrix, file)

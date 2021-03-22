@@ -162,7 +162,8 @@ class Model:
         for count in counts:
             j += count
             sub_corr_df = corr_df_first_hc[corr_df_first_hc.columns.values[i:j]].loc[
-                corr_df_first_hc.columns.values[i:j]]
+                corr_df_first_hc.columns.values[i:j]
+            ]
             sub_corr_col = sub_corr_df.columns.tolist()
             if j - i > 1:
                 dist = sch.distance.pdist(sub_corr_df.values)
@@ -173,17 +174,24 @@ class Model:
             columns.extend(sub_corr_col)
 
         # Combine the matrix
-        corr_dfs = [(corr_df[feature].reindex(columns, axis=0).reindex(columns, axis=1)) for feature in self.features]
-        corr_df = corr_dfs[1].copy()
+        corr_dfs = [
+            (corr_df['close'].reindex(columns, axis=0).reindex(columns, axis=1)),
+            (corr_df['vol'].reindex(columns, axis=0).reindex(columns, axis=1))
+        ]
+        corr_df = corr_dfs[1]
         for idx, col in enumerate(corr_dfs[0].columns):
             corr_df.loc[col][idx:] = corr_dfs[0].loc[col][idx:]
 
         # Find correlation with index
         index_price = self.index_daily_log['000001.SH'].loc[self.query_dates[0]:self.query_dates[1]]
         stock_price = self.stock_daily_log.loc[self.query_dates[0]:self.query_dates[1]].close[columns]
-        index_corr_df = stock_price.corrwith(index_price, method=self.method, drop=True)
+        index_corr = list(stock_price.corrwith(index_price, method=self.method, drop=True).values)
 
-        return pd.concat(corr_dfs + [corr_df] + [index_corr_df], axis=1, keys=self.features + ['combined'] + ['index_corr'])
+        return columns, [
+            {'row': row, 'col': col, 'val': val if i != j else index_corr[i], 'type': 'market' if i == j else 'price' if i <= j else 'vol'}
+            for i, (row, col_dict) in enumerate(corr_df.round(5).to_dict(orient='index').items())
+            for j, (col, val) in enumerate(col_dict.items())
+        ]
 
     def find_index_code(self, query_code='000652'):
         industry_code = self.industry_list.query(
