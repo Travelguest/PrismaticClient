@@ -37,6 +37,7 @@ export default {
           combined[i*length+i%length] = { row: this.matrixColumn[i], col: this.matrixColumn[i], val: d }
         })
       }
+      console.log("matrixCombined:",combined);
       return combined;
     },
   },
@@ -62,6 +63,7 @@ export default {
     }
   },
   mounted() {
+    console.log("correlationMatrix:",this.correlationMatrix);
     this.initMatrix();
     this.renderMatrix();
   },
