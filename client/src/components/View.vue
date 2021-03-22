@@ -1,6 +1,6 @@
 <template>
   <div>
-
+    Knowledge Graph
   </div>
 </template>
 

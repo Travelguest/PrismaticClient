@@ -34,7 +34,7 @@ export default {
       return !_.isEmpty(this.correlationTriangle)? this.correlationTriangle.corr: []
     },
     squareLength() {
-      return (this.width-this.margin.left-this.margin.right);
+      return (this.height-this.margin.top-this.margin.bottom);
     }
   },
   data () {
@@ -44,7 +44,7 @@ export default {
       cellSize: null,
       width: 0,
       height: 0,
-      margin: {top: 0, right: 50, bottom: 0, left: 0},
+      margin: {top: 50, right: 0, bottom: 50, left: 50},
       padding: 0.0,
 
       // colorScheme: d3.interpolateBrBG,
@@ -97,10 +97,7 @@ export default {
       let numRow = this.matrixRow.length,
           cellSize = (this.squareLength / numRow) - this.padding;
       this.cellSize = cellSize;
-      this.margin.bottom = this.height - this.margin.top - this.squareLength;
-
-      console.log(this.correlationTriangle.date)
-      console.log(this.correlationTriangle.window)
+      this.margin.right = this.width - this.margin.left - this.squareLength;
 
       let colorScale = d3.scaleSequential()
           .domain([-1,1])
