@@ -30,7 +30,7 @@ export default {
       svg: null,
       width: 759,
       height: 598,
-      margin: { top: 120, right: 150, bottom: 80, left: 199 },
+      margin: { top: 108, right: 150, bottom: 80, left: 199 },
       padding: 0.1,
       legend: { yaxis: 40, xaxis: 20 },
       lineData: [
@@ -59,9 +59,9 @@ export default {
     },
   },
   mounted() {
-    console.log("矩阵数据:", this.correlationMatrix);
-    console.log("col:", this.correlationMatrix.columns);
-    console.log("corr:", this.correlationMatrix.corr);
+    // console.log("矩阵数据:", this.correlationMatrix);
+    // console.log("col:", this.correlationMatrix.columns);
+    // console.log("corr:", this.correlationMatrix.corr);
     this.initMatrix();
     this.renderMatrix();
   },

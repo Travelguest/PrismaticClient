@@ -8,6 +8,7 @@ venv
 *.ftr
 *.pkl
 *.csv
+*.pyc
 
 # local env files
 .env.local

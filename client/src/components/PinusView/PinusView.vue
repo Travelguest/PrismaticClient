@@ -1,5 +1,5 @@
 <template>
-  <div style='height: 100%'>
+  <div style='height: 100%;width:100%'>
     <a-spin :spinning="loadingTriangle" :delay="100">
       <div :id='`pinus_${id}`' style='height: 100%'>
         <div :id='`tooltip_${id}`' class='tooltip'></div>
@@ -44,7 +44,7 @@ export default {
       cellSize: null,
       width: 0,
       height: 0,
-      margin: {top: 50, right: 0, bottom: 50, left: 50},
+      margin: {top: 5, right: 0, bottom: 5, left: 15},
       padding: 0.0,
 
       // colorScheme: d3.interpolateBrBG,
@@ -69,6 +69,7 @@ export default {
     }
   },
   mounted() {
+    // console.log(this.correlationTriangle);
     this.initPinus();
   },
   methods: {
@@ -76,6 +77,7 @@ export default {
       // Initialize canvas
       this.width = this.$el.clientWidth;
       this.height = this.$el.clientHeight;
+      // console.log("width height:",this.width,this.height);
       this.canvas = d3.select(`#pinus_${this.id}`)
           .append('canvas')
           .attr('width', this.width)

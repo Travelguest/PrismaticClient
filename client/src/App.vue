@@ -1,6 +1,6 @@
 <template>
   <div>
-    <a-row :gutter="[2,2]">
+    <a-row :gutter="[2, 2]">
       <a-col :span="6">
         <div id="control_panel_container">
           <ControlPanel
@@ -9,105 +9,90 @@
           ></ControlPanel>
         </div>
       </a-col>
-      <a-col :span="18" >
+      <a-col :span="18">
         <a-row id="matrix_knowledge_graph_container" :gutter="2">
-            <a-col :span="12">
-              <div id="correlation_matrix_view_container">
-                <CorrelationMatrixView
-                  :correlation-matrix="correlationMatrix"
-                  @selected-stock-from-matrix-diagonal="
-                    updateSelectedStockMarket
-                  "
-                  @selected-stock-from-matrix="updateSelectedStockAgainst"
-                >
-                </CorrelationMatrixView>
-              </div>
-            </a-col>
-            <a-col :span="12">
-              <div id="knowledge_graph_container">
-                <View></View>
-              </div>
-            </a-col>
+          <a-col :span="12">
+            <div id="correlation_matrix_view_container">
+              <CorrelationMatrixView
+                :correlation-matrix="correlationMatrix"
+                @selected-stock-from-matrix-diagonal="updateSelectedStockMarket"
+                @selected-stock-from-matrix="updateSelectedStockAgainst"
+              >
+              </CorrelationMatrixView>
+            </div>
+          </a-col>
+          <a-col :span="12">
+            <div id="knowledge_graph_container">
+              <View></View>
+            </div>
+          </a-col>
           <!-- </div> -->
         </a-row>
 
-        <a-row >
-          <div id="detail_time_series_container">
-            <PinusView
-              :id="'market'"
-              :period-range="selectedRange"
-              :correlation-triangle="correlationTriangleMarket"
-              :loading-triangle="loadingTriangleMarket"
-            ></PinusView>
-            <!-- <PinusView
+        <a-row id="detail_time_series_container">
+          <PinusLayout 
+            :period-range="selectedRange"
+            :correlation-triangle-Market="correlationTriangleMarket"
+            :correlation-triangle-sector="correlationTriangleSector"
+            :loading-triangle-market="loadingTriangleMarket"
+            :loading-triangle-sector="loadingTriangleSector"
+          />
+          <!-- <a-col :span="2"> -->
+            <!-- <a-row class="pinus_view_container">
+              <PinusView
+                :id="'market'"
+                :period-range="selectedRange"
+                :correlation-triangle="correlationTriangleMarket"
+                :loading-triangle="loadingTriangleMarket"
+                @click="handlePinusViewClick"
+              ></PinusView>
+            </a-row>
+            <a-row class="pinus_view_container">
+               <PinusView
               :id="'sector'"
               :period-range="selectedRange"
               :correlation-triangle="correlationTriangleSector"
               :loading-triangle="loadingTriangleSector"
-            ></PinusView> -->
-          </div>
+            ></PinusView>
+            </a-row>
+            <a-row class="pinus_view_container">
+               <PinusView
+              :id="'temp1'"
+              :period-range="selectedRange"
+              :correlation-triangle="correlationTriangleSector"
+              :loading-triangle="loadingTriangleSector"
+            ></PinusView>
+            </a-row>
+            <a-row class="pinus_view_container">
+              <PinusView
+              :id="'temp2'"
+              :period-range="selectedRange"
+              :correlation-triangle="correlationTriangleSector"
+              :loading-triangle="loadingTriangleSector"
+            ></PinusView>
+            </a-row>
+            <a-row class="pinus_view_container">
+              <PinusView
+              :id="'temp3'"
+              :period-range="selectedRange"
+              :correlation-triangle="correlationTriangleSector"
+              :loading-triangle="loadingTriangleSector"
+            ></PinusView>
+            </a-row> -->
+          <!-- </a-col>
+          <a-col :span="22"> </a-col> -->
         </a-row>
+
       </a-col>
     </a-row>
 
-    <!-- <a-row :gutter="[5, 5]">
-      <a-col :span="6">
-        <div class="upper_row">
-          <ControlPanel
-            @get-correlation-matrix="getCorrelationMatrix"
-            @update-period-range="updatePeriodRange"
-          ></ControlPanel>
-        </div>
-      </a-col>
-      <a-col :span="9">
-        <div class="upper_row">
-          <CorrelationMatrixView
-            :correlation-matrix="correlationMatrix"
-            @selected-stock-from-matrix-diagonal="updateSelectedStockMarket"
-            @selected-stock-from-matrix="updateSelectedStockAgainst"
-          ></CorrelationMatrixView>
-        </div>
-      </a-col>
-      <a-col :span="5">
-        <div class="upper_row">
-          <PinusView
-            :id="'market'"
-            :period-range="selectedRange"
-            :correlation-triangle="correlationTriangleMarket"
-            :loading-triangle="loadingTriangleMarket"
-          ></PinusView>
-        </div>
-      </a-col>
-      <a-col :span="4">
-        <div class="upper_row">
-          <PinusView
-            :id="'sector'"
-            :period-range="selectedRange"
-            :correlation-triangle="correlationTriangleSector"
-            :loading-triangle="loadingTriangleSector"
-          ></PinusView>
-        </div>
-      </a-col>
-    </a-row>
-    <a-row :gutter="[5, 5]">
-      <a-col :span="5">
-        <div class="lower_row">
-          <View></View>
-        </div>
-      </a-col>
-      <a-col :span="19">
-        <div class="lower_row">
-          <View></View>
-        </div>
-      </a-col>
-    </a-row> -->
   </div>
 </template>
 
 <script>
 import ControlPanel from "@/components/ControlPanel.vue";
 import CorrelationMatrixView from "@/components/CorrelationMatrixView";
-import PinusView from "@/components/PinusView";
+import PinusLayout from "@/components/PinusView/PinusLayout";
 import View from "@/components/View";
 
 import _ from "lodash";
@@ -121,7 +106,7 @@ import pinus_sector from "./components/pinus_sector.json";
 export default {
   name: "App",
   components: {
-    PinusView,
+    PinusLayout,
     CorrelationMatrixView,
     ControlPanel,
     View,
@@ -148,11 +133,16 @@ export default {
 
       loadingTriangleMarket: false,
       loadingTriangleSector: false,
+
+      numberOfSelectedPinus: 0,
     };
   },
   watch: {},
   mounted: function () {},
   methods: {
+    handlePinusViewClick(event,d){
+      console.log("被点击了：",event,d);
+    },
     updatePeriodRange(range) {
       this.periodRange = range;
     },
@@ -253,25 +243,30 @@ export default {
 #matrix_knowledge_graph_container {
   box-sizing: border-box;
   height: 600px;
-  width:100%;
+  width: 100%;
   margin-bottom: 2px;
 }
 #correlation_matrix_view_container {
   box-sizing: border-box;
   height: 600px;
-  width:100%;
+  width: 100%;
 
   /* margin-right: 2px; */
   border: 1px solid steelblue;
 }
 #knowledge_graph_container {
   height: 600px;
-  width:100%;
+  width: 100%;
   border: 1px solid steelblue;
 }
 #detail_time_series_container {
   height: 520px;
   width: 100%;
   border: 1px solid steelblue;
+}
+.pinus_view_container{
+  height: 104px;
+  width: 100%;
+  /* border: 1px solid red; */
 }
 </style>
