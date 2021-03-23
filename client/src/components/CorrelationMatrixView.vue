@@ -1,5 +1,5 @@
 <template>
-  <div id="matrix" style="height: 100%"></div>
+  <div id="matrix" style="height: 100%; width: 100%"></div>
 </template>
 
 <script>
@@ -28,11 +28,24 @@ export default {
   data() {
     return {
       svg: null,
-      width: 0,
-      height: 0,
-      margin: { top: 100, right: 40, bottom: 100, left: 0 },
+      width: 759,
+      height: 598,
+      margin: { top: 120, right: 150, bottom: 80, left: 199 },
       padding: 0.1,
       legend: { yaxis: 40, xaxis: 20 },
+      lineData: [
+        { row: "000955", col: "600200", val: 0.52342, type: "price" },
+        { row: "600200", col: "000538", val: -0.05813, type: "price" },
+        { row: "000078", col: "000652", val: 0.66309, type: "price" },
+        { row: "603301", col: "600763", val: -0.12519, type: "price" },
+        { row: "000652", col: "603288", val: -0.10912, type: "price" },
+        { row: "000538", col: "600269", val: 0.60816, type: "price" },
+        { row: "600436", col: "600200", val: -0.00632, type: "vol" },
+        { row: "000623", col: "000078", val: 0.07383, type: "vol" },
+        { row: "600763", col: "000078", val: -0.15669, type: "vol" },
+        { row: "603288", col: "000652", val: -0.13302, type: "vol" },
+        { row: "600269", col: "000078", val: -0.06548, type: "vol" },
+      ],
 
       colorScheme: d3.interpolateBrBG,
       // colorScheme: d3.interpolateYlGnBu,
@@ -55,35 +68,26 @@ export default {
   methods: {
     initMatrix() {
       // Initialize svg
-      this.width = this.$el.clientWidth;
-      this.height = this.$el.clientHeight;
+      // this.width = this.$el.clientWidth;
+      // this.height = this.$el.clientHeight;
 
-      if (this.margin.left === 0) {
-        this.margin.left =
-          this.width - (this.height - this.margin.top - this.margin.bottom);
-      }
+      // if (this.margin.left === 0) {
+      //   this.margin.left =
+      //     this.width - (this.height - this.margin.top - this.margin.bottom);
+      // }
       this.svg = d3
         .select(this.$el)
         .append("svg")
-        .attr("viewBox", [0, 0, this.width, this.height]);
+        .attr("viewBox", [0, 0, this.width, this.height])
+        .append("g")
+        .attr("transform", `translate(${this.margin.left},${this.margin.top})`);
     },
     renderMatrix() {
       // Remove all groups in svg
       this.svg.selectAll("g").remove();
 
-      let heatmapContainer = this.svg
-        .append("g")
-        .attr(
-          "transform",
-          `translate(${this.margin.left - this.margin.right},${
-            this.margin.top
-          })`
-        );
+      let heatmapContainer = this.svg.append("g");
 
-      // Configuration
-      let xAxis = (g) => g.call(d3.axisBottom(x).tickSizeOuter(0));
-      let yAxis = (g) => g.call(d3.axisLeft(y).tickSizeOuter(0));
-      // .call(g => g.select('.domain').remove());
       let colorScale = d3
         .scaleSequential()
         .domain([-1, 1])
@@ -92,10 +96,7 @@ export default {
         .scaleBand()
         .domain(this.matrixColumn)
         .padding(this.padding)
-        .range([
-          0,
-          this.width - this.margin.right - this.margin.left + this.legend.xaxis,
-        ]);
+        .range([0, this.width - this.margin.right - this.margin.left]);
       let y = d3
         .scaleBand()
         .domain(this.matrixColumn)
@@ -104,8 +105,25 @@ export default {
       let r = (x(this.matrixColumn[1]) - x(this.matrixColumn[0])) / 2;
 
       // Heatmap
-      heatmapContainer.append("g").call(xAxis);
-      heatmapContainer.append("g").call(yAxis);
+      this.svg
+        .append("g")
+        .attr("class", "xAxis")
+        .call(d3.axisBottom(x).tickSizeOuter(0))
+        .attr(
+          "transform",
+          `translate(0,${this.height - this.margin.bottom - this.margin.top})`
+        );
+      this.svg.selectAll(".xAxis .tick text").attr("transform", "rotate(12)");
+
+      this.svg
+        .append("g")
+        .attr("class", "yAxis")
+        .call(d3.axisRight(y).tickSizeOuter(0))
+        .attr(
+          "transform",
+          `translate(${this.width - this.margin.right - this.margin.left},0)`
+        );
+
       heatmapContainer
         .selectAll(".cell")
         .data(this.matrixCorr)
@@ -117,21 +135,6 @@ export default {
         .attr("width", x.bandwidth())
         .attr("height", y.bandwidth())
         .style("fill", (d) => colorScale(d.val))
-        .style("stroke-width", 1)
-        .style("stroke", (d) => {
-          if (d.type === "vol") {
-            //交易量下三角
-            return "black";
-          } else if (d.type === "price") {
-            //股价上三角
-            return "black";
-          } else return "none";
-        })
-        .style("stroke-dasharray", (d) => {
-          if (d.type === "vol") {
-            return "8 8";
-          } else return "0";
-        })
         .style("opacity", 1e-6)
         .transition()
         .style("opacity", 1);
@@ -141,15 +144,10 @@ export default {
           .filter((k) => !(k.col === d.col || k.row === d.row)) // when not in the same row or column
           .style("opacity", 0.3)
           .style("stroke-width", 0);
-        // d3.selectAll('.cell')
-        //     .filter(k => (k.col === d.col || k.row === d.row) && (k.col !== k.row)) // when in the same row or column
-        //     .style("stroke", "black");
-        // .style("stroke-width", 1);
-      };
-
-      let mouseout = function () {
         d3.selectAll(".cell")
-          .style("opacity", 1)
+          .filter(
+            (k) => (k.col === d.col || k.row === d.row) && k.col !== k.row
+          ) // when in the same row or column
           .style("stroke-width", 1)
           .style("stroke", (d) => {
             if (d.type === "vol") {
@@ -162,17 +160,37 @@ export default {
           })
           .style("stroke-dasharray", (d) => {
             if (d.type === "vol") {
-              return "8 8";
+              return "2 2";
             } else return "0";
           });
+      };
+
+      let mouseout = function () {
         d3.selectAll(".cell")
-          .filter((k) => k.col === k.row)
-          // .style('fill', 'white')
-          .attr("rx", r)
-          .attr("ry", r)
-          .style("fill", "white")
-          .style("stroke", (d) => colorScale(d.val))
-          .style("stroke-width", 4);
+          .style("opacity", 1)
+          .style("stroke-width", (d) => {
+            if (d.col === d.row) return 4;
+            else return 0;
+          });
+        // .style("stroke", (d) => {
+        //   if (d.type === "vol") {
+        //     //交易量下三角
+        //     return "black";
+        //   } else if (d.type === "price") {
+        //     //股价上三角
+        //     return "black";
+        //   } else return colorScale(d.val);
+        // })
+        // .style("stroke-dasharray", (d) => {
+        //   if (d.type === "vol") {
+        //     return "8 8";
+        //   } else return "0";
+        // })
+
+        // d3.selectAll(".cell")
+        //   .filter((k) => k.col === k.row)
+        // .style("stroke", (d) => colorScale(d.val))
+        // .style("stroke-width", 4);
         // .filter(k => k.col !== k.row)
         // .style("stroke-width", 0);
       };
@@ -183,7 +201,6 @@ export default {
       // The diagonal cells
       d3.selectAll(".cell")
         .filter((k) => k.col === k.row)
-        // .style('fill', 'white')
         .attr("rx", r)
         .attr("ry", r)
         .style("fill", "white")
@@ -199,55 +216,82 @@ export default {
           this.$emit("selectedStockFromMatrix", d.row, d.col);
         });
 
+      //barChart
+      let yScale = d3
+        .scaleLinear()
+        .domain(d3.extent(this.lineData, (d) => d.val))
+        .range([this.margin.top / 3, 0])
+        .nice();
+      this.svg
+        .selectAll(".barChart")
+        .data(this.lineData)
+        .enter()
+        .append("rect")
+        .attr("x", (d) => x(d.col))
+        .attr("y", (d) => yScale(Math.max(0, d.val)))
+        .attr("height", (d) => Math.abs(yScale(d.val) - yScale(0)))
+        .attr("width", x.bandwidth())
+        .style("fill", (d) => {
+          if (d.val < 0) return "#C65A21";
+          else return "#407FB4";
+        })
+        .attr("transform", "translate(0,-110)");
+
+        let xScale = d3
+        .scaleLinear()
+        .domain(d3.extent(this.lineData, (d) => d.val))
+        .range([0,this.margin.left / 3])
+        .nice();
+
+        this.svg
+        .selectAll(".barChart")
+        .data(this.lineData)
+        .enter()
+        .append("rect")
+        .attr("x", (d) => xScale(Math.min(0, d.val)))
+        .attr("y", (d) => y(d.row))
+        .attr("width", (d) => Math.abs(xScale(d.val) - xScale(0)))
+        .attr("height", y.bandwidth() )
+        .style("fill", (d) => {
+          if (d.val < 0) return "#C65A21";
+          else return "#407FB4";
+        })
+        .attr("transform", "translate(-110,0)");
+
       // legend scale
-      let legendHeight = this.height - this.margin.top - this.margin.bottom,
-        legend = this.svg
-          .append("g")
-          .attr("width", this.legend.xaxis)
-          .attr("height", legendHeight)
-          .attr(
-            "transform",
-            `translate(${
-              this.margin.left - this.margin.right * 2 - this.legend.xaxis * 2
-            },${this.margin.top})`
-          );
+      let legendWidth = 138;
+      let legendHeight = 15;
+      let legend = this.svg.append("g").attr("transform", "translate(410,-30)");
 
       let stops = d3.range(-1, 1.01, 0.2).map((d) => {
-        return { offset: (d + 1) / 2, color: colorScale(-d), value: -d };
+        return { offset: (d + 1) / 2, color: colorScale(d), value: d };
       });
       legend
         .append("linearGradient")
         .attr("id", "linear-gradient")
-        .attr("x2", "0%")
-        .attr("y2", "100%")
+        .attr("x2", "100%")
+        .attr("y2", "0%")
         .selectAll("stop")
         .data(stops)
         .enter()
         .append("stop")
-        .attr("offset", function (d) {
-          return 100 * d.offset + "%";
-        })
-        .attr("stop-color", function (d) {
-          return d.color;
-        });
+        .attr("offset", (d) => 100 * d.offset + "%")
+        .attr("stop-color", (d) => d.color);
       legend
         .append("rect")
-        .attr("width", this.legend.xaxis)
+        .attr("width", legendWidth)
         .attr("height", legendHeight)
         .style("fill", "url(#linear-gradient)");
+    
       legend
         .selectAll("text")
-        .data(stops)
+        .data([-1.0,1.0])
         .enter()
         .append("text")
-        .attr("dx", -5)
-        .attr("y", function (d) {
-          return legendHeight * d.offset;
-        })
-        .style("text-anchor", "end")
-        .text(function (d) {
-          return d.value.toFixed(1);
-        });
+        .attr("dy", -5)
+        .attr("x", (_,i) => i * 138)
+        .style("text-anchor", "middle")
+        .text((d) => d.toFixed(1));
     },
   },
 };
