@@ -43,7 +43,7 @@
           ></PinusView>
         </a-row>
       </a-col>
-      <a-col :span="4">
+      <a-col :span="5">
         <div>
           <a-row class="pinus_view_switch_two">
             <PrismView
@@ -63,7 +63,7 @@
           </a-row>
         </div>
       </a-col>
-      <a-col :span="18">LineChart</a-col>
+      <a-col :span="17">LineChart</a-col>
     </a-row>
   </div>
 </template>
@@ -115,6 +115,6 @@ export default {
 .pinus_view_switch_two {
   width: 100%;
   height: 260px;
-  /* border: 1px solid red; */
+  border: 1px solid red;
 }
 </style>
