@@ -206,9 +206,7 @@ export default {
   },
   mounted: function () {
     DataService.get('get_stock_list', data => {
-      console.log(data);
       this.stockList = data;
-      
     })
 
   },

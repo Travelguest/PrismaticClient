@@ -18,12 +18,12 @@ def get_stock_list():
     return json_dumps(CORR.get_stock_list())
 
 
-@app.route('/set_stocks', methods=['POST'])
-def set_stocks():
+@app.route('/get_corr_dist', methods=['POST'])
+def get_corr_dist():
     post_data = request.data.decode()
     if post_data != "":
         post_data = simplejson.loads(post_data)
-    return json_dumps(CORR.set_query_codes(post_data))
+    return json_dumps(CORR.get_corr_dist(post_data))
 
 
 @app.route('/set_period', methods=['POST'])
@@ -84,7 +84,7 @@ def get_corr_tri_market():
                 for i in row.fillna(2).to_list()[-(len(pinus)+2-num):]
             ]
         }
-        # with open('../client/src/components/pinus_market.json', 'w+') as file:
+        # with open(f'../client/src/components/pinus_market_{post_data[0]}.json', 'w+') as file:
         #     simplejson.dump(response, file)
     return json_dumps(response)
 
@@ -113,7 +113,7 @@ def get_corr_tri_sector():
                 for i in row.fillna(2).to_list()[-(len(pinus)+2-num):]
             ]
         }
-        # with open('../client/src/components/pinus_sector.json', 'w+') as file:
+        # with open(f'../client/src/components/pinus_sector_{post_data[0]}.json', 'w+') as file:
         #     simplejson.dump(response, file)
     return json_dumps(response)
 
@@ -141,6 +141,6 @@ def get_corr_tri_stock():
                 for i in row.fillna(2).to_list()[-(len(pinus)+2-num):]
             ]
         }
-        # with open('../client/src/components/pinus_sector.json', 'w+') as file:
+        # with open(f'../client/src/components/pinus_stock_{post_data[0]}.json', 'w+') as file:
         #     simplejson.dump(response, file)
     return json_dumps(response)
