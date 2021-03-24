@@ -102,7 +102,7 @@ export default {
         .domain(this.matrixColumn)
         .padding(this.padding)
         .range([0, this.height - this.margin.bottom - this.margin.top]);
-      let r = (x(this.matrixColumn[1]) - x(this.matrixColumn[0])) / 2;
+      //let r = (x(this.matrixColumn[1]) - x(this.matrixColumn[0])) / 2;
 
       // Heatmap
       this.svg
@@ -124,13 +124,17 @@ export default {
           `translate(${this.width - this.margin.right - this.margin.left},0)`
         );
 
-      heatmapContainer
+      var cell = heatmapContainer
         .selectAll(".cell")
         .data(this.matrixCorr)
-        .enter()
+        .enter();
+
+      var cellRect = cell
         .append("rect")
         .attr("class", "cell")
-        .attr("x", (d) => x(d.col))
+        .attr("x", function (d) {
+          return x(d.col);
+        })
         .attr("y", (d) => y(d.row))
         .attr("width", x.bandwidth())
         .attr("height", y.bandwidth())
@@ -138,6 +142,40 @@ export default {
         .style("opacity", 1e-6)
         .transition()
         .style("opacity", 1);
+
+      // var cellCircle = cell
+      //   .filter((k) => k.col === k.row)
+      //   .append("circle")
+      //   .attr("class", "cell")
+      //   .attr("cx", (d) => x(d.col) + x.bandwidth() / 2)
+      //   .attr("cy", (d) => y(d.row) + y.bandwidth() / 2)
+      //   .attr("r", x.bandwidth() / 4);
+
+
+      let radius = x.bandwidth() / 4;
+      let arc = d3.arc().innerRadius(0).outerRadius(radius);
+      //var color = ["#98abc5", "#8a89a6"];
+      var pie = d3.pie().value(function (d) {
+        return d;
+      });
+      var data_ready = pie([50,20]);
+      console.log(data_ready);
+      var cellCircle  = cell
+        .filter((k) => k.col === k.row)
+        .data(data_ready)
+        .enter()
+        .append("g")
+        .attr("class", "cell")
+        // .attr(
+        //   "transform",
+        //   "translate(100,100)"
+        // )
+        .append("path")
+        .attr("d", arc)
+        .attr("fill","black");
+        // .attr("fill", function (d) {
+        //   return color(d.data.key);
+        // });
 
       let mouseover = function (_, d) {
         d3.selectAll(".cell")
@@ -199,12 +237,26 @@ export default {
       d3.selectAll(".cell").on("mouseover", mouseover).on("mouseout", mouseout);
 
       // The diagonal cells
-      d3.selectAll(".cell")
-        .filter((k) => k.col === k.row)
-        .attr("rx", r)
-        .attr("ry", r)
-        .style("fill", "white")
-        .style("stroke", (d) => colorScale(d.val))
+
+      cellRect.filter((k) => k.col === k.row).style("fill", "white");
+
+      // d3.selectAll(".cell")
+      //   .filter((k) => k.col === k.row)
+      cellCircle
+        .style("fill", function (d) {
+          if (d.val < 0) {
+            return colorScale(-0.75);
+          } else {
+            return colorScale(0.75);
+          }
+        })
+        .style("stroke", function (d) {
+          if (d.val < 0) {
+            return colorScale(-0.75);
+          } else {
+            return colorScale(0.75);
+          }
+        })
         .style("stroke-width", 4)
         .on("click", (_, d) => {
           this.$emit("selectedStockFromMatrixDiagonal", d.row);
@@ -237,13 +289,13 @@ export default {
         })
         .attr("transform", "translate(0,-110)");
 
-        let xScale = d3
+      let xScale = d3
         .scaleLinear()
         .domain(d3.extent(this.lineData, (d) => d.val))
-        .range([0,this.margin.left / 3])
+        .range([0, this.margin.left / 3])
         .nice();
 
-        this.svg
+      this.svg
         .selectAll(".barChart")
         .data(this.lineData)
         .enter()
@@ -251,7 +303,7 @@ export default {
         .attr("x", (d) => xScale(Math.min(0, d.val)))
         .attr("y", (d) => y(d.row))
         .attr("width", (d) => Math.abs(xScale(d.val) - xScale(0)))
-        .attr("height", y.bandwidth() )
+        .attr("height", y.bandwidth())
         .style("fill", (d) => {
           if (d.val < 0) return "#C65A21";
           else return "#407FB4";
@@ -282,14 +334,14 @@ export default {
         .attr("width", legendWidth)
         .attr("height", legendHeight)
         .style("fill", "url(#linear-gradient)");
-    
+
       legend
         .selectAll("text")
-        .data([-1.0,1.0])
+        .data([-1.0, 1.0])
         .enter()
         .append("text")
         .attr("dy", -5)
-        .attr("x", (_,i) => i * 138)
+        .attr("x", (_, i) => i * 138)
         .style("text-anchor", "middle")
         .text((d) => d.toFixed(1));
     },
