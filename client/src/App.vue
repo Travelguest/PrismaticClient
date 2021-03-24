@@ -26,61 +26,19 @@
               <View></View>
             </div>
           </a-col>
-          <!-- </div> -->
         </a-row>
 
         <a-row id="detail_time_series_container">
           <PinusLayout 
             :period-range="selectedRange"
-            :correlation-triangle-Market="correlationTriangleMarket"
-            :correlation-triangle-sector="correlationTriangleSector"
+            :correlation-triangle-stock="correlationTriangleStock"
+            :correlation-triangle-market-left="correlationTriangleMarketLeft"
+            :correlation-triangle-market-right="correlationTriangleMarketRight"
+            :correlation-triangle-sector-left="correlationTriangleSectorLeft"
+            :correlation-triangle-sector-right="correlationTriangleSectorRight"
             :loading-triangle-market="loadingTriangleMarket"
             :loading-triangle-sector="loadingTriangleSector"
           />
-          <!-- <a-col :span="2"> -->
-            <!-- <a-row class="pinus_view_container">
-              <PinusView
-                :id="'market'"
-                :period-range="selectedRange"
-                :correlation-triangle="correlationTriangleMarket"
-                :loading-triangle="loadingTriangleMarket"
-                @click="handlePinusViewClick"
-              ></PinusView>
-            </a-row>
-            <a-row class="pinus_view_container">
-               <PinusView
-              :id="'sector'"
-              :period-range="selectedRange"
-              :correlation-triangle="correlationTriangleSector"
-              :loading-triangle="loadingTriangleSector"
-            ></PinusView>
-            </a-row>
-            <a-row class="pinus_view_container">
-               <PinusView
-              :id="'temp1'"
-              :period-range="selectedRange"
-              :correlation-triangle="correlationTriangleSector"
-              :loading-triangle="loadingTriangleSector"
-            ></PinusView>
-            </a-row>
-            <a-row class="pinus_view_container">
-              <PinusView
-              :id="'temp2'"
-              :period-range="selectedRange"
-              :correlation-triangle="correlationTriangleSector"
-              :loading-triangle="loadingTriangleSector"
-            ></PinusView>
-            </a-row>
-            <a-row class="pinus_view_container">
-              <PinusView
-              :id="'temp3'"
-              :period-range="selectedRange"
-              :correlation-triangle="correlationTriangleSector"
-              :loading-triangle="loadingTriangleSector"
-            ></PinusView>
-            </a-row> -->
-          <!-- </a-col>
-          <a-col :span="22"> </a-col> -->
         </a-row>
 
       </a-col>
@@ -90,7 +48,7 @@
 </template>
 
 <script>
-import ControlPanel from "@/components/ControlPanel.vue";
+import ControlPanel from "@/components/DynamicGraphView/ControlPanel";
 import CorrelationMatrixView from "@/components/CorrelationMatrixView";
 import PinusLayout from "@/components/PinusView/PinusLayout";
 import View from "@/components/View";
@@ -100,8 +58,11 @@ import moment from "moment";
 import DataService from "@/utils/data-service";
 
 import matrix from "./components/matrix.json";
-import pinus_market from "./components/pinus_market.json";
-import pinus_sector from "./components/pinus_sector.json";
+import pinus_stock from "./components/pinus_stock.json";
+import pinus_market_left from "./components/pinus_market_left.json";
+import pinus_market_right from "./components/pinus_market_right.json";
+import pinus_sector_left from "./components/pinus_sector_left.json";
+import pinus_sector_right from "./components/pinus_sector_right.json";
 
 export default {
   name: "App",
@@ -124,12 +85,15 @@ export default {
   data() {
     return {
       periodRange: [],
-      selectedStock: "000652",
-      selectedStockAgainst: "000538",
+      selectedStockLeft: "000652",
+      selectedStockRight: "000538",
 
       correlationMatrix: matrix,
-      correlationTriangleMarket: pinus_market,
-      correlationTriangleSector: pinus_sector,
+      correlationTriangleStock: pinus_stock,
+      correlationTriangleMarketLeft: pinus_market_left,
+      correlationTriangleMarketRight: pinus_market_right,
+      correlationTriangleSectorLeft: pinus_sector_left,
+      correlationTriangleSectorRight: pinus_sector_right,
 
       loadingTriangleMarket: false,
       loadingTriangleSector: false,
@@ -147,12 +111,13 @@ export default {
       this.periodRange = range;
     },
     updateSelectedStockMarket(stock) {
-      this.selectedStock = stock;
+      this.selectedStockLeft = stock;
+      this.selectedStockRight = stock;
       this.getCorrelationTriangleMarket();
     },
     updateSelectedStockAgainst(stock_left, stock_right) {
-      this.selectedStock = stock_left;
-      this.selectedStockAgainst = stock_right;
+      this.selectedStockLeft = stock_left;
+      this.selectedStockRight = stock_right;
       this.getCorrelationTriangleStock();
     },
     getCorrelationMatrix() {
@@ -164,9 +129,17 @@ export default {
       this.loadingTriangleMarket = true;
       DataService.post(
         "get_corr_tri_market",
-        _.flatten([this.selectedStock, this.selectedRange]),
+        _.flatten([this.selectedStockLeft, this.selectedRange]),
         (data) => {
-          this.correlationTriangleMarket = data;
+          this.correlationTriangleMarketLeft = data;
+          this.loadingTriangleMarket = false;
+        }
+      );
+      DataService.post(
+        "get_corr_tri_market",
+        _.flatten([this.selectedStockRight, this.selectedRange]),
+        (data) => {
+          this.correlationTriangleMarketRight = data;
           this.loadingTriangleMarket = false;
         }
       );
@@ -174,9 +147,19 @@ export default {
       this.loadingTriangleSector = true;
       DataService.post(
         "get_corr_tri_sector",
-        _.flatten([this.selectedStock, this.selectedRange]),
+        _.flatten([this.selectedStockLeft, this.selectedRange]),
         (data) => {
-          this.correlationTriangleSector = data;
+          this.correlationTriangleSectorLeft = data;
+          this.loadingTriangleSector = false;
+        }
+      );
+
+      this.loadingTriangleSector = true;
+      DataService.post(
+        "get_corr_tri_sector",
+        _.flatten([this.selectedStockRight, this.selectedRange]),
+        (data) => {
+          this.correlationTriangleSectorRight = data;
           this.loadingTriangleSector = false;
         }
       );
@@ -185,9 +168,19 @@ export default {
       this.loadingTriangleMarket = true;
       DataService.post(
         "get_corr_tri_market",
-        _.flatten([this.selectedStock, this.selectedRange]),
+        _.flatten([this.selectedStockLeft, this.selectedRange]),
         (data) => {
-          this.correlationTriangleMarket = data;
+          this.correlationTriangleMarketLeft = data;
+          this.loadingTriangleMarket = false;
+        }
+      );
+
+      this.loadingTriangleMarket = true;
+      DataService.post(
+        "get_corr_tri_market",
+        _.flatten([this.selectedStockRight, this.selectedRange]),
+        (data) => {
+          this.correlationTriangleMarketRight = data;
           this.loadingTriangleMarket = false;
         }
       );
@@ -196,12 +189,32 @@ export default {
       DataService.post(
         "get_corr_tri_stock",
         _.flatten([
-          this.selectedStock,
-          this.selectedStockAgainst,
+          this.selectedStockLeft,
+          this.selectedStockRight,
           this.selectedRange,
         ]),
         (data) => {
-          this.correlationTriangleSector = data;
+          this.correlationTriangleStock = data;
+          this.loadingTriangleSector = false;
+        }
+      );
+
+      this.loadingTriangleSector = true;
+      DataService.post(
+        "get_corr_tri_sector",
+        _.flatten([this.selectedStockLeft, this.selectedRange]),
+        (data) => {
+          this.correlationTriangleSectorLeft = data;
+          this.loadingTriangleSector = false;
+        }
+      );
+
+      this.loadingTriangleSector = true;
+      DataService.post(
+        "get_corr_tri_sector",
+        _.flatten([this.selectedStockRight, this.selectedRange]),
+        (data) => {
+          this.correlationTriangleSectorRight = data;
           this.loadingTriangleSector = false;
         }
       );

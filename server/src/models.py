@@ -1,13 +1,16 @@
 import pandas as pd
 import numpy as np
 import networkx as nx
+import math
 
 import scipy.cluster.hierarchy as sch
+
+PATH_CORR_ALL_YEARS = './data/corr_all_years.pkl'
+PATH_TRADE_CAL = './data/trade_cal.ftr'
 
 PATH_STOCK_LIST = './data/stock_list.ftr'
 PATH_STOCK_DAILY = './data/stock_daily.ftr'
 PATH_STOCK_DAILY_LOG = './data/stock_daily_log.pkl'
-PATH_TRADE_CAL = './data/trade_cal.ftr'
 
 PATH_INDUSTRY_LIST = './data/industry_list.ftr'
 
@@ -28,6 +31,11 @@ PINUS_WINDOW_SIZE = 250
 
 class Model:
     def __init__(self):
+        # All correlations matrix
+        self.corr_df = pd.read_pickle(PATH_CORR_ALL_YEARS)
+        self.corr_index_df = self.corr_df.drop(columns=[(str(year), '000001.SH') for year in range(2011, 2021)]).iloc[0]
+        self.corr_df = self.corr_df.drop(columns=[(str(year), '000001.SH') for year in range(2011, 2021)]).iloc[1:]
+
         # Stocks related
         self.stock_list = pd.read_feather(PATH_STOCK_LIST)
         self.stock_daily = pd.read_feather(PATH_STOCK_DAILY)
@@ -61,19 +69,108 @@ class Model:
         self.corr_df = None
         self.community = None
 
+    """
+    Initiation
+    """
+    # entrance get stock list
     def get_stock_list(self):
         return self.stock_list[['ts_code', 'name']].merge(
             self.industry_list.query('level == "L1"')[['ts_code', 'industry_name']]
         ).to_dict('records')
 
-    def set_query_codes(self, query_codes):
-        if query_codes is None:
-            return False
-        if len(self.stock_list.query('ts_code == @query_codes')) == len(query_codes):
-            self.query_codes = query_codes
-            return True
-        else:
-            return False
+    # get ten years market index distribution
+    def get_corr_dist(self, query_codes):
+        self.query_codes = query_codes
+        corr = {str(year): {} for year in range(2011, 2021)}
+        for year in range(2011, 2021):
+            corr_out = pd.cut(
+                self.corr_index_df[str(year)],
+                bins=[i / 100 for i in range(-40, 101, 5)],
+                precision=2,
+                right=True,
+                include_lowest=True).value_counts()
+            corr[str(year)]['sci'] = [corr_out[i / 100] for i in range(-40, 101, 5)]
+            for query_code in query_codes:
+                corr_out = pd.cut(
+                    self.corr_df[str(year)].loc[query_code],
+                    bins=[i / 100 for i in range(-40, 101, 5)],
+                    precision=2,
+                    right=True,
+                    include_lowest=True).value_counts()
+                corr[str(year)][query_code] = [corr_out[i / 100] for i in range(-40, 101, 5)]
+        return corr
+
+    # get cluster data for all years
+    def get_corr_clusters_all_years(self, threshold):
+        corr = {str(year): {} for year in range(2011, 2021)}
+        for year in range(2011, 2021):
+            year = str(year)
+            corr[year] = self.get_corr_clusters_one_year(year, threshold)
+        return corr
+
+    # Get cluster data for one year
+    def get_corr_clusters_one_year(self, year, threshold):
+        year = str(year)
+        corr = {}
+        corr_matrix = self.get_corr_matrix_filtered(year, threshold)
+        corr_graph = self.get_corr_graph(corr_matrix, threshold)
+        corr_betweenness = self.get_betweenness_centrality(corr_graph)
+        corr[year]['betweenness'] = self.get_betweenness_centrality(corr_graph)
+        corr[year]['components'] = self.get_connected_components(corr_graph, corr_betweenness)
+        corr[year]['component'] = self.get_connected_components(corr_graph, corr_betweenness)
+        return corr
+
+    # Get the correlation filtered matrix
+    def get_corr_matrix_filtered(self, year, threshold):
+        corr_filter = pd.eval('|'.join(
+            [f'(self.corr_df["{year}"]["{query_code}"] > {threshold})' for query_code in self.query_codes]
+        ))
+        corr_filter = self.corr_df[str(year)].loc[corr_filter]
+        return corr_filter.filter(items=corr_filter.index)
+
+    # Get the correlation filtered graph
+    def get_corr_graph(self, corr_df, threshold):
+        G = nx.Graph()
+        corr_df[corr_df > threshold].apply(
+            lambda u: [G.add_edge(u.name, v, w=1.01 - weight) for v, weight in u.items() if
+                       not math.isnan(weight) and weight >= threshold and u.name != v]
+        )
+        return G
+
+    def get_betweenness_centrality(self, graph):
+        return nx.algorithms.centrality.betweenness_centrality(graph, endpoints=True, weight='weight')
+
+    def get_connected_components(self, graph, sort_dict):
+        sorted_components = []
+        for components in sorted(nx.connected_components(graph), key=len, reverse=True):
+            for node in sorted(list(components), key=lambda x: sort_dict[x], reverse=True):
+                sorted_components.append(node)
+        return sorted_components
+
+    # Get business tag table
+    def get_business_tag_table(self, threshold):
+        all_nodes = pd.eval(
+            '|'.join([f'(self.corr_df.loc["{query_code}"] > {threshold})' for query_code in self.query_codes]))
+        all_nodes = list(set([code for _, code in all_nodes[all_nodes].index]))
+
+        industry_tags = self.industry_list.merge(
+            pd.Series(all_nodes, name='ts_code'))[['industry_name', 'ts_code', 'level']].groupby(
+            ['industry_name', 'level']).count().reset_index().set_index('level').sort_values(by='ts_code',
+                                                                                             ascending=False)
+        concept_tags = self.concept_list.merge(
+            pd.Series(all_nodes, name='ts_code'))[['name', 'ts_code']].groupby(
+            'name').count().reset_index().sort_values(by='ts_code', ascending=False)
+        industry_tags.columns = ['name', 'count']
+        concept_tags.columns = ['name', 'count']
+
+        return {
+            'L1': industry_tags.loc['L1'].to_dict(orient='records'),
+            'L2': industry_tags.loc['L2'].to_dict(orient='records'),
+            'L3': industry_tags.loc['L3'].to_dict(orient='records'),
+            'concept': concept_tags.to_dict(orient='records')
+        }
+
+    # Output to matrix view
 
     def corr_community_detection(self,
                                  method='pearson',
@@ -123,6 +220,10 @@ class Model:
             return self.stock_list[['ts_code', 'name']].merge(pd.Series(self.community, name='ts_code')).merge(
                 self.industry_list.query('level == "L1"')[['ts_code', 'industry_name']]).to_dict('records')
 
+    '''
+    Correlation matrix
+    '''
+    # entrance
     def list_to_corr_matrix(self,
                             method='pearson',
                             start_date='2020-01-01',
@@ -188,11 +289,15 @@ class Model:
         index_corr = list(stock_price.corrwith(index_price, method=self.method, drop=True).values)
 
         return columns, [
-            {'row': row, 'col': col, 'val': val if i != j else index_corr[i], 'type': 'market' if i == j else 'price' if i <= j else 'vol'}
+            {'row': row, 'col': col, 'val': val if i != j else index_corr[i],
+             'type': 'market' if i == j else 'price' if i <= j else 'vol'}
             for i, (row, col_dict) in enumerate(corr_df.round(5).to_dict(orient='index').items())
             for j, (col, val) in enumerate(col_dict.items())
         ]
 
+    '''
+    Pinus view related
+    '''
     def find_index_code(self, query_code='000652'):
         industry_code = self.industry_list.query(
             'ts_code == @query_code and level == "L1"').industry_code.to_list()[0]

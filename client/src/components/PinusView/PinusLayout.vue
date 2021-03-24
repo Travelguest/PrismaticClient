@@ -6,7 +6,7 @@
           <PinusView
             :id="'market'"
             :period-range="periodRange"
-            :correlation-triangle="correlationTriangleMarket"
+            :correlation-triangle="correlationTriangleMarketLeft"
             :loading-triangle="loadingTriangleMarket"
           ></PinusView>
         </a-row>
@@ -14,7 +14,7 @@
           <PinusView
             :id="'sector'"
             :period-range="periodRange"
-            :correlation-triangle="correlationTriangleSector"
+            :correlation-triangle="correlationTriangleSectorLeft"
             :loading-triangle="loadingTriangleSector"
           ></PinusView>
         </a-row>
@@ -22,7 +22,7 @@
           <PinusView
             :id="'temp1'"
             :period-range="periodRange"
-            :correlation-triangle="correlationTriangleSector"
+            :correlation-triangle="correlationTriangleStock"
             :loading-triangle="loadingTriangleSector"
           ></PinusView>
         </a-row>
@@ -30,7 +30,7 @@
           <PinusView
             :id="'temp2'"
             :period-range="periodRange"
-            :correlation-triangle="correlationTriangleSector"
+            :correlation-triangle="correlationTriangleSectorRight"
             :loading-triangle="loadingTriangleSector"
           ></PinusView>
         </a-row>
@@ -38,8 +38,8 @@
           <PinusView
             :id="'temp3'"
             :period-range="periodRange"
-            :correlation-triangle="correlationTriangleSector"
-            :loading-triangle="loadingTriangleSector"
+            :correlation-triangle="correlationTriangleMarketRight"
+            :loading-triangle="loadingTriangleMarket"
           ></PinusView>
         </a-row>
       </a-col>
@@ -49,7 +49,7 @@
             <PrismView
               :id="'big_market1'"
               :period-range="periodRange"
-              :correlation-triangle="correlationTriangleMarket"
+              :correlation-triangle="correlationTriangleMarketLeft"
               :loading-triangle="loadingTriangleMarket"
             ></PrismView>
           </a-row>
@@ -57,7 +57,7 @@
             <PrismView
               :id="'big_market2'"
               :period-range="periodRange"
-              :correlation-triangle="correlationTriangleMarket"
+              :correlation-triangle="correlationTriangleMarketRight"
               :loading-triangle="loadingTriangleMarket"
             ></PrismView>
           </a-row>
@@ -80,8 +80,11 @@ export default {
   },
   props: {
     periodRange: Array,
-    correlationTriangleMarket: Object,
-    correlationTriangleSector: Object,
+    correlationTriangleStock: Object,
+    correlationTriangleMarketLeft: Object,
+    correlationTriangleMarketRight: Object,
+    correlationTriangleSectorLeft: Object,
+    correlationTriangleSectorRight: Object,
     loadingTriangleMarket: Boolean,
     loadingTriangleSector: Boolean,
   },
