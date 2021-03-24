@@ -44,7 +44,6 @@ export default {
   watch: {
     correlationTriangle: function () {
       this.bindPinus();
-
       this.initTooltip();
       this.renderArea();
 
@@ -101,7 +100,7 @@ export default {
     },
   },
   mounted() {
-    console.log("correlationTriangle:", this.correlationTriangle);
+    // console.log("correlationTriangle:", this.correlationTriangle);
     this.initPinus();
   },
   methods: {
@@ -201,6 +200,7 @@ export default {
       join.exit().transition().attr("width", 0).attr("height", 0).remove();
     },
     renderArea() {
+      this.svg.selectAll("g").remove();
       this.svg
         .append("g")
         .attr("class", "xAxis")
@@ -243,6 +243,15 @@ export default {
         .attr("class", "brush")
         .call(brush)
         .attr("transform", `translate(0,${this.height - 7})`);
+
+      //Title
+      this.svg
+        .append("g")
+        .append("text")
+        .attr("x", 10)
+        .attr("y", 20)
+        .text(this.id)
+        .style("font-size", "20px");
     },
     renderPinus() {
       let context = this.canvas.node().getContext("2d");
@@ -271,7 +280,7 @@ export default {
         // get mousePositions from the main canvas
         let mouseX = mouse.layerX;
         let mouseY = mouse.layerY;
-        console.log(mouseX, mouseY);
+        // console.log(mouseX, mouseY);
         let x,
           y,
           corr = null;
@@ -291,7 +300,7 @@ export default {
           x = _this.matrixColumn[numRow - 1 - x];
           y = _this.matrixRow[y];
         }
-        console.log("x,y", x, y);
+        // console.log("x,y", x, y);
         if (x && y) {
           d3.select(`#tooltip_${id}`)
             .style("opacity", 0.8)

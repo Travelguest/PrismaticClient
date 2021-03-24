@@ -155,10 +155,7 @@ export default {
       let radius = x.bandwidth() / 3;
       let pie = d3.pie().value((d) => d);
       let arc = d3.arc().innerRadius(6).outerRadius(radius);
-      console.log(
-        "data:",
-        this.matrixCorr.filter((k) => k.col === k.row)
-      );
+      
       //var color = ["#98abc5", "#8a89a6"];
       let points = heatmapContainer
         .selectAll("g")
@@ -191,7 +188,7 @@ export default {
         .append("path")
         .attr("d", arc)
         .attr("fill", (d) => {
-          console.log("d:", d); //不知道d是啥，可以console出来看看
+          // console.log("d:", d); //不知道d是啥，可以console出来看看
           if (d.value < 0) {
             return colorScale(-0.75);
           } else {

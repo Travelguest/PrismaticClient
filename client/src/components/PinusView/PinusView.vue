@@ -1,5 +1,5 @@
 <template>
-  <div style='height: 100%;width:100%'>
+  <div style='height: 100%;width:100%' @click="clickedPinus">
     <a-spin :spinning="loadingTriangle" :delay="100">
       <div :id='`pinus_${id}`' style='height: 100%'>
       </div>
@@ -14,6 +14,7 @@ import * as d3 from 'd3';
 export default {
   name: 'PrismView',
   components: {},
+  emits: ["clickedPinus"],
   props: {
     id: String,
     loadingTriangle: Boolean,
@@ -72,6 +73,9 @@ export default {
     this.initPinus();
   },
   methods: {
+    clickedPinus(){
+      this.$emit('clickedPinus',this.id);
+    },
     initPinus() {
       // Initialize canvas
       this.width = this.$el.clientWidth;
