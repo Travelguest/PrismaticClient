@@ -2,7 +2,6 @@
   <div style='height: 100%;width:100%'>
     <a-spin :spinning="loadingTriangle" :delay="100">
       <div :id='`pinus_${id}`' style='height: 100%'>
-        <div :id='`tooltip_${id}`' class='tooltip'></div>
       </div>
     </a-spin>
   </div>
@@ -13,7 +12,7 @@ import _ from 'lodash';
 import * as d3 from 'd3';
 
 export default {
-  name: 'PinusView',
+  name: 'PrismView',
   components: {},
   props: {
     id: String,
@@ -59,7 +58,7 @@ export default {
     correlationTriangle: function() {
       this.bindPinus();
 
-      this.initTooltip();
+      // this.initTooltip();
 
       let _this = this;
       let t = d3.timer(function(elapsed) {
@@ -87,7 +86,6 @@ export default {
 
       this.bindPinus();
 
-      this.initTooltip();
 
       let _this = this;
       let t = d3.timer(function(elapsed) {
@@ -153,44 +151,7 @@ export default {
             context.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'))
           });
     },
-    initTooltip() {
-      let margin = this.margin,
-          id = this.id,
-          numRow = this.matrixRow.length,
-          _this = this;
-
-      d3.select(`#pinus_${id}`).on('mousemove', function(mouse) {
-        // get mousePositions from the main canvas
-        let mouseX = mouse.layerX;
-        let mouseY = mouse.layerY;
-
-        let x, y, corr = null;
-
-        // linear programming to determine in-triangle position
-        if ((mouseY <= (_this.height-margin.bottom)) &&
-            (mouseX <= (_this.width-margin.right)) &&
-            (mouseY >= (-mouseX+margin.left+margin.top+_this.squareLength))){
-          x = numRow-1-parseInt((mouseX-margin.left)/_this.cellSize);
-          y = parseInt((mouseY-margin.top)/_this.cellSize);
-          corr = Math.floor((y+1)*(y+2)/2)-1-x;
-          corr = _this.matrixCorr[corr];
-          corr = (corr === undefined || corr === 2)? 'suspended': corr.toFixed(4);
-          x = _this.matrixColumn[numRow-1-x];
-          y = _this.matrixRow[y];
-        }
-
-        if (x && y) {
-          d3.select(`#tooltip_${id}`)
-              .style('opacity', 0.8)
-              .style('top', mouseY + 5 + 'px')
-              .style('left', mouseX + 5 + 'px')
-              .html(`${_this.indexName}<br>${x}<br>${y} days corr: ${corr}`);
-        } else {
-          d3.select(`#tooltip_${id}`)
-              .style('opacity', 0);
-        }
-      });
-    }
+  
   }
 }
 </script>

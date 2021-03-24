@@ -44,39 +44,23 @@
         </a-row>
       </a-col>
       <a-col :span="4">
-        <a-row v-if="!isSwitch" id="pinus_view_switch_one">
-          <PinusView
-            :id="'big_market'"
-            :period-range="periodRange"
-            :correlation-triangle="correlationTriangleMarket"
-            :loading-triangle="loadingTriangleMarket"
-          ></PinusView>
-        </a-row>
-        <div v-if="isSwitch" >
-          <a-row class="pinus_view_switch_three">
-            <PinusView
+        <div>
+          <a-row class="pinus_view_switch_two">
+            <PrismView
               :id="'big_market1'"
               :period-range="periodRange"
               :correlation-triangle="correlationTriangleMarket"
               :loading-triangle="loadingTriangleMarket"
-            ></PinusView>
+            ></PrismView>
           </a-row>
-          <a-row class="pinus_view_switch_three">
-            <PinusView
+          <a-row class="pinus_view_switch_two">
+            <PrismView
               :id="'big_market2'"
               :period-range="periodRange"
               :correlation-triangle="correlationTriangleMarket"
               :loading-triangle="loadingTriangleMarket"
-            ></PinusView>
+            ></PrismView>
           </a-row>
-          <!-- <a-row class="pinus_view_switch_three">
-            <PinusView
-              :id="'big_market3'"
-              :period-range="periodRange"
-              :correlation-triangle="correlationTriangleMarket"
-              :loading-triangle="loadingTriangleMarket"
-            ></PinusView>
-          </a-row> -->
         </div>
       </a-col>
       <a-col :span="18">LineChart</a-col>
@@ -86,10 +70,13 @@
 
 <script>
 import PinusView from "@/components/PinusView/PinusView";
+import PrismView from "@/components/PinusView/PrismView";
+
 export default {
   name: "PinusLayout",
   components: {
     PinusView,
+    PrismView,
   },
   props: {
     periodRange: Array,
@@ -122,14 +109,9 @@ export default {
   width: 100%;
   /* border: 1px solid red; */
 }
-#pinus_view_switch_one {
-  height: 520px;
-  border: 1px solid red;
+.pinus_view_switch_two {
   width: 100%;
-}
-.pinus_view_switch_three{
-width: 100%;
-height: 260px;
- border: 1px solid red;
+  height: 260px;
+  /* border: 1px solid red; */
 }
 </style>
