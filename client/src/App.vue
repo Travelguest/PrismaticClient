@@ -57,12 +57,12 @@ import _ from "lodash";
 import moment from "moment";
 import DataService from "@/utils/data-service";
 
-import matrix from "./components/matrix.json";
-import pinus_stock from "./components/pinus_stock.json";
-import pinus_market_left from "./components/pinus_market_left.json";
-import pinus_market_right from "./components/pinus_market_right.json";
-import pinus_sector_left from "./components/pinus_sector_left.json";
-import pinus_sector_right from "./components/pinus_sector_right.json";
+import matrix from "./components/data/matrix.json";
+import pinus_stock from "./components/data/pinus_stock.json";
+import pinus_market_left from "./components/data/pinus_market_left.json";
+import pinus_market_right from "./components/data/pinus_market_right.json";
+import pinus_sector_left from "./components/data/pinus_sector_left.json";
+import pinus_sector_right from "./components/data/pinus_sector_right.json";
 
 export default {
   name: "App",

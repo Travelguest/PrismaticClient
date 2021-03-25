@@ -59,9 +59,6 @@ export default {
     },
   },
   mounted() {
-    // console.log("矩阵数据:", this.correlationMatrix);
-    // console.log("col:", this.correlationMatrix.columns);
-    // console.log("corr:", this.correlationMatrix.corr);
     this.initMatrix();
     this.renderMatrix();
   },

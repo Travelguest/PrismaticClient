@@ -23,29 +23,32 @@ def get_corr_dist():
     post_data = request.data.decode()
     if post_data != "":
         post_data = simplejson.loads(post_data)
+    # with open('../client/src/components/index_corr_dist.json', 'w+') as file:
+    #     simplejson.dump(CORR.get_corr_dist(post_data), file)
     return json_dumps(CORR.get_corr_dist(post_data))
 
 
-@app.route('/set_period', methods=['POST'])
-def set_period():
-    post_data = request.data.decode()
-    if post_data != "":
-        post_data = simplejson.loads(post_data)
-        CORR.corr_community_detection(
-            start_date=post_data[0][:10],
-            end_date=post_data[1][:10],
-            # method='spearman'
-        )
-    return json_dumps(post_data != "")
-
-
-@app.route('/set_correlation', methods=['POST'])
-def set_correlation():
+@app.route('/get_corr_clusters_all_years', methods=['POST'])
+def get_corr_clusters_all_years():
     post_data = request.data.decode()
     response = []
     if post_data != "":
         post_data = simplejson.loads(post_data)
-        response = CORR.corr_community_filter(left_threshold=post_data[0], right_threshold=post_data[1])
+        response = CORR.get_corr_clusters_all_years(left_threshold=post_data[0], right_threshold=post_data[1])
+        # with open('../client/src/components/corr_clusters_all_years.json', 'w+') as file:
+        #     simplejson.dump(response, file)
+    return json_dumps(response)
+
+
+@app.route('/get_business_tag_table', methods=['POST'])
+def get_business_tag_table():
+    post_data = request.data.decode()
+    response = []
+    if post_data != "":
+        post_data = simplejson.loads(post_data)
+        response = CORR.get_business_tag_table(left_threshold=post_data[0], right_threshold=post_data[1])
+        # with open('../client/src/components/business_tag_table.json', 'w+') as file:
+        #     simplejson.dump(response, file)
     return json_dumps(response)
 
 
@@ -61,6 +64,19 @@ def get_correlation_matrix():
         # with open('../client/src/components/matrix.json', 'w+') as file:
         #     simplejson.dump(corr_matrix, file)
     return json_dumps(corr_matrix)
+
+
+@app.route('/set_period', methods=['POST'])
+def set_period():
+    post_data = request.data.decode()
+    if post_data != "":
+        post_data = simplejson.loads(post_data)
+        CORR.corr_community_detection(
+            start_date=post_data[0][:10],
+            end_date=post_data[1][:10],
+            # method='spearman'
+        )
+    return json_dumps(post_data != "")
 
 
 @app.route('/get_corr_tri_market', methods=['POST'])

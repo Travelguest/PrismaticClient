@@ -1,11 +1,54 @@
 <template>
   <div id="vue">
+    Knowledge Graph
+
+
+    <!--    <a-row type="flex" justify="space-around" class="second-row" style="padding: 0px">-->
+    <!--      <a-col :span="21" class="second-row">-->
+    <!--        <a-range-picker-->
+    <!--            style="width: 100%"-->
+    <!--            v-model:value="periodRange"-->
+    <!--            :disabledDate="periodDisabledRange"-->
+    <!--            :ranges="periodPresetRange"-->
+    <!--        />-->
+    <!--      </a-col>-->
+    <!--      <a-col :span="2" class="second-row">-->
+    <!--        <a-button-->
+    <!--            shape="circle"-->
+    <!--            type="primary"-->
+    <!--            :loading="periodButtonLoading"-->
+    <!--            :disabled="periodButtonDisabled"-->
+    <!--            @click="onPeriodButtonClick"-->
+    <!--        >-->
+    <!--          <template #icon><CalendarOutlined/></template>-->
+    <!--        </a-button>-->
+    <!--      </a-col>-->
+    <!--    </a-row>-->
     <div id="knowledge_graph_title">Knowledge Graph</div>
     <div id="triangle"></div>
   </div>
 </template>
 
 <script>
+import moment from "moment";
+import 'moment/dist/locale/zh-cn';
+
+export default {
+  name: "View",
+  data() {
+    return {
+      periodRange: [moment.utc('2020-01-01', 'YYYY-MM-DD'), moment.utc('2020-06-30', 'YYYY-MM-DD')],
+      periodPresetRange: {
+        'All': [moment.utc('2011-01-01', 'YYYY-MM-DD'), moment.utc('2020-12-31', 'YYYY-MM-DD')],
+        '3Y': [moment.utc('2018-01-01', 'YYYY-MM-DD'), moment.utc('2020-12-31', 'YYYY-MM-DD')],
+        '1Y': [moment.utc('2020-01-01', 'YYYY-MM-DD'), moment.utc('2020-12-31', 'YYYY-MM-DD')],
+        '3M': [moment.utc('2020-01-01', 'YYYY-MM-DD'), moment.utc('2020-03-31', 'YYYY-MM-DD')],
+      },
+      periodDisabledRange: (cur) => { return cur < moment.utc('2011-01-01', 'YYYY-MM-DD') || cur > moment.utc('2020-12-31', 'YYYY-MM-DD')},
+      periodButtonLoading: false,
+    }
+  },
+}
 </script>
 
 <style scoped>
