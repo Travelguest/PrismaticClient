@@ -66,7 +66,6 @@ class Model:
         self.query_codes = ['000652', '000538']
         self.query_dates = []
         self.method = None
-        self.corr_df = None
         self.community = None
 
     """
@@ -74,13 +73,17 @@ class Model:
     """
     # entrance get stock list
     def get_stock_list(self):
-        return self.stock_list[['ts_code', 'name']].merge(
-            self.industry_list.query('level == "L1"')[['ts_code', 'industry_name']]
-        ).to_dict('records')
+        stock_list = self.stock_list[['ts_code', 'name']].merge(
+            self.industry_list.query('level == "L1" or level == "L3"')[['ts_code', 'industry_name']]).groupby(
+            ['ts_code', 'name']).agg(list).reset_index()
+        stock_list['level1'] = stock_list['industry_name'].apply(lambda x: x[0])
+        stock_list['level3'] = stock_list['industry_name'].apply(lambda x: x[1])
+        return stock_list[['ts_code', 'name', 'level1', 'level3']].to_dict('records')
 
     # get ten years market index distribution
     def get_corr_dist(self, query_codes):
-        self.query_codes = query_codes
+        self.query_codes = query_codes if query_codes is not None else []
+        print(query_codes)
         corr = {str(year): {} for year in range(2011, 2021)}
         for year in range(2011, 2021):
             corr_out = pd.cut(
@@ -89,52 +92,58 @@ class Model:
                 precision=2,
                 right=True,
                 include_lowest=True).value_counts()
-            corr[str(year)]['sci'] = [corr_out[i / 100] for i in range(-40, 101, 5)]
-            for query_code in query_codes:
+            corr[str(year)]['sci'] = [int(corr_out[i / 100]) for i in range(-40, 101, 5)]
+            for query_code in self.query_codes:
                 corr_out = pd.cut(
                     self.corr_df[str(year)].loc[query_code],
                     bins=[i / 100 for i in range(-40, 101, 5)],
                     precision=2,
                     right=True,
                     include_lowest=True).value_counts()
-                corr[str(year)][query_code] = [corr_out[i / 100] for i in range(-40, 101, 5)]
+                corr[str(year)][query_code] = [int(corr_out[i / 100]) for i in range(-40, 101, 5)]
         return corr
 
+    """
+    Get dynamic graph data
+    """
     # get cluster data for all years
-    def get_corr_clusters_all_years(self, threshold):
+    def get_corr_clusters_all_years(self, left_threshold, right_threshold):
         corr = {str(year): {} for year in range(2011, 2021)}
         for year in range(2011, 2021):
             year = str(year)
-            corr[year] = self.get_corr_clusters_one_year(year, threshold)
+            corr[year] = self.get_corr_clusters_one_year(year, left_threshold, right_threshold)
         return corr
 
     # Get cluster data for one year
-    def get_corr_clusters_one_year(self, year, threshold):
+    def get_corr_clusters_one_year(self, year, left_threshold, right_threshold):
+        print(f'Running cluster analysis for {year}')
         year = str(year)
         corr = {}
-        corr_matrix = self.get_corr_matrix_filtered(year, threshold)
-        corr_graph = self.get_corr_graph(corr_matrix, threshold)
+        corr_matrix = self.get_corr_matrix_filtered(year, left_threshold, right_threshold)
+        corr_graph = self.get_corr_graph(corr_matrix, left_threshold, right_threshold)
         corr_betweenness = self.get_betweenness_centrality(corr_graph)
-        corr[year]['betweenness'] = self.get_betweenness_centrality(corr_graph)
-        corr[year]['components'] = self.get_connected_components(corr_graph, corr_betweenness)
-        corr[year]['component'] = self.get_connected_components(corr_graph, corr_betweenness)
+        corr_components = self.get_connected_components(corr_graph, corr_betweenness)
+        corr['betweenness'] = corr_betweenness
+        corr['components'] = corr_components
         return corr
 
     # Get the correlation filtered matrix
-    def get_corr_matrix_filtered(self, year, threshold):
-        corr_filter = pd.eval('|'.join(
-            [f'(self.corr_df["{year}"]["{query_code}"] > {threshold})' for query_code in self.query_codes]
-        ))
+    def get_corr_matrix_filtered(self, year, left_threshold, right_threshold):
+        corr_filter = pd.eval('|'.join([
+            f'{left_threshold} <= self.corr_df["{year}"]["{query_code}"] <= {right_threshold}'
+            for query_code in self.query_codes
+        ]))
         corr_filter = self.corr_df[str(year)].loc[corr_filter]
         return corr_filter.filter(items=corr_filter.index)
 
     # Get the correlation filtered graph
-    def get_corr_graph(self, corr_df, threshold):
+    def get_corr_graph(self, corr_df, left_threshold, right_threshold):
         G = nx.Graph()
-        corr_df[corr_df > threshold].apply(
+        corr_df[(left_threshold <= corr_df) & (corr_df <= right_threshold)].apply(
             lambda u: [G.add_edge(u.name, v, w=1.01 - weight) for v, weight in u.items() if
-                       not math.isnan(weight) and weight >= threshold and u.name != v]
+                       not math.isnan(weight) and left_threshold <= weight <= right_threshold and u.name != v]
         )
+        G.add_nodes_from(self.query_codes)
         return G
 
     def get_betweenness_centrality(self, graph):
@@ -148,9 +157,10 @@ class Model:
         return sorted_components
 
     # Get business tag table
-    def get_business_tag_table(self, threshold):
-        all_nodes = pd.eval(
-            '|'.join([f'(self.corr_df.loc["{query_code}"] > {threshold})' for query_code in self.query_codes]))
+    def get_business_tag_table(self, left_threshold, right_threshold):
+        all_nodes = pd.eval('|'.join([
+            f'{left_threshold} <= self.corr_df.loc["{query_code}"] <= {right_threshold}'
+            for query_code in self.query_codes]))
         all_nodes = list(set([code for _, code in all_nodes[all_nodes].index]))
 
         industry_tags = self.industry_list.merge(
@@ -179,7 +189,7 @@ class Model:
                                  min_period=0.8):
         # Default case for fast access
         if self.query_codes == ['000652', '000538'] and start_date == '2020-01-01' and end_date == '2020-06-30':
-            self.corr_df = self.community_default
+            self.cummunity = self.community_default
             return
 
         self.query_dates = [start_date, end_date]
@@ -200,13 +210,13 @@ class Model:
                 for query_code in self.query_codes
             ]
             selected_corr.append(pd.DataFrame(selected_stocks, index=self.query_codes).transpose())
-        self.corr_df = pd.concat(selected_corr, axis=1, keys=self.features)
+        self.cummunity = pd.concat(selected_corr, axis=1, keys=self.features)
 
     def corr_community_filter(self,
                               by='close',
                               left_threshold=0.6,
                               right_threshold=1.0):
-        corr_filtered = self.corr_df[by]
+        corr_filtered = self.cummunity[by]
         corr_filter_left = pd.eval(
             '|'.join([f'(corr_filtered["{query_code}"]>={left_threshold})' for query_code in self.query_codes]))
         corr_filtered = corr_filtered[corr_filter_left]
