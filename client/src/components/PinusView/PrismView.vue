@@ -1,9 +1,9 @@
 <template>
   <div style="height: 100%; width: 100%">
     <a-spin :spinning="loadingTriangle" :delay="100">
-      <div :id="`pinus_${id}`" style="height: 100%">
-        <div :id="`tooltip_${id}`" class="tooltip"></div>
-      </div>
+      <div :id="`pinus_${id}`" style="height: 100%; width: 100%"></div>
+      <div :id="`pinus_${id}_svg`"></div>
+      <div :id="`tooltip_${id}`" class="tooltip"></div>
     </a-spin>
   </div>
 </template>
@@ -20,7 +20,7 @@ export default {
     loadingTriangle: Boolean,
     correlationTriangle: Object,
   },
-  
+
   data() {
     return {
       canvas: null,
@@ -32,7 +32,7 @@ export default {
       margin: { top: 0, right: 0, bottom: 0, left: 10 },
       padding: 0.0,
       svg: null,
-      date:null,
+      date: null,
 
       // colorScheme: d3.interpolateBrBG,
       // colorScheme: d3.interpolateYlGnBu,
@@ -44,7 +44,6 @@ export default {
   watch: {
     correlationTriangle: function () {
       this.bindPinus();
-
       this.initTooltip();
       this.renderArea();
 
@@ -89,12 +88,19 @@ export default {
       return d3
         .scaleTime()
         .domain([this.date[0], this.date[this.date.length - 1]])
-        .range([12, this.innerWidth-12])
+        .range([this.margin.left, this.margin.left + this.width])
+        .nice();
+    },
+    yScale() {
+      return d3
+        .scaleLinear()
+        .domain([this.matrixRow[0], this.matrixRow[this.matrixRow.length - 1]])
+        .range([this.margin.top, this.margin.top + this.height - 7])
         .nice();
     },
   },
   mounted() {
-    console.log("correlationTriangle:", this.correlationTriangle);
+    // console.log("correlationTriangle:", this.correlationTriangle);
     this.initPinus();
   },
   methods: {
@@ -106,8 +112,7 @@ export default {
       this.height = 220;
       // console.log("width height:",this.width,this.height);
 
-      this.date = this.matrixColumn.map(d => new Date(d));
-
+      this.date = this.matrixColumn.map((d) => new Date(d));
 
       this.canvas = d3
         .select(`#pinus_${this.id}`)
@@ -117,11 +122,17 @@ export default {
 
       this.custom = d3.select(document.createElement("custom"));
       this.svg = d3
-        .select(`#pinus_${this.id}`)
+        .select(`#pinus_${this.id}_svg`)
         .append("svg")
-        .attr("width", this.width)
-        .attr("height", this.totalHeight - this.height)
-        .append("g");
+        .attr("width", this.width + 30)
+        .attr("height", this.height + 30)
+        // .attr("transform", `translate(0,${-this.height})`)
+        .style("position", "absolute")
+        .style("top", 6)
+        .style("left", 45)
+        .append("g")
+        .style("z-index", "1");
+
       // .attr("transform", `translate(${this.margin.left},${this.width})`);
 
       this.bindPinus();
@@ -189,29 +200,58 @@ export default {
       join.exit().transition().attr("width", 0).attr("height", 0).remove();
     },
     renderArea() {
+      this.svg.selectAll("g").remove();
       this.svg
         .append("g")
         .attr("class", "xAxis")
-        .call(d3.axisTop(this.xScale).ticks(d3.timeMonth.every(2)))
-        .attr("transform", `translate(0,18)`)
+        .call(
+          d3
+            .axisBottom(this.xScale)
+            .ticks(d3.timeMonth.every(1))
+            .tickFormat(d3.timeFormat("%b"))
+        )
+        .attr("transform", `translate(0,${this.height - 6})`)
         .select(".domain")
         .remove();
-    let area = this.svg
+      this.svg
+        .append("g")
+        .attr("class", "yAxis")
+        .call(
+          d3.axisRight(this.yScale).ticks(2)
+          // .tickFormat(d3.timeFormat("%b"))
+        )
+        .attr("transform", `translate(${this.height},0)`)
+        .select(".domain")
+        .remove();
+
+      this.svg
         .append("rect")
         .attr("x", 0)
-        .attr("y", 18)
+        .attr("y", 20)
         .attr("width", this.width)
-        .attr("height", "20")
-        .style("fill", "#E9E9E9");
-    
-      let brush = d3
-        .brushX()
-        .extent([
-          [0, 0],
-          [this.width, 20],
-        ])
-        // .on("end", this.updateDate);
-      area.append("g").attr("class", "brush").call(brush);
+        .attr("height", "15")
+        .style("fill", "#E9E9E9")
+        .attr("transform", `translate(0,${this.height - 6})`);
+
+      let brush = d3.brushX().extent([
+        [0, 0],
+        [this.innerWidth, 38],
+      ]);
+      // .on("end", this.updateDate);
+      this.svg
+        .append("g")
+        .attr("class", "brush")
+        .call(brush)
+        .attr("transform", `translate(0,${this.height - 7})`);
+
+      //Title
+      this.svg
+        .append("g")
+        .append("text")
+        .attr("x", 10)
+        .attr("y", 20)
+        .text(this.id)
+        .style("font-size", "20px");
     },
     renderPinus() {
       let context = this.canvas.node().getContext("2d");
@@ -235,11 +275,12 @@ export default {
         numRow = this.matrixRow.length,
         _this = this;
 
-      d3.select(`#pinus_${id}`).on("mousemove", function (mouse) {
+      d3.select(`#pinus_${id}_svg`).on("mousemove", function (mouse) {
+        // console.log(mouse.x, mouse.y);
         // get mousePositions from the main canvas
         let mouseX = mouse.layerX;
         let mouseY = mouse.layerY;
-
+        // console.log(mouseX, mouseY);
         let x,
           y,
           corr = null;
@@ -259,7 +300,7 @@ export default {
           x = _this.matrixColumn[numRow - 1 - x];
           y = _this.matrixRow[y];
         }
-
+        // console.log("x,y", x, y);
         if (x && y) {
           d3.select(`#tooltip_${id}`)
             .style("opacity", 0.8)
@@ -289,6 +330,6 @@ export default {
   border-radius: 2px;
   pointer-events: none;
   opacity: 0;
-  z-index: 1;
+  z-index: 99;
 }
 </style>
