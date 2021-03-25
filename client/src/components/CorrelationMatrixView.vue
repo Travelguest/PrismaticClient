@@ -85,7 +85,6 @@ export default {
     renderMatrix() {
       // Remove all groups in svg
       this.svg.selectAll("g").remove();
-
       let heatmapContainer = this.svg.append("g");
 
       let colorScale = d3
@@ -143,39 +142,16 @@ export default {
         .transition()
         .style("opacity", 1);
 
-      // var cellCircle = cell
-      //   .filter((k) => k.col === k.row)
-      //   .append("circle")
-      //   .attr("class", "cell")
-      //   .attr("cx", (d) => x(d.col) + x.bandwidth() / 2)
-      //   .attr("cy", (d) => y(d.row) + y.bandwidth() / 2)
-      //   .attr("r", x.bandwidth() / 4);
-
-
-      let radius = x.bandwidth() / 4;
-      let arc = d3.arc().innerRadius(0).outerRadius(radius);
-      //var color = ["#98abc5", "#8a89a6"];
-      var pie = d3.pie().value(function (d) {
-        return d;
-      });
-      var data_ready = pie([50,20]);
-      console.log(data_ready);
-      var cellCircle  = cell
+      var cellCircle = cell
         .filter((k) => k.col === k.row)
-        .data(data_ready)
-        .enter()
-        .append("g")
+        .append("circle")
         .attr("class", "cell")
-        // .attr(
-        //   "transform",
-        //   "translate(100,100)"
-        // )
-        .append("path")
-        .attr("d", arc)
-        .attr("fill","black");
-        // .attr("fill", function (d) {
-        //   return color(d.data.key);
-        // });
+        .attr("cx", (d) => x(d.col) + x.bandwidth() / 2)
+        .attr("cy", (d) => y(d.row) + y.bandwidth() / 2)
+        .attr("r", x.bandwidth() / 4);
+
+
+      
 
       let mouseover = function (_, d) {
         d3.selectAll(".cell")
