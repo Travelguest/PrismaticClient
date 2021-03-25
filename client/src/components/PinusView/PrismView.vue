@@ -19,6 +19,7 @@ export default {
     id: String,
     loadingTriangle: Boolean,
     correlationTriangle: Object,
+    title: String,
   },
 
   data() {
@@ -43,6 +44,7 @@ export default {
   },
   watch: {
     correlationTriangle: function () {
+      // console.log(this.id);
       this.bindPinus();
       this.initTooltip();
       this.renderArea();
@@ -52,6 +54,8 @@ export default {
         _this.renderPinus();
         if (elapsed > 2000) t.stop();
       });
+
+      //  this.initTooltip();
     },
   },
   computed: {
@@ -158,7 +162,7 @@ export default {
 
       let join = this.custom
         .selectAll("custom.rect")
-        .data(this.correlationTriangle.corr);
+        .data(this.matrixCorr);
       let enterSel = join
         .enter()
         .append("custom")
@@ -250,7 +254,7 @@ export default {
         .append("text")
         .attr("x", 10)
         .attr("y", 20)
-        .text(this.id)
+        .text(this.title)
         .style("font-size", "20px");
     },
     renderPinus() {
@@ -302,6 +306,7 @@ export default {
         }
         // console.log("x,y", x, y);
         if (x && y) {
+          // console.log(d3.select(`#tooltip_${id}`));
           d3.select(`#tooltip_${id}`)
             .style("opacity", 0.8)
             .style("top", mouseY + 5 + "px")

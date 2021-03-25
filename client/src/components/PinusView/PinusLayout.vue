@@ -52,7 +52,8 @@
         <div>
           <a-row class="pinus_view_switch_two">
             <PrismView
-              :id="showTopPinusID"
+              :id="'topDetail'"
+              :title="showTopPinusTitle"
               :period-range="periodRange"
               :correlation-triangle="showTopPinusData"
               :loading-triangle="loadingTriangleMarket"
@@ -60,7 +61,8 @@
           </a-row>
           <a-row class="pinus_view_switch_two">
             <PrismView
-              :id="showBottomPinusID"
+              :id="'bottomDetail'"
+              :title="showBottomPinusTitle"
               :period-range="periodRange"
               :correlation-triangle="showBottomPinusData"
               :loading-triangle="loadingTriangleMarket"
@@ -97,17 +99,23 @@ export default {
   },
   data() {
     return {
-      showMap: {
-        MarketLeft: false,
-        SectorLeft: false,
-        Stock: false,
-        SectorRight: false,
-        MarketRight: false,
+      pinusDataMap: {
+        MarketLeft: this.correlationTriangleMarketLeft,
+        SectorLeft: this.correlationTriangleSectorLeft,
+        Stock: this.correlationTriangleStock,
+        SectorRight: this.correlationTriangleSectorRight,
+        MarketRight: this.correlationTriangleMarketRight,
       },
-      showTopPinusData: this.correlationTriangleMarketLeft,
-      showBottomPinusData: this.correlationTriangleMarketRight,
-      showTopPinusID: "MarketLeftDetail",
-      showBottomPinusID: "MarketRightDetail",
+      showMap: {
+        top: "",
+        bottom: "",
+      },
+      //   showTopPinusData: this.correlationTriangleMarketLeft,
+      //   showBottomPinusData: this.correlationTriangleMarketRight,
+      showTopPinusData: null,
+      showBottomPinusData: null,
+      showTopPinusTitle: "",
+      showBottomPinusTitle: "",
     };
   },
   computed: {},
@@ -116,48 +124,46 @@ export default {
   mounted() {},
   methods: {
     handleClick(id) {
-      this.showMap[id] = !this.showMap[id];
       console.log(id);
-      //前两个画图
-      let cnt = 0;
-      for (let key in this.showMap) {
-        if (this.showMap[key]) {
-          cnt++;
-          if (cnt === 1) {
-            if (key === "MarketLeft") {
-              this.showTopPinusData = this.correlationTriangleMarketLeft;
-            //   this.showTopPinusID = "MarketLeft";
-            } else if (key === "SectorLeft") {
-              this.showTopPinusData = this.correlationTriangleSectorLeft;
-            //   this.showTopPinusID = "SectorLeft";
-            } else if (key === "Stock") {
-              this.showTopPinusData = this.correlationTriangleStock;
-            //   this.showTopPinusID = "Stock";
-            } else if (key === "SectorRight") {
-              this.showTopPinusData = this.correlationTriangleSectorRight;
-            //   this.showTopPinusID = "SectorRight";
-            } else {
-              this.showTopPinusData = this.correlationTriangleMarketRight;
-            //   this.showTopPinusID = "MarketRight";
-            }
-            this.showTopPinusID = key+"Detail";
-          } else if (cnt === 2) {
-            if (key === "MarketLeft") {
-              this.showBottomPinusData = this.correlationTriangleMarketLeft;
-             
-            } else if (key === "SectorLeft") {
-              this.showBottomPinusData = this.correlationTriangleSectorLeft;
-            } else if (key === "Stock") {
-              this.showBottomPinusData = this.correlationTriangleStock;
-            } else if (key === "SectorRight") {
-              this.showBottomPinusData = this.correlationTriangleSectorRight;
-            } else {
-              this.showBottomPinusData = this.correlationTriangleMarketRight;
-            }
-             this.showBottomPinusID = key + "Detail";
-          }
-        }
+      if (!this.showMap.top) {
+        this.showMap.top = id;
+        this.showTopPinusData = this.pinusDataMap[id];
+        this.showTopPinusTitle = id;
+      } else if (id === this.showMap.top) {
+        this.showTopPinusData = null;
+        this.showMap.top = "";
+        this.showTopPinusTitle = "";
+      } else if (!this.showMap.bottom) {
+        this.showMap.bottom = id;
+        this.showBottomPinusData = this.pinusDataMap[id];
+        this.showBottomPinusTitle = id;
+      } else if (id === this.showMap.bottom) {
+        this.showBottomPinusData = null;
+        this.showMap.bottom = "";
+        this.showBottomPinusTitle = "";
       }
+      //   this.showMap[id] = !this.showMap[id];
+      //   for (let key in this.showMap) {
+      //     if (this.showMap[key]) {
+      //       if (key === "MarketLeft") {
+      //         this.showTopPinusData = this.correlationTriangleMarketLeft;
+      //         this.showTopPinusTitle = key;
+      //       } else if (key === "SectorLeft") {
+      //         this.showTopPinusData = this.correlationTriangleSectorLeft;
+      //         this.showTopPinusTitle = key;
+      //       }
+      //       if (key === "Stock") {
+      //         this.showBottomPinusData = this.correlationTriangleStock;
+      //         this.showBottomPinusTitle = key;
+      //       } else if (key === "SectorRight") {
+      //         this.showBottomPinusData = this.correlationTriangleSectorRight;
+      //         this.showBottomPinusTitle = key;
+      //       } else {
+      //         this.showBottomPinusData = this.correlationTriangleMarketRight;
+      //         this.showBottomPinusTitle = key;
+      //       }
+      //     }
+      //   }
     },
   },
 };
