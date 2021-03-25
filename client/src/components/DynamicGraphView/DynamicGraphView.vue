@@ -65,7 +65,7 @@ export default {
       // Remove all groups in svg
       this.svg.selectAll("g").remove();
 
-      this.renderNodeLink();
+      // this.renderNodeLink();
       this.renderDistChart();
     },
     renderNodeLink(){
@@ -77,7 +77,7 @@ export default {
           .attr('class', 'dist')
           .attr('transform', (_, i) => `translate(${0},${this.distPadding+(this.distHeight+this.distPadding) * i})`);
 
-      console.log(Object.entries((this.corrCluster)))
+      // console.log(Object.entries((this.corrCluster)))
     },
     renderDistChart(){
       let _this = this;

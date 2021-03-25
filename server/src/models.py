@@ -15,12 +15,9 @@ PATH_STOCK_DAILY_LOG = './data/stock_daily_log.pkl'
 PATH_INDUSTRY_LIST = './data/industry_list.ftr'
 
 PATH_CONCEPT_LIST = './data/concept_list.ftr'
-PATH_CONCEPT_DAILY = './data/concept_daily.ftr'
-PATH_CONCEPT_DAILY_LOG = './data/concept_daily_log.pkl'
 
 PATH_INDEX_INDUSTRY_LIST = './data/index_industry_list.ftr'
-PATH_INDEX_DAILY = './data/index_daily.ftr'
-PATH_INDEX_DAILY_LOG = './data/index_daily_log.pkl'
+PATH_INDEX_DAILY = './data/index_daily.pkl'
 
 PATH_KNOWLEDGE_GRAPH = './data/knowledge_graph.pkl'
 
@@ -47,13 +44,10 @@ class Model:
 
         # Concept related
         self.concept_list = pd.read_feather(PATH_CONCEPT_LIST)
-        self.concept_daily = pd.read_feather(PATH_CONCEPT_DAILY)
-        self.concept_daily_log = pd.read_pickle(PATH_CONCEPT_DAILY_LOG)
 
         # Index related
         self.index_industry_list = pd.read_feather(PATH_INDEX_INDUSTRY_LIST)
-        self.index_daily = pd.read_feather(PATH_INDEX_DAILY)
-        self.index_daily_log = pd.read_pickle(PATH_INDEX_DAILY_LOG)
+        self.index_daily = pd.read_pickle(PATH_INDEX_DAILY)
 
         # Knowledge graph
         # self.knowledge_graph = nx.read_gpickle(PATH_KNOWLEDGE_GRAPH)
@@ -71,6 +65,7 @@ class Model:
     """
     Initiation
     """
+
     # entrance get stock list
     def get_stock_list(self):
         stock_list = self.stock_list[['ts_code', 'name']].merge(
@@ -105,6 +100,7 @@ class Model:
     """
     Get dynamic graph data
     """
+
     # get cluster data for all years
     def get_corr_clusters_all_years(self, left_threshold, right_threshold):
         corr = {str(year): {} for year in range(2011, 2021)}
@@ -232,6 +228,7 @@ class Model:
     '''
     Correlation matrix
     '''
+
     # entrance
     def list_to_corr_matrix(self,
                             method='pearson',
@@ -293,7 +290,7 @@ class Model:
             corr_df.loc[col][idx:] = corr_dfs[0].loc[col][idx:]
 
         # Find correlation with index
-        index_price = self.index_daily_log['000001.SH'].loc[self.query_dates[0]:self.query_dates[1]]
+        index_price = self.index_daily.log['000001.SH'].loc[self.query_dates[0]:self.query_dates[1]]
         stock_price = self.stock_daily_log.loc[self.query_dates[0]:self.query_dates[1]].close[columns]
         index_corr = list(stock_price.corrwith(index_price, method=self.method, drop=True).values)
 
@@ -307,6 +304,7 @@ class Model:
     '''
     Pinus view related
     '''
+
     def find_index_code(self, query_code='000652'):
         industry_code = self.industry_list.query(
             'ts_code == @query_code and level == "L1"').industry_code.to_list()[0]
@@ -322,7 +320,7 @@ class Model:
         window = int(max(1, trade_days / PINUS_WINDOW_SIZE))
 
         # filter stock price by timeframe
-        index_price = self.index_daily_log[[index_code]].loc[start_date:end_date][::window]
+        index_price = self.index_daily.log[[index_code]].loc[start_date:end_date][::window]
         stock_price = self.stock_daily_log.close[query_code].loc[start_date:end_date]
         index_stock_price = index_price.merge(stock_price, left_index=True, right_index=True)
         index_price = index_stock_price[index_stock_price.columns[0]]
@@ -345,7 +343,7 @@ class Model:
         window = int(max(1, trade_days / PINUS_WINDOW_SIZE))
 
         # filter stock price by timeframe
-        stock_price = self.index_daily_log[['000001.SH']].loc[start_date:end_date][::window]
+        stock_price = self.index_daily.log[['000001.SH']].loc[start_date:end_date][::window]
         stock_price_left = self.stock_daily_log.close[query_code_left].loc[start_date:end_date]
         stock_price_right = self.stock_daily_log.close[query_code_right].loc[start_date:end_date]
         stock_price = stock_price.merge(
@@ -372,3 +370,17 @@ class Model:
         for query_code in query_codes:
             response[query_code] = result[query_code].to_dict(orient='records')
         return response
+
+    def query_stock_index_daily(self,
+                                stock_code='000538',
+                                index_code='market',
+                                start_date='2020-02-01',
+                                end_date='2020-04-30'):
+        columns = list([(item, index_code) for item in ['close', 'pct', 'log']])
+        result = self.index_daily.loc[start_date:end_date][columns].round(5)
+        return {
+            'date': list(result.index.astype(str)),
+            stock_code: self.stock_daily.loc[start_date:end_date][stock_code].round(5).to_dict(
+                orient='records'),
+            index_code: [{k[0]: v for k, v in record.items()} for record in result.to_dict(orient='records')]
+        }
