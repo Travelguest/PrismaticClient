@@ -4,47 +4,47 @@
       <a-col :span="2">
         <a-row class="pinus_view_container">
           <PinusView
-              :id="'MarketLeft'"
-              :period-range="periodRange"
-              :correlation-triangle="correlationTriangleMarketLeft"
-              :loading-triangle="loadingTriangleMarket"
-              @clickedPinus="handleClick"
+            :id="'MarketLeft'"
+            :period-range="periodRange"
+            :correlation-triangle="correlationTriangleMarketLeft"
+            :loading-triangle="loadingTriangleMarket"
+            @clickedPinus="handleClick"
           ></PinusView>
         </a-row>
         <a-row class="pinus_view_container">
           <PinusView
-              :id="'SectorLeft'"
-              :period-range="periodRange"
-              :correlation-triangle="correlationTriangleSectorLeft"
-              :loading-triangle="loadingTriangleSector"
-              @clickedPinus="handleClick"
+            :id="'SectorLeft'"
+            :period-range="periodRange"
+            :correlation-triangle="correlationTriangleSectorLeft"
+            :loading-triangle="loadingTriangleSector"
+            @clickedPinus="handleClick"
           ></PinusView>
         </a-row>
         <a-row class="pinus_view_container">
           <PinusView
-              :id="'Stock'"
-              :period-range="periodRange"
-              :correlation-triangle="correlationTriangleStock"
-              :loading-triangle="loadingTriangleSector"
-              @clickedPinus="handleClick"
+            :id="'Stock'"
+            :period-range="periodRange"
+            :correlation-triangle="correlationTriangleStock"
+            :loading-triangle="loadingTriangleSector"
+            @clickedPinus="handleClick"
           ></PinusView>
         </a-row>
         <a-row class="pinus_view_container">
           <PinusView
-              :id="'SectorRight'"
-              :period-range="periodRange"
-              :correlation-triangle="correlationTriangleSectorRight"
-              :loading-triangle="loadingTriangleSector"
-              @clickedPinus="handleClick"
+            :id="'SectorRight'"
+            :period-range="periodRange"
+            :correlation-triangle="correlationTriangleSectorRight"
+            :loading-triangle="loadingTriangleSector"
+            @clickedPinus="handleClick"
           ></PinusView>
         </a-row>
         <a-row class="pinus_view_container">
           <PinusView
-              :id="'MarketRight'"
-              :period-range="periodRange"
-              :correlation-triangle="correlationTriangleMarketRight"
-              :loading-triangle="loadingTriangleMarket"
-              @clickedPinus="handleClick"
+            :id="'MarketRight'"
+            :period-range="periodRange"
+            :correlation-triangle="correlationTriangleMarketRight"
+            :loading-triangle="loadingTriangleMarket"
+            @clickedPinus="handleClick"
           ></PinusView>
         </a-row>
       </a-col>
@@ -52,34 +52,31 @@
         <div>
           <a-row class="pinus_view_switch_two">
             <PrismView
-                :id="'topDetail'"
-                :title="showTopPinusTitle"
-                :period-range="periodRange"
-                :correlation-triangle="showTopPinusData"
-                :loading-triangle="loadingTriangleMarket"
+              :id="'topDetail'"
+              :title="showTopPinusTitle"
+              :period-range="periodRange"
+              :correlation-triangle="showTopPinusData"
+              :loading-triangle="loadingTriangleMarket"
             ></PrismView>
           </a-row>
           <a-row class="pinus_view_switch_two">
             <PrismView
-                :id="'bottomDetail'"
-                :title="showBottomPinusTitle"
-                :period-range="periodRange"
-                :correlation-triangle="showBottomPinusData"
-                :loading-triangle="loadingTriangleMarket"
+              :id="'bottomDetail'"
+              :title="showBottomPinusTitle"
+              :period-range="periodRange"
+              :correlation-triangle="showBottomPinusData"
+              :loading-triangle="loadingTriangleMarket"
             ></PrismView>
           </a-row>
         </div>
       </a-col>
       <a-col :span="17">
         <a-row>
-          <LineChart>
-          </LineChart>
+          <LineChart> </LineChart>
         </a-row>
         <a-row>
-          <LineChart>
-          </LineChart>
+          <LineChart> </LineChart>
         </a-row>
-
       </a-col>
     </a-row>
   </div>
@@ -96,7 +93,7 @@ export default {
   components: {
     PinusView,
     PrismView,
-    LineChart
+    LineChart,
   },
   props: {
     periodRange: Array,
@@ -123,12 +120,13 @@ export default {
         top: "",
         bottom: "",
       },
-      //   showTopPinusData: this.correlationTriangleMarketLeft,
-      //   showBottomPinusData: this.correlationTriangleMarketRight,
+      //传给Prism的信息
       showTopPinusData: null,
       showBottomPinusData: null,
       showTopPinusTitle: "",
       showBottomPinusTitle: "",
+      start_date: "2010-02-01",
+      end_date: "2020-04-30",
     };
   },
   computed: {},
@@ -137,7 +135,6 @@ export default {
   mounted() {},
   methods: {
     handleClick(id) {
-      // console.log(id);
       if (!this.showMap.top) {
         this.showMap.top = id;
         this.showTopPinusData = this.pinusDataMap[id];
@@ -155,35 +152,17 @@ export default {
         this.showMap.bottom = "";
         this.showBottomPinusTitle = "";
       }
-      //   this.showMap[id] = !this.showMap[id];
-      //   for (let key in this.showMap) {
-      //     if (this.showMap[key]) {
-      //       if (key === "MarketLeft") {
-      //         this.showTopPinusData = this.correlationTriangleMarketLeft;
-      //         this.showTopPinusTitle = key;
-      //       } else if (key === "SectorLeft") {
-      //         this.showTopPinusData = this.correlationTriangleSectorLeft;
-      //         this.showTopPinusTitle = key;
-      //       }
-      //       if (key === "Stock") {
-      //         this.showBottomPinusData = this.correlationTriangleStock;
-      //         this.showBottomPinusTitle = key;
-      //       } else if (key === "SectorRight") {
-      //         this.showBottomPinusData = this.correlationTriangleSectorRight;
-      //         this.showBottomPinusTitle = key;
-      //       } else {
-      //         this.showBottomPinusData = this.correlationTriangleMarketRight;
-      //         this.showBottomPinusTitle = key;
-      //       }
-      //     }
-      //   }
     },
-    handleBrush(){
-      DataService.post('get_stock_daily',[[], this.start_date, this.end_date],(data) => {
-        // this.businessTag = data;
-        console.log(data)
-      });
-    }
+    handleBrush() {
+      DataService.post(
+        "get_stock_daily",
+        [[], this.start_date, this.end_date],
+        (data) => {
+          // this.businessTag = data;
+          console.log(data);
+        }
+      );
+    },
   },
 };
 </script>

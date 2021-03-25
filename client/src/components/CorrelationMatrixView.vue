@@ -59,6 +59,7 @@ export default {
     },
   },
   mounted() {
+    console.log("matrixColumn:",this.matrixColumn);
     this.initMatrix();
     this.renderMatrix();
   },
@@ -89,6 +90,7 @@ export default {
         .scaleSequential()
         .domain([-1, 1])
         .interpolator(this.colorScheme);
+        
       let x = d3
         .scaleBand()
         .domain(this.matrixColumn)

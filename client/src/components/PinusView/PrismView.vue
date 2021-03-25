@@ -106,7 +106,26 @@ export default {
     // console.log("correlationTriangle:", this.correlationTriangle);
     this.initPinus();
   },
+  emits:["updateBrush"],
   methods: {
+    updateDate({ selection }) {
+      if (selection) {
+        let start = this.xScale
+          .invert(selection[0])
+          .toISOString()
+          .slice(0, 10)
+          // .replace(/-/g, "");
+        let end = this.xScale
+          .invert(selection[1])
+          .toISOString()
+          .slice(0, 10)
+          // .replace(/-/g, "");
+        if (start !== end) {
+          console.log("start,end",start,end);
+          this.$emit("updateBrush", start, end);
+        }
+      }
+    },
     initPinus() {
       // Initialize canvas
       // this.width = this.$el.clientWidth;
@@ -235,12 +254,15 @@ export default {
         .attr("height", "15")
         .style("fill", "#E9E9E9")
         .attr("transform", `translate(0,${this.height - 6})`);
+      
+      //
 
       let brush = d3.brushX().extent([
         [0, 0],
         [this.innerWidth, 38],
-      ]);
-      // .on("end", this.updateDate);
+      ])
+      .on("end", this.updateDate);
+      this.svg.select(".brush").remove();
       this.svg
         .append("g")
         .attr("class", "brush")
