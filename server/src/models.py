@@ -9,7 +9,7 @@ PATH_CORR_ALL_YEARS = './data/corr_all_years.pkl'
 PATH_TRADE_CAL = './data/trade_cal.ftr'
 
 PATH_STOCK_LIST = './data/stock_list.ftr'
-PATH_STOCK_DAILY = './data/stock_daily.ftr'
+PATH_STOCK_DAILY = './data/stock_daily.pkl'
 PATH_STOCK_DAILY_LOG = './data/stock_daily_log.pkl'
 
 PATH_INDUSTRY_LIST = './data/industry_list.ftr'
@@ -38,7 +38,7 @@ class Model:
 
         # Stocks related
         self.stock_list = pd.read_feather(PATH_STOCK_LIST)
-        self.stock_daily = pd.read_feather(PATH_STOCK_DAILY)
+        self.stock_daily = pd.read_pickle(PATH_STOCK_DAILY)
         self.stock_daily_log = pd.read_pickle(PATH_STOCK_DAILY_LOG)
         self.trade_cal = pd.read_feather(PATH_TRADE_CAL)
 
@@ -360,3 +360,15 @@ class Model:
         pinus = pd.DataFrame(pinus).round(4).replace([np.inf, -np.inf], np.nan)
         pinus.index = pinus.index.strftime("%Y-%m-%d")
         return pinus.drop(index=pinus.index[0]).transpose()
+
+    def query_stock_daily(self,
+                          query_codes=None,
+                          start_date='2020-02-01',
+                          end_date='2020-04-30'):
+        if query_codes is None:
+            query_codes = ['000538', '000652']
+        result = self.stock_daily.loc[start_date:end_date][query_codes]
+        response = {'date': list(result.index.astype(str))}
+        for query_code in query_codes:
+            response[query_code] = result[query_code].to_dict(orient='records')
+        return response

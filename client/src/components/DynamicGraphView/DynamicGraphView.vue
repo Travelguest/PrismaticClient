@@ -26,10 +26,11 @@ export default {
       height: 1620,
       margin: { top: 10, right: 10, bottom: 10, left: 10 },
 
-      distContainer: null,
       distWidth: 100,
       distHeight: 150,
       distPadding: 11.5,
+
+      color: d3.schemeTableau10,
 
       yearSelected: '2020',
       correlationRange: [0.6, 1],
@@ -46,12 +47,6 @@ export default {
     }
   },
   computed: {
-    stockListIndustries() {
-      let set = Array.from(new Set(this.correlatedStocks.map(x => x.industry_name)));
-      return set.map(x => {
-        return {text: x, value: x};
-      });
-    },
   },
   mounted: function () {
     this.initGraph();
@@ -65,15 +60,26 @@ export default {
           .select(this.$el)
           .append("svg")
           .attr("viewBox", [0, 0, this.width, this.height]);
-
-      this.graphContainer = this.svg
-          .append("g")
-          .attr("transform", `translate(${this.margin.left},${this.margin.top})`);
     },
     renderGraph() {
       // Remove all groups in svg
       this.svg.selectAll("g").remove();
 
+      this.renderNodeLink();
+      this.renderDistChart();
+    },
+    renderNodeLink(){
+      this.svg
+          .selectAll('graph')
+          .data(Object.entries((this.corrCluster)))
+          .enter()
+          .append('g')
+          .attr('class', 'dist')
+          .attr('transform', (_, i) => `translate(${0},${this.distPadding+(this.distHeight+this.distPadding) * i})`);
+
+      console.log(Object.entries((this.corrCluster)))
+    },
+    renderDistChart(){
       let _this = this;
       let distX = d3.scaleLinear().domain([799, 0]).range([0, this.distWidth]); // x is count
       let distY = d3.scaleLinear().domain([1, -0.5]).range([0, this.distHeight]); // y is correlation
@@ -87,7 +93,7 @@ export default {
           .y((_, i) => distY(-0.5+i*0.05));
 
       // Distribution charts container
-      this.distCoqntainer = this.svg
+      this.svg
           .selectAll('.dist')
           // sort to have 2020 be the first year to display
           .data(Object.entries(this.corrDistribution).sort((a, b)=>(a[0]<b[0]?1: -1)))
@@ -105,11 +111,10 @@ export default {
                 .call(d3.axisTop(distX)
                     .ticks(4)
                     .tickSize(_this.distHeight))
-                .call(g => g.select(".domain")
-                    .remove())
+                .call(g => g.select(".domain").remove())
                 .call(g => g.selectAll(".tick line")
-                    .attr("stroke-opacity", 0.5)
-                    .attr("stroke-dasharray", "2,2"))
+                    .attr("stroke-opacity", 0.2)
+                    .attr("stroke-dasharray", "1,1"))
                 .call(g => g.selectAll(".tick text")
                     .attr("dx", -5)
                     .attr("dy", 4));

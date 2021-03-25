@@ -4,47 +4,47 @@
       <a-col :span="2">
         <a-row class="pinus_view_container">
           <PinusView
-            :id="'MarketLeft'"
-            :period-range="periodRange"
-            :correlation-triangle="correlationTriangleMarketLeft"
-            :loading-triangle="loadingTriangleMarket"
-            @clickedPinus="handleClick"
+              :id="'MarketLeft'"
+              :period-range="periodRange"
+              :correlation-triangle="correlationTriangleMarketLeft"
+              :loading-triangle="loadingTriangleMarket"
+              @clickedPinus="handleClick"
           ></PinusView>
         </a-row>
         <a-row class="pinus_view_container">
           <PinusView
-            :id="'SectorLeft'"
-            :period-range="periodRange"
-            :correlation-triangle="correlationTriangleSectorLeft"
-            :loading-triangle="loadingTriangleSector"
-            @clickedPinus="handleClick"
+              :id="'SectorLeft'"
+              :period-range="periodRange"
+              :correlation-triangle="correlationTriangleSectorLeft"
+              :loading-triangle="loadingTriangleSector"
+              @clickedPinus="handleClick"
           ></PinusView>
         </a-row>
         <a-row class="pinus_view_container">
           <PinusView
-            :id="'Stock'"
-            :period-range="periodRange"
-            :correlation-triangle="correlationTriangleStock"
-            :loading-triangle="loadingTriangleSector"
-            @clickedPinus="handleClick"
+              :id="'Stock'"
+              :period-range="periodRange"
+              :correlation-triangle="correlationTriangleStock"
+              :loading-triangle="loadingTriangleSector"
+              @clickedPinus="handleClick"
           ></PinusView>
         </a-row>
         <a-row class="pinus_view_container">
           <PinusView
-            :id="'SectorRight'"
-            :period-range="periodRange"
-            :correlation-triangle="correlationTriangleSectorRight"
-            :loading-triangle="loadingTriangleSector"
-            @clickedPinus="handleClick"
+              :id="'SectorRight'"
+              :period-range="periodRange"
+              :correlation-triangle="correlationTriangleSectorRight"
+              :loading-triangle="loadingTriangleSector"
+              @clickedPinus="handleClick"
           ></PinusView>
         </a-row>
         <a-row class="pinus_view_container">
           <PinusView
-            :id="'MarketRight'"
-            :period-range="periodRange"
-            :correlation-triangle="correlationTriangleMarketRight"
-            :loading-triangle="loadingTriangleMarket"
-            @clickedPinus="handleClick"
+              :id="'MarketRight'"
+              :period-range="periodRange"
+              :correlation-triangle="correlationTriangleMarketRight"
+              :loading-triangle="loadingTriangleMarket"
+              @clickedPinus="handleClick"
           ></PinusView>
         </a-row>
       </a-col>
@@ -52,20 +52,20 @@
         <div>
           <a-row class="pinus_view_switch_two">
             <PrismView
-              :id="'topDetail'"
-              :title="showTopPinusTitle"
-              :period-range="periodRange"
-              :correlation-triangle="showTopPinusData"
-              :loading-triangle="loadingTriangleMarket"
+                :id="'topDetail'"
+                :title="showTopPinusTitle"
+                :period-range="periodRange"
+                :correlation-triangle="showTopPinusData"
+                :loading-triangle="loadingTriangleMarket"
             ></PrismView>
           </a-row>
           <a-row class="pinus_view_switch_two">
             <PrismView
-              :id="'bottomDetail'"
-              :title="showBottomPinusTitle"
-              :period-range="periodRange"
-              :correlation-triangle="showBottomPinusData"
-              :loading-triangle="loadingTriangleMarket"
+                :id="'bottomDetail'"
+                :title="showBottomPinusTitle"
+                :period-range="periodRange"
+                :correlation-triangle="showBottomPinusData"
+                :loading-triangle="loadingTriangleMarket"
             ></PrismView>
           </a-row>
         </div>
@@ -89,6 +89,7 @@
 import PinusView from "@/components/PinusView/PinusView";
 import PrismView from "@/components/PinusView/PrismView";
 import LineChart from "@/components/PinusView/LineChart";
+import DataService from "@/utils/data-service";
 
 export default {
   name: "PinusLayout",
@@ -177,6 +178,12 @@ export default {
       //     }
       //   }
     },
+    handleBrush(){
+      DataService.post('get_stock_daily',[[], this.start_date, this.end_date],(data) => {
+        // this.businessTag = data;
+        console.log(data)
+      });
+    }
   },
 };
 </script>

@@ -115,8 +115,6 @@ export default {
       this.height = 220;
       // console.log("width height:",this.width,this.height);
 
-      
-
       this.canvas = d3
         .select(`#pinus_${this.id}`)
         .append("canvas")

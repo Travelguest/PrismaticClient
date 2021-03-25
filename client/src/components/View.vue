@@ -65,7 +65,7 @@ export default {
   top: 0px;
   font-weight: bold;
   border-radius: 2px;
-  box-shadow: 0 1px 2px rgb(26 26 26 / 20%);
+  box-shadow: 0 1px 2px rgba(26 26 26 0.2);
 }
 
 #triangle {

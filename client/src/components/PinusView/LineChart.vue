@@ -80,7 +80,6 @@ export default {
         .y1((d) => this.yScale(d));
     },
   },
-
   methods: {
     updateTimeBrush() {
       //Time Brush
