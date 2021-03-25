@@ -85,6 +85,7 @@ export default {
     renderMatrix() {
       // Remove all groups in svg
       this.svg.selectAll("g").remove();
+
       let heatmapContainer = this.svg.append("g");
 
       let colorScale = d3
@@ -142,16 +143,103 @@ export default {
         .transition()
         .style("opacity", 1);
 
-      var cellCircle = cell
-        .filter((k) => k.col === k.row)
-        .append("circle")
-        .attr("class", "cell")
-        .attr("cx", (d) => x(d.col) + x.bandwidth() / 2)
-        .attr("cy", (d) => y(d.row) + y.bandwidth() / 2)
-        .attr("r", x.bandwidth() / 4);
+      // var cellCircle = cell
+      //   .filter((k) => k.col === k.row)
+      //   .append("circle")
+      //   .attr("class", "cell")
+      //   .attr("cx", (d) => x(d.col) + x.bandwidth() / 2)
+      //   .attr("cy", (d) => y(d.row) + y.bandwidth() / 2)
+      //   .attr("r", x.bandwidth() / 4);
 
-
+      //pieChart
+      let radius = x.bandwidth() / 3;
+      let pie = d3.pie().value((d) => d);
+      let arc = d3.arc().innerRadius(6).outerRadius(radius);
       
+      //var color = ["#98abc5", "#8a89a6"];
+      let points = heatmapContainer
+        .selectAll("g")
+        .data(this.matrixCorr.filter((k) => k.col === k.row))
+        .enter()
+        .append("g")
+        .attr(
+          "transform",
+          (d) =>
+            `translate(${x(d.col) + x.bandwidth() / 2},${
+              y(d.row) + y.bandwidth() / 2
+            })`
+        )
+        .attr("class", "pies");
+
+      let pies = points
+        .selectAll(".pies")
+        .data((d) => {
+          let res = pie([Math.abs(d.val)]); //pie()只能接受正值数组，用于pieChart的分段画弧
+          return res;
+        })
+        .enter()
+        .append("g")
+        .attr("class", "arc")
+        .on("click", (_, d) => {  //把事件加到整体group上
+          this.$emit("selectedStockFromMatrixDiagonal", d.row);
+        });
+
+      pies
+        .append("path")
+        .attr("d", arc)
+        .attr("fill", (d) => {
+          // console.log("d:", d); //不知道d是啥，可以console出来看看
+          if (d.value < 0) {
+            return colorScale(-0.75);
+          } else {
+            return colorScale(0.75);
+          }
+        })
+        .style("stroke", function (d) {
+          if (d.value < 0) {
+            return colorScale(-0.75);
+          } else {
+            return colorScale(0.75);
+          }
+        })
+        .style("stroke-width", 3);
+
+      // cellCircle
+      //   .style("fill", function (d) {
+      //     if (d.val < 0) {
+      //       return colorScale(-0.75);
+      //     } else {
+      //       return colorScale(0.75);
+      //     }
+      //   })
+      //   .style("stroke", function (d) {
+      //     if (d.val < 0) {
+      //       return colorScale(-0.75);
+      //     } else {
+      //       return colorScale(0.75);
+      //     }
+      //   })
+      //   .style("stroke-width", 4)
+      //   .on("click", (_, d) => {
+      //     this.$emit("selectedStockFromMatrixDiagonal", d.row);
+      //   });
+
+      // var cellCircle  = heatmapContainer
+      //   .selectAll(".cell")
+      //   .data(pie(this.matrixCorr.filter((k) => k.col === k.row)))
+      //   .enter()
+      //   .append("g")
+      //   .attr("class", "cell")
+      //   .attr(
+      //     "transform",
+      //     d => `translate(${x(d.col) + x.bandwidth() / 2},${y(d.row) + y.bandwidth() / 2})`
+      //   )
+      //   .append("path")
+      //   .attr("d", arc)
+      //   .attr("fill","black");
+      // .attr("fill", function (d) {
+      //   return color(d.data.key);
+      // });
 
       let mouseover = function (_, d) {
         d3.selectAll(".cell")
@@ -215,28 +303,6 @@ export default {
       // The diagonal cells
 
       cellRect.filter((k) => k.col === k.row).style("fill", "white");
-
-      // d3.selectAll(".cell")
-      //   .filter((k) => k.col === k.row)
-      cellCircle
-        .style("fill", function (d) {
-          if (d.val < 0) {
-            return colorScale(-0.75);
-          } else {
-            return colorScale(0.75);
-          }
-        })
-        .style("stroke", function (d) {
-          if (d.val < 0) {
-            return colorScale(-0.75);
-          } else {
-            return colorScale(0.75);
-          }
-        })
-        .style("stroke-width", 4)
-        .on("click", (_, d) => {
-          this.$emit("selectedStockFromMatrixDiagonal", d.row);
-        });
 
       d3.selectAll(".cell")
         .filter((k) => k.col !== k.row)
