@@ -70,7 +70,17 @@
           </a-row>
         </div>
       </a-col>
-      <a-col :span="17">LineChart</a-col>
+      <a-col :span="17">
+        <a-row>
+          <LineChart>
+          </LineChart>
+        </a-row>
+        <a-row>
+          <LineChart>
+          </LineChart>
+        </a-row>
+
+      </a-col>
     </a-row>
   </div>
 </template>
@@ -78,12 +88,14 @@
 <script>
 import PinusView from "@/components/PinusView/PinusView";
 import PrismView from "@/components/PinusView/PrismView";
+import LineChart from "@/components/PinusView/LineChart";
 
 export default {
   name: "PinusLayout",
   components: {
     PinusView,
     PrismView,
+    LineChart
   },
   props: {
     periodRange: Array,
@@ -124,7 +136,7 @@ export default {
   mounted() {},
   methods: {
     handleClick(id) {
-      console.log(id);
+      // console.log(id);
       if (!this.showMap.top) {
         this.showMap.top = id;
         this.showTopPinusData = this.pinusDataMap[id];

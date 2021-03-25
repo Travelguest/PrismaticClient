@@ -184,7 +184,7 @@ export default {
           res.forEach((dd) => {
             dd.dataValue = [d.val, 1];
           });
-          console.log(res);
+          // console.log(res);
           return res;
         })
         .enter()
@@ -201,7 +201,7 @@ export default {
         .append("path")
         .attr("d", arc)
         .attr("fill", (d, i) => {
-          console.log("d.dataValuel:", d.dataValue); //不知道d是啥，可以console出来看看
+          // console.log("d.dataValuel:", d.dataValue); //不知道d是啥，可以console出来看看
           if (i == 0) {
             if (d.dataValue[i] < 0) {
               return colorScale(-0.75);

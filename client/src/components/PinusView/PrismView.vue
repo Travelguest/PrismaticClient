@@ -47,15 +47,14 @@ export default {
       // console.log(this.id);
       this.bindPinus();
       this.initTooltip();
-      this.renderArea();
+      
 
       let _this = this;
       let t = d3.timer(function (elapsed) {
         _this.renderPinus();
         if (elapsed > 2000) t.stop();
       });
-
-      //  this.initTooltip();
+    this.renderArea();
     },
   },
   computed: {
@@ -116,7 +115,7 @@ export default {
       this.height = 220;
       // console.log("width height:",this.width,this.height);
 
-      this.date = this.matrixColumn.map((d) => new Date(d));
+      
 
       this.canvas = d3
         .select(`#pinus_${this.id}`)
@@ -204,17 +203,19 @@ export default {
       join.exit().transition().attr("width", 0).attr("height", 0).remove();
     },
     renderArea() {
+      this.date = this.matrixColumn.map((d) => new Date(d));
       this.svg.selectAll("g").remove();
+      
       this.svg
         .append("g")
         .attr("class", "xAxis")
         .call(
           d3
             .axisBottom(this.xScale)
-            .ticks(d3.timeMonth.every(1))
+            // .ticks(d3.timeMonth.every(1))
             .tickFormat(d3.timeFormat("%b"))
         )
-        .attr("transform", `translate(0,${this.height - 6})`)
+        .attr("transform", `translate(0,${this.height -6})`)
         .select(".domain")
         .remove();
       this.svg
