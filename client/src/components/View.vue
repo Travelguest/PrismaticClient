@@ -1,8 +1,5 @@
 <template>
   <div id="vue">
-    Knowledge Graph
-
-
     <!--    <a-row type="flex" justify="space-around" class="second-row" style="padding: 0px">-->
     <!--      <a-col :span="21" class="second-row">-->
     <!--        <a-range-picker-->
