@@ -1,8 +1,8 @@
 <template>
   <div>
-    {{corrDistribution}}
-    <br><br>
-    {{corrCluster}}
+    <!--    {{corrDistribution}}-->
+    <!--    <br><br>-->
+    <!--    {{corrCluster}}-->
   </div>
 </template>
 
@@ -23,14 +23,13 @@ export default {
     return {
       svg: null,
       width: 0,
-      height: 0,
+      height: 1620,
       margin: { top: 10, right: 10, bottom: 10, left: 10 },
 
       distContainer: null,
-      distX: null,
-      distY: null,
       distWidth: 100,
-      distHeight: 100,
+      distHeight: 150,
+      distPadding: 11.5,
 
       yearSelected: '2020',
       correlationRange: [0.6, 1],
@@ -40,7 +39,7 @@ export default {
   },
   watch: {
     corrDistribution: function() {
-      // console.log(this.corrDistribution)
+      this.renderGraph();
     },
     periodRange: function() {
       this.$emit('update-period-range', this.periodRange);
@@ -55,13 +54,12 @@ export default {
     },
   },
   mounted: function () {
-    // this.initGraph();
-    // this.renderGraph();
+    this.initGraph();
+    this.renderGraph();
   },
   methods: {
     initGraph() {
       this.width = this.$el.clientWidth;
-      this.height = this.$el.clientHeight;
 
       this.svg = d3
           .select(this.$el)
@@ -71,69 +69,78 @@ export default {
       this.graphContainer = this.svg
           .append("g")
           .attr("transform", `translate(${this.margin.left},${this.margin.top})`);
-
-      this.distX = d3.scaleLinear().domain([0, 600]).range([0, this.distWidth]).nice(); // x is count
-      this.distY = d3.scaleLinear().domain([-0.4, 1]).range([0, this.distHeight]).nice(); // y is correlation
     },
     renderGraph() {
       // Remove all groups in svg
       this.svg.selectAll("g").remove();
 
+      let _this = this;
+      let distX = d3.scaleLinear().domain([799, 0]).range([0, this.distWidth]); // x is count
+      let distY = d3.scaleLinear().domain([1, -0.5]).range([0, this.distHeight]); // y is correlation
+      let stockLine = d3.line().curve(d3.curveCatmullRom)
+          .x((d) => distX(d))
+          .y((_, i) => distY(-0.5+i*0.05));
+      let indexArea = d3
+          .area()
+          .x0(distX(0))
+          .x1((d) => distX(d))
+          .y((_, i) => distY(-0.5+i*0.05));
+
       // Distribution charts container
-      this.distContainer = this.svg
+      this.distCoqntainer = this.svg
           .selectAll('.dist')
-          .data(Object.entries(this.corrDistribution))
+          // sort to have 2020 be the first year to display
+          .data(Object.entries(this.corrDistribution).sort((a, b)=>(a[0]<b[0]?1: -1)))
           .enter()
           .append('g')
           .attr('class', 'dist')
-          .attr('transform', (_, i) => `translate(${0},${this.distHeight * i})`)
-          .each(function(data, index, container) {
-            container[index]
+          .attr('transform', (_, i) => `translate(${0},${this.distPadding+(this.distHeight+this.distPadding) * i})`)
+          .each(function(data, i, containers) {
+            let container = d3.select(containers[i]);
+            // x-axis
+            container
                 .append("g")
                 .attr("class", "xAxis")
-                // .attr("transform", `translate(0,${this.innerHeight})`)
-                .call(d3.axisBottom(this.distX))
-            // .select(".domain")
-            // .remove();
-
-            container[index]
+                .attr("transform", `translate(0, ${_this.distHeight})`)
+                .call(d3.axisTop(distX)
+                    .ticks(4)
+                    .tickSize(_this.distHeight))
+                .call(g => g.select(".domain")
+                    .remove())
+                .call(g => g.selectAll(".tick line")
+                    .attr("stroke-opacity", 0.5)
+                    .attr("stroke-dasharray", "2,2"))
+                .call(g => g.selectAll(".tick text")
+                    .attr("dx", -5)
+                    .attr("dy", 4));
+            // y-axis
+            container
                 .append("g")
                 .attr("class", "yAxis")
-                .call(d3.axisRight(this.distY))
-            // .select(".domain")
-            // .remove();
-            console.log(container[index])
+                .attr("transform", `translate(${_this.distWidth},0)`)
+                .call(d3.axisRight(distY).ticks(3));
+            // index area plot
+            container
+                .append("path")
+                .datum(data[1].sci)
+                .style("stroke", "rgba(80,161,255,0.10)")
+                .style("fill", "rgba(80,161,255,0.10)")
+                .attr("d", indexArea);
+            // stock line plots
+            container
+                .append("g")
+                .selectAll('.stockLine')
+                .data(Object.entries(data[1]).filter((d) => d[0] !== 'sci'))
+                // .data(Object.entries(data[1]))
+                .enter()
+                .append('path')
+                .attr('class', 'stock-line')
+                .attr('d', (d) => stockLine(d[1]))
+                .attr('fill', 'none')
+                .attr('stroke-width', '2px')
+                .attr('stroke', 'cornflowerblue');
+
           });
-
-      // this.cell_containers = d3.select(rowContainer)
-      //     .selectAll('.cell')
-      //     .data(_this.featureData)
-      //     .enter()
-      //     .append('g')
-      //     .attr('class', 'cell')
-      //     .attr('transform', d => 'translate(' + [_this.xScale(d.timestamp), 0] + ')');
-      //
-      // let rects = cell_containers
-      //     .append('rect')
-      //     .attr('width', _this.unitWidth > 1?_this.unitWidth-1: _this.unitWidth)
-      //     .attr('height', _this.rowHeight-1 > 1? _this.rowHeight-1: _this.rowHeight)
-      //     .attr('rx', _this.unitWidth / 5)
-      //     .attr('fill', d => {
-      //       return (d[stationId] === null || d[stationId] === 'null')?
-      //           '#ffffff':
-      //           _this.colorScale(_this.dataScale(d[stationId]))
-      //     })
-      //     .attr('stroke', 'white')
-      //     .attr('stroke-width', 1);
-      //
-      // rects
-      //     .append('title')
-      //     .text(d=>{
-      //       let _id = stationId in hkStationDict? hkStationDict[stationId]: stationId;
-      //       let value = (d[stationId] === null || d[stationId] === 'null')? 'Null': parseInt(d[stationId] * 100) / 100;
-      //       return 'Id: '+ _id + ' error: ' + value + '\nTimestamp: ' + format_date(new Date(d.timestamp * 1000));
-      //     });
-
     },
     onCorrelationSliderChange(val) {
       this.correlationMarks = {0: '0'};

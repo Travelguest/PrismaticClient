@@ -83,24 +83,23 @@ class Model:
     # get ten years market index distribution
     def get_corr_dist(self, query_codes):
         self.query_codes = query_codes if query_codes is not None else []
-        print(query_codes)
         corr = {str(year): {} for year in range(2011, 2021)}
         for year in range(2011, 2021):
             corr_out = pd.cut(
                 self.corr_index_df[str(year)],
-                bins=[i / 100 for i in range(-40, 101, 5)],
+                bins=[i / 100 for i in range(-50, 101, 5)],
                 precision=2,
                 right=True,
                 include_lowest=True).value_counts()
-            corr[str(year)]['sci'] = [int(corr_out[i / 100]) for i in range(-40, 101, 5)]
+            corr[str(year)]['sci'] = [int(corr_out[i / 100]) for i in range(-50, 101, 5)]
             for query_code in self.query_codes:
                 corr_out = pd.cut(
                     self.corr_df[str(year)].loc[query_code],
-                    bins=[i / 100 for i in range(-40, 101, 5)],
+                    bins=[i / 100 for i in range(-50, 101, 5)],
                     precision=2,
                     right=True,
                     include_lowest=True).value_counts()
-                corr[str(year)][query_code] = [int(corr_out[i / 100]) for i in range(-40, 101, 5)]
+                corr[str(year)][query_code] = [int(corr_out[i / 100]) for i in range(-50, 101, 5)]
         return corr
 
     """

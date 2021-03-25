@@ -119,7 +119,7 @@ export default {
   data() {
     return {
       stockList: [{ts_code:'000001.SH', name:'上证指数', level1:'index', level3:'composite'}],
-      stockSelectionNumMax: 5,
+      stockSelectionNumMax: 10,
       stockSelected: ['000652', '000538'],
 
       corrDistribution: index_corr_dist,
