@@ -57,6 +57,7 @@
               :period-range="periodRange"
               :correlation-triangle="showTopPinusData"
               :loading-triangle="loadingTriangleMarket"
+              v-on:updateBrush="handleUpdateBrush"
             ></PrismView>
           </a-row>
           <a-row class="pinus_view_switch_two">
@@ -152,6 +153,9 @@ export default {
         this.showMap.bottom = "";
         this.showBottomPinusTitle = "";
       }
+    },
+    handleUpdateBrush(start, end) {
+      console.log("得到start,end:", start, end);
     },
     handleBrush() {
       DataService.post(
