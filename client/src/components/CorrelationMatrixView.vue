@@ -144,19 +144,28 @@ export default {
         .style("opacity", 1);
 
       // var cellCircle = cell
-      //   .filter((k) => k.col === k.row)
-      //   .append("circle")
-      //   .attr("class", "cell")
-      //   .attr("cx", (d) => x(d.col) + x.bandwidth() / 2)
-      //   .attr("cy", (d) => y(d.row) + y.bandwidth() / 2)
-      //   .attr("r", x.bandwidth() / 4);
+      cell
+        .filter((k) => k.col == k.row)
+        .append("circle")
+        .attr("class", "cell")
+        .attr("cx", function (d) {
+          return x(d.col) + x.bandwidth() / 2;
+        })
+        .attr("cy", (d) => y(d.row) + y.bandwidth() / 2)
+        .attr("r", x.bandwidth() / 3.25)
+        .style("fill", function (d) {
+          if (d.val >= 0) return colorScale(0.75);
+          else return colorScale(-0.75);
+        })
+        .style("opacity", 0.3)
+        .transition()
+        .style("opacity", 0.3);
 
       //pieChart
-      let radius = x.bandwidth() / 3;
+      let radius = x.bandwidth() / 2.75;
       let pie = d3.pie().value((d) => d);
-      let arc = d3.arc().innerRadius(6).outerRadius(radius);
-      
-      //var color = ["#98abc5", "#8a89a6"];
+      let arc = d3.arc().innerRadius(x.bandwidth() / 3.25).outerRadius(radius);
+
       let points = heatmapContainer
         .selectAll("g")
         .data(this.matrixCorr.filter((k) => k.col === k.row))
@@ -174,72 +183,49 @@ export default {
       let pies = points
         .selectAll(".pies")
         .data((d) => {
-          let res = pie([Math.abs(d.val)]); //pie()只能接受正值数组，用于pieChart的分段画弧
+          let res = pie([Math.abs(d.val), 1 - Math.abs(d.val)]); //pie()只能接受正值数组，用于pieChart的分段画弧
+          res.forEach((dd) => {
+            dd.dataValue = [d.val, 1];
+          });
+          console.log(res);
           return res;
         })
         .enter()
         .append("g")
         .attr("class", "arc")
-        .on("click", (_, d) => {  //把事件加到整体group上
+        //.attr("class", "cell")
+        .on("click", (_, d) => {
+          //把事件加到整体group上
           this.$emit("selectedStockFromMatrixDiagonal", d.row);
         });
 
       pies
+      //.attr("class", "cell")
         .append("path")
         .attr("d", arc)
-        .attr("fill", (d) => {
-          // console.log("d:", d); //不知道d是啥，可以console出来看看
-          if (d.value < 0) {
-            return colorScale(-0.75);
-          } else {
-            return colorScale(0.75);
-          }
+        .attr("fill", (d, i) => {
+          console.log("d.dataValuel:", d.dataValue); //不知道d是啥，可以console出来看看
+          if (i == 0) {
+            if (d.dataValue[i] < 0) {
+              return colorScale(-0.75);
+            } else {
+              return colorScale(0.75);
+            }
+            //return colorScale(d.dataValue[i]);
+          } else return "white";
         })
-        .style("stroke", function (d) {
-          if (d.value < 0) {
-            return colorScale(-0.75);
-          } else {
-            return colorScale(0.75);
-          }
+        .style("stroke", function (d, i) {
+          if (i == 0) {
+            if (d.dataValue[i] < 0) {
+              return colorScale(-0.75);
+            } else {
+              return colorScale(0.75);
+            }
+            //return colorScale(d.dataValue[i]);
+          } else return "white";
         })
         .style("stroke-width", 3);
-
-      // cellCircle
-      //   .style("fill", function (d) {
-      //     if (d.val < 0) {
-      //       return colorScale(-0.75);
-      //     } else {
-      //       return colorScale(0.75);
-      //     }
-      //   })
-      //   .style("stroke", function (d) {
-      //     if (d.val < 0) {
-      //       return colorScale(-0.75);
-      //     } else {
-      //       return colorScale(0.75);
-      //     }
-      //   })
-      //   .style("stroke-width", 4)
-      //   .on("click", (_, d) => {
-      //     this.$emit("selectedStockFromMatrixDiagonal", d.row);
-      //   });
-
-      // var cellCircle  = heatmapContainer
-      //   .selectAll(".cell")
-      //   .data(pie(this.matrixCorr.filter((k) => k.col === k.row)))
-      //   .enter()
-      //   .append("g")
-      //   .attr("class", "cell")
-      //   .attr(
-      //     "transform",
-      //     d => `translate(${x(d.col) + x.bandwidth() / 2},${y(d.row) + y.bandwidth() / 2})`
-      //   )
-      //   .append("path")
-      //   .attr("d", arc)
-      //   .attr("fill","black");
-      // .attr("fill", function (d) {
-      //   return color(d.data.key);
-      // });
+      
 
       let mouseover = function (_, d) {
         d3.selectAll(".cell")
@@ -265,6 +251,12 @@ export default {
               return "2 2";
             } else return "0";
           });
+          d3.selectAll(".cell")
+          .filter(
+            (k) => (k.col === d.col || k.row === d.row) && k.col == k.row
+          ) // when in the same row or column
+          .style("opacity", 0.3)
+          .style("stroke-width", 0);
       };
 
       let mouseout = function () {
@@ -274,27 +266,12 @@ export default {
             if (d.col === d.row) return 4;
             else return 0;
           });
-        // .style("stroke", (d) => {
-        //   if (d.type === "vol") {
-        //     //交易量下三角
-        //     return "black";
-        //   } else if (d.type === "price") {
-        //     //股价上三角
-        //     return "black";
-        //   } else return colorScale(d.val);
-        // })
-        // .style("stroke-dasharray", (d) => {
-        //   if (d.type === "vol") {
-        //     return "8 8";
-        //   } else return "0";
-        // })
-
-        // d3.selectAll(".cell")
-        //   .filter((k) => k.col === k.row)
-        // .style("stroke", (d) => colorScale(d.val))
-        // .style("stroke-width", 4);
-        // .filter(k => k.col !== k.row)
-        // .style("stroke-width", 0);
+        d3.selectAll(".cell")
+          .filter(
+            (k) => k.col == k.row
+          ) // when in the same row or column
+          .style("opacity", 0.3)
+          .style("stroke-width", 0);
       };
 
       // Heatmap interaction
@@ -305,7 +282,7 @@ export default {
       cellRect.filter((k) => k.col === k.row).style("fill", "white");
 
       d3.selectAll(".cell")
-        .filter((k) => k.col !== k.row)
+        //.filter((k) => k.col !== k.row)
         .on("click", (_, d) => {
           this.$emit("selectedStockFromMatrix", d.row, d.col);
         });

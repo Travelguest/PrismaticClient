@@ -31,7 +31,7 @@
 #triangle {
   position: absolute;
   top: 0px;
-  right: 300px;
+  right: 350px;
   border-top: 40px solid #777;
   border-right: 45px solid #ffffff;
   border-bottom: 3px solid #ffff;
