@@ -74,10 +74,26 @@
       </a-col>
       <a-col :span="17">
         <a-row>
-          <LineChart> </LineChart>
+          <LineChart
+            v-if="isShowTopLineChart"
+            :id="'top'"
+            :title="topLineChartTitle"
+            :stock-a="stockA"
+            :stock-b="stockB"
+            :preprocessed-data="topLineChartData"
+          >
+          </LineChart>
         </a-row>
         <a-row>
-          <LineChart> </LineChart>
+          <LineChart
+            v-if="isShowBottomLineChart"
+            :id="'bottom'"
+            :title="bottomLineChartTitle"
+            :stock-a="stockA"
+            :stock-b="stockB"
+            :preprocessed-data="bottomLineChartData"
+          >
+          </LineChart>
         </a-row>
       </a-col>
     </a-row>
@@ -115,13 +131,13 @@ export default {
   },
   data() {
     return {
-      pinusDataMap: {
-        MarketLeft: this.correlationTriangleMarketLeft,
-        SectorLeft: this.correlationTriangleSectorLeft,
-        Stock: this.correlationTriangleStock,
-        SectorRight: this.correlationTriangleSectorRight,
-        MarketRight: this.correlationTriangleMarketRight,
-      },
+      // pinusDataMap: {
+      //   MarketLeft: this.correlationTriangleMarketLeft,
+      //   SectorLeft: this.correlationTriangleSectorLeft,
+      //   Stock: this.correlationTriangleStock,
+      //   SectorRight: this.correlationTriangleSectorRight,
+      //   MarketRight: this.correlationTriangleMarketRight,
+      // },
       showMap: {
         top: "",
         bottom: "",
@@ -133,19 +149,43 @@ export default {
       showBottomPinusTitle: "",
       start_date: "2010-02-01",
       end_date: "2020-04-30",
-      stock_code:this.stockA,
-      index_type:'',
+      stock_code: this.stockA,
+      index_type: "",
+
+      //传给LineChart的信息
+      topLineChartTitle: "",
+      bottomLineChartTitle: "",
+      topLineChartData: null,
+      bottomLineChartData: null,
+      isShowTopLineChart: false,
+      isShowBottomLineChart: false,
     };
   },
   computed: {},
 
-  watch: {},
+  watch: {
+    correlationTriangleMarketLeft: function () {
+      this.showTopPinusData = null;
+      this.showBottomPinusData = null;
+      this.showTopPinusTitle = "";
+      this.showBottomPinusTitle = "";
+    },
+  },
   mounted() {},
   methods: {
+    pinusDataMap: function (id) {
+      if (id === "MarketLeft") return this.correlationTriangleMarketLeft;
+      else if (id === "SectorLeft") return this.correlationTriangleSectorLeft;
+      else if (id === "Stock") return this.correlationTriangleStock;
+      else if (id === "SectorRight") return this.correlationTriangleSectorRight;
+      else if (id === "MarketRight") return this.correlationTriangleMarketRight;
+      else return null;
+    },
     handleClick(id) {
       if (!this.showMap.top) {
         this.showMap.top = id;
-        this.showTopPinusData = this.pinusDataMap[id];
+
+        this.showTopPinusData = this.pinusDataMap(id);
         this.showTopPinusTitle = id;
       } else if (id === this.showMap.top) {
         this.showTopPinusData = null;
@@ -153,7 +193,7 @@ export default {
         this.showTopPinusTitle = "";
       } else if (!this.showMap.bottom) {
         this.showMap.bottom = id;
-        this.showBottomPinusData = this.pinusDataMap[id];
+        this.showBottomPinusData = this.pinusDataMap(id);
         this.showBottomPinusTitle = id;
       } else if (id === this.showMap.bottom) {
         this.showBottomPinusData = null;
@@ -164,39 +204,60 @@ export default {
     handleUpdateBrush(start, end, title) {
       this.start_date = start;
       this.end_date = end;
-      console.log("得到start,end:", start, end,title,this.stockA,this.stockB);
+      // console.log(
+      //   "得到start,end:",
+      //   start,
+      //   end,
+      //   title,
+      //   this.stockA,
+      //   this.stockB
+      // );
       if (title === "Stock") {
         // can only get AB
         DataService.post(
           "get_stock_daily",
-          [[this.stockA,this.stockB], this.start_date, this.end_date],
+          [[this.stockA, this.stockB], this.start_date, this.end_date],
           (data) => {
             // this.businessTag = data;
             console.log("Stock得到的数据：", data);
+            if (title === this.showTopPinusTitle) {
+              console.log("Stock在Top");
+              this.topLineChartData = data;
+              this.topLineChartTitle = title;
+              this.isShowTopLineChart = true;
+            } else if (title === this.showBottomPinusData) {
+              console.log("Stock在Bottom");
+              this.bottomLineChartData = data;
+              this.bottomLineChartTitle = title;
+              this.isShowBottomLineChart = true;
+            }
           }
         );
       } else {
-        console.log("不是Stock")
-        if(title === "MarketLeft" || title === "SectorLeft") {
+        if (title === "MarketLeft" || title === "SectorLeft") {
           this.stock_code = this.stockA;
+        } else if (title === "MarketRight" || title === "SectorRight") {
+          this.stock_code = this.stockB;
         }
-        else if(title === "MarketRight" || title === "SectorRight") {
-           this.stock_code = this.stockB;
-        }
-        if(title === "SectorLeft" || title === "SectorRight") {
+        if (title === "SectorLeft" || title === "SectorRight") {
           this.index_type = "industry";
-        }
-        else {
+        } else {
           this.index_type = "market";
         }
-        console.log("传入：",this.stock_code, this.index_type, this.start_date, this.end_date);
+        console.log(
+          "不是Stock,传入：",
+          this.stock_code,
+          this.index_type,
+          this.start_date,
+          this.end_date
+        );
         // can get AM, AI, BI, BM
         DataService.post(
           "get_stock_index_daily",
           [this.stock_code, this.index_type, this.start_date, this.end_date],
           (data) => {
             // this.businessTag = data;
-            console.log("其余的得到的数据：",data);
+            console.log(`其余的${title}得到的数据：`, data);
           }
         );
       }

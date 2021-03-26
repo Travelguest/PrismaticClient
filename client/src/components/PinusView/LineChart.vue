@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div id="line_chart"></div>
+    <div :id="`line_chart_${id}`"></div>
   </div>
 </template>
 
@@ -10,14 +10,23 @@ import * as d3 from "d3";
 export default {
   name: "LineChart",
   props: {
+    id: String,
+    title: String,
+    stockA: String,
+    stockB: String,
+    preprocessedData: Object,
   },
   components: {},
   data() {
     return {
       svg: null,
-      margin: { top: 70, right: 30, bottom: 30, left: 55 },
-      width: 520,
-      height: 253,
+      margin: { top: 10, right: 40, bottom: 30, left: 35 },
+      width: 1055,
+      height: 259,
+      date: null,
+      stockDataA: null,
+      stockDataB: null,
+
       //   date: Object.keys(market_nav_date),
       //   marketNav: Object.values(market_nav_date),
       //   marketShares: Object.values(market_number_date),
@@ -25,10 +34,20 @@ export default {
     };
   },
   watch: {
+    preprocessedData: function () {
+      console.log("title,a,b:", this.title, this.stockA, this.stockB);
+      console.log("Data:", this.preprocessedData);
+      if (this.title === "Stock") {
+        this.dataInit();
+        console.log("预处理后的", this.stockDataA, this.stockDataB);
+        this.renderUpdate();
+      }
+    },
   },
   mounted: function () {
-    // this.renderInit();
-    // this.renderUpdate();
+    this.dataInit();
+    this.renderInit();
+    this.renderUpdate();
   },
   emits: ["updateBrush"],
   computed: {
@@ -53,7 +72,7 @@ export default {
         .line()
         .curve(d3.curveCatmullRom)
         .x((d, i) => this.xScale(this.date[i]))
-        .y((d) => this.yScale(d));
+        .y((d) => this.yScale(d.close));
     },
     colorScale() {
       return d3
@@ -70,17 +89,18 @@ export default {
     },
   },
   methods: {
-   
+    dataInit() {
+      this.date = this.preprocessedData.date.map((d) => new Date(d));
+      if (this.title === "Stock") {
+        this.stockDataA = this.preprocessedData[this.stockA];
+        this.stockDataB = this.preprocessedData[this.stockB];
+      }
+    },
     renderInit() {
       //date数据处理
-      this.date = this.date.map(
-        (d) =>
-          new Date(
-            d.substring(0, 4) + "-" + d.substring(4, 6) + "-" + d.substring(6)
-          )
-      );
+
       this.svg = d3
-        .select("#line_chart")
+        .select(`#line_chart_${this.id}`)
         .append("svg")
         .attr("width", this.width)
         .attr("height", this.height)
@@ -89,16 +109,19 @@ export default {
         .attr("transform", `translate(${this.margin.left},${this.margin.top})`);
     },
     renderUpdate() {
+      console.log("renderUpdate了！", this.svg);
+      // this.svg.selectAll("g").remove();
       // Add X axis
       this.svg
         .append("g")
         .attr("class", "xAxis")
-        .call(d3.axisBottom(this.xScale)
-        // .ticks(d3.timeYear.every(1), "%Y")
+        .call(
+          d3.axisBottom(this.xScale)
+          // .ticks(d3.timeYear.every(1), "%Y")
         )
-        .attr("transform", `translate(0,${this.innerHeight})`)
-        .select(".domain")
-        .remove();
+        .attr("transform", `translate(0,${this.innerHeight})`);
+      // .select(".domain")
+      // .remove();
 
       this.svg
         .select(".xAxis")
@@ -130,12 +153,13 @@ export default {
 
       //market shares
       //画y轴
-      this.yScale.domain([0, d3.max(this.marketShares)]);
+      this.yScale.domain(d3.extent(this.stockDataA, (d) => d.close));
       this.svg
         .append("g")
-        .attr("id", "yAxis")
+        .attr("id", "yAxis_Stock_A")
         .call(
-          d3.axisLeft(this.yScale).tickFormat(d3.format("~s"))
+          d3.axisLeft(this.yScale)
+          // .tickFormat(d3.format("~s"))
           // .ticks(5)
           // .tickFormat(d3.format(".0%")).ticks(5)
           // .ticks(d3.timeYear.every(2))
@@ -145,41 +169,46 @@ export default {
         .select(".domain")
         .remove();
       this.svg
-        .select("#marketShares_yAxis")
+        .select("#yAxis_Stock_A")
         .selectAll(".tick text")
         .style("font-family", "Helvetica")
         .style("font-size", "10px")
         .style("color", "#6C7B8A");
 
-      // curveChart
-      //   .append("g")
-      //   .append("path")
-      //   .attr("class", "line-path-size")
-      //   .attr("d", this.linePath(this.fund_size))
-      //   .attr("fill", "none")
-      //   .attr("stroke-width", 1.5)
-      //   // .attr("stroke", "rgba(80,161,255,0.30)");
-      //   .attr("stroke", "red");
       curveChart
         .append("g")
         .append("path")
-        .datum(this.marketShares)
-        .attr("class", "streamGraphLayers")
-        .style("stroke", "rgba(80,161,255,0.30)")
-        .style("fill", "rgba(80,161,255,0.30)")
-        .attr("d", this.area);
+        .attr("class", "line_path_stock_A")
+        .attr("d", this.linePath(this.stockDataA))
+        .attr("fill", "none")
+        .attr("stroke-width", 1.5)
+        // .attr("stroke", "rgba(80,161,255,0.30)");
+        .attr("stroke", "red");
+
+      //面积图
+      // curveChart
+      //   .append("g")
+      //   .append("path")
+      //   .datum(this.marketShares)
+      //   .attr("class", "streamGraphLayers")
+      //   .style("stroke", "rgba(80,161,255,0.30)")
+      //   .style("fill", "rgba(80,161,255,0.30)")
+      //   .attr("d", this.area);
 
       //marketNav
-      this.yScale.domain([0.8, d3.max(this.marketNav)]);
+      this.yScale.domain(d3.extent(this.stockDataB, (d) => d.close));
       this.svg
         .append("g")
-        .attr("id", "marketNav_yAxis")
-        .call(d3.axisRight(this.yScale).ticks(6))
+        .attr("id", "yAxis_Stock_B")
+        .call(
+          d3.axisRight(this.yScale)
+          // .ticks(6)
+        )
         .attr("transform", `translate(${this.innerWidth},0)`)
         .select(".domain")
         .remove();
       this.svg
-        .select("#marketNav_yAxis")
+        .select("#yAxis_Stock_B")
         .selectAll(".tick text")
         .style("font-family", "Helvetica")
         .style("font-size", "10px")
@@ -188,50 +217,50 @@ export default {
       curveChart
         .append("g")
         .append("path")
-        .attr("class", "line-path-income")
-        .attr("d", this.linePath(this.marketNav))
+        .attr("class", "line_path_stock_B")
+        .attr("d", this.linePath(this.stockDataB))
         .attr("fill", "none")
         .attr("stroke-width", 2)
         .attr("stroke", "#FE6AAC");
 
       //legend
-      this.svg
-        .selectAll(".legend")
-        .data(this.keys)
-        .enter()
-        .append("circle")
-        .attr("cx", (d, i) => 15 + i * 230)
-        .attr("cy", -49)
-        .attr("r", "6px")
-        .style("fill", (d) => this.colorScale(d));
+      // this.svg
+      //   .selectAll(".legend")
+      //   .data(this.keys)
+      //   .enter()
+      //   .append("circle")
+      //   .attr("cx", (d, i) => 15 + i * 230)
+      //   .attr("cy", -49)
+      //   .attr("r", "6px")
+      //   .style("fill", (d) => this.colorScale(d));
 
-      this.svg
-        .selectAll(".labels")
-        .data(this.keys)
-        .enter()
-        .append("text")
-        .attr("x", (d, i) => 30 + i * 230)
-        .attr("y", -48)
-        .style("fill", "#9F9F9F")
-        .style("font-family", "PingFangSC-Medium")
-        .style("font-size", "14px")
-        .style("letter-spacing", "-0.18px")
-        .text((d) => d)
-        .attr("text-anchor", "left")
-        .style("alignment-baseline", "middle");
+      // this.svg
+      //   .selectAll(".labels")
+      //   .data(this.keys)
+      //   .enter()
+      //   .append("text")
+      //   .attr("x", (d, i) => 30 + i * 230)
+      //   .attr("y", -48)
+      //   .style("fill", "#9F9F9F")
+      //   .style("font-family", "PingFangSC-Medium")
+      //   .style("font-size", "14px")
+      //   .style("letter-spacing", "-0.18px")
+      //   .text((d) => d)
+      //   .attr("text-anchor", "left")
+      //   .style("alignment-baseline", "middle");
 
       //删除刻度线
-      this.svg.selectAll(".tick line").remove();
+      // this.svg.selectAll(".tick line").remove();
 
       //timebrush
-      let brush = d3
-        .brushX()
-        .extent([
-          [0, -this.margin.top + 65],
-          [this.innerWidth, this.innerHeight],
-        ])
-        .on("end", this.updateDate);
-      this.svg.append("g").attr("class", "brush").call(brush);
+      // let brush = d3
+      //   .brushX()
+      //   .extent([
+      //     [0, -this.margin.top + 65],
+      //     [this.innerWidth, this.innerHeight],
+      //   ])
+      //   .on("end", this.updateDate);
+      // this.svg.append("g").attr("class", "brush").call(brush);
     },
   },
 };

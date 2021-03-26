@@ -107,7 +107,7 @@ export default {
   emits: ["updateBrush"],
   methods: {
     updateDate({ selection }) {
-      if (selection) {
+      if (selection && this.correlationTriangle) {
         let start = this.xScale.invert(selection[0]).toISOString().slice(0, 10);
         let end = this.xScale.invert(selection[1]).toISOString().slice(0, 10);
         if (start !== end) {
