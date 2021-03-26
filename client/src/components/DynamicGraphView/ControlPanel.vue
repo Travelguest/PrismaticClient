@@ -209,7 +209,7 @@ export default {
     FilterOutlined,
   },
   props: {},
-  emits: ["get-correlation-matrix", "update-period-range"],
+  emits: ["get-correlation-matrix"],
   data() {
     return {
       stockList: [{ts_code:'000001.SH', name:'上证指数', level1:'index', level3:'composite'}],
@@ -236,9 +236,6 @@ export default {
     },
   },
   watch: {
-    periodRange: function () {
-      this.$emit("update-period-range", this.periodRange);
-    },
     stockSelected: function (_, newVal) {
       // Remove the last element if the selected number of stocks exceeds maximum
       if (newVal.length >= this.stockSelectionNumMax) {
@@ -280,15 +277,11 @@ export default {
           }
       );
     },
-    onYearClick(year, topNodes) {
+    onYearClick(topNodes, year) {
       // TODO: put a button to select filter
       // eslint-disable-next-line no-constant-condition
       let nodes = true? topNodes: this.corrCluster[year].nodes;
-      this.$emit(
-          "get-correlation-matrix",
-          year,
-          nodes
-      );
+      this.$emit("get-correlation-matrix", nodes, year);
     },
   },
 };
@@ -301,12 +294,10 @@ export default {
   width: 60%;
   height: 40px;
   line-height: 40px;
-  font-size: 24px;
+  font-size: 26px;
   background: #777;
   color: #fcfcfc;
-
   display: flex;
-  top: 0;
   font-weight: bold;
   border-radius: 2px;
   box-shadow: 0 1px 2px rgba(26 26 26 0.2);

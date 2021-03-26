@@ -7,7 +7,7 @@
             :id="'MarketLeft'"
             :period-range="periodRange"
             :correlation-triangle="correlationTriangleMarketLeft"
-            :loading-triangle="loadingTriangleMarket"
+            :loading-triangle="loadingTriangleMarketLeft"
             @clickedPinus="handleClick"
           ></PinusView>
         </a-row>
@@ -16,7 +16,7 @@
             :id="'SectorLeft'"
             :period-range="periodRange"
             :correlation-triangle="correlationTriangleSectorLeft"
-            :loading-triangle="loadingTriangleSector"
+            :loading-triangle="loadingTriangleSectorLeft"
             @clickedPinus="handleClick"
           ></PinusView>
         </a-row>
@@ -25,7 +25,7 @@
             :id="'Stock'"
             :period-range="periodRange"
             :correlation-triangle="correlationTriangleStock"
-            :loading-triangle="loadingTriangleSector"
+            :loading-triangle="loadingTriangleStock"
             @clickedPinus="handleClick"
           ></PinusView>
         </a-row>
@@ -34,7 +34,7 @@
             :id="'SectorRight'"
             :period-range="periodRange"
             :correlation-triangle="correlationTriangleSectorRight"
-            :loading-triangle="loadingTriangleSector"
+            :loading-triangle="loadingTriangleSectorRight"
             @clickedPinus="handleClick"
           ></PinusView>
         </a-row>
@@ -43,7 +43,7 @@
             :id="'MarketRight'"
             :period-range="periodRange"
             :correlation-triangle="correlationTriangleMarketRight"
-            :loading-triangle="loadingTriangleMarket"
+            :loading-triangle="loadingTriangleMarketRight"
             @clickedPinus="handleClick"
           ></PinusView>
         </a-row>
@@ -56,7 +56,6 @@
               :title="showTopPinusTitle"
               :period-range="periodRange"
               :correlation-triangle="showTopPinusData"
-              :loading-triangle="loadingTriangleMarket"
               v-on:updateBrush="handleUpdateBrush"
             ></PrismView>
           </a-row>
@@ -66,7 +65,6 @@
               :title="showBottomPinusTitle"
               :period-range="periodRange"
               :correlation-triangle="showBottomPinusData"
-              :loading-triangle="loadingTriangleMarket"
               v-on:updateBrush="handleUpdateBrush"
             ></PrismView>
           </a-row>
@@ -126,8 +124,11 @@ export default {
     stockA: String,
     stockB: String,
 
-    loadingTriangleMarket: Boolean,
-    loadingTriangleSector: Boolean,
+    loadingTriangleMarketLeft: Boolean,
+    loadingTriangleSectorLeft: Boolean,
+    loadingTriangleStock: Boolean,
+    loadingTriangleSectorRight: Boolean,
+    loadingTriangleMarketRight: Boolean,
   },
   data() {
     return {

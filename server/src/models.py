@@ -59,7 +59,6 @@ class Model:
         self.features = ['close', 'vol']
         self.query_codes = ['000652', '000538']
         self.query_dates = []
-        self.method = None
         self.community = None
 
     """
@@ -182,13 +181,12 @@ class Model:
     '''
     # entrance
     def list_to_corr_matrix(self,
-                            year='2020',
                             stock_list=None,
-                            method='pearson'):
+                            start_time='2020-01-01',
+                            end_time='2020-06-30'):
         if stock_list is None:
             stock_list = ['000538', '000652']
-        self.query_dates = [year+'-01-01', year+'-12-31']
-        self.method = method
+        self.query_dates = [start_time, end_time]
         # filter stock price by timeframe and query_codes
         stock_price = self.stock_daily_log.loc[self.query_dates[0]:self.query_dates[1]]
         stock_price = stock_price.transpose().loc[
@@ -197,7 +195,7 @@ class Model:
         # find individual correlation with other assets
         selected_corr = []
         for feature in self.features:
-            selected_stocks = stock_price[feature].corr(method=method)
+            selected_stocks = stock_price[feature].corr()
             selected_corr.append(selected_stocks)
         return pd.concat(selected_corr, axis=1, keys=self.features)
 
@@ -207,6 +205,7 @@ class Model:
                                           second_by='vol'):
         if corr_df is None or len(corr_df) <= 1:
             return False
+        corr_df = corr_df.dropna(axis=0, how='all').dropna(axis=1, how='all')
         dist = sch.distance.pdist(corr_df[first_by].values)
         link = sch.linkage(dist, method='complete')
         index = sch.fcluster(link, dist.max(initial=0) / 2, 'distance')
@@ -243,7 +242,7 @@ class Model:
         # Find correlation with index
         index_price = self.index_daily.log['000001.SH'].loc[self.query_dates[0]:self.query_dates[1]]
         stock_price = self.stock_daily_log.loc[self.query_dates[0]:self.query_dates[1]].close[columns]
-        index_corr = list(stock_price.corrwith(index_price, method=self.method, drop=True).values)
+        index_corr = list(stock_price.corrwith(index_price, drop=True).values)
 
         return columns, [
             {'row': row, 'col': col, 'val': val if i != j else index_corr[i],
@@ -251,6 +250,15 @@ class Model:
             for i, (row, col_dict) in enumerate(corr_df.round(5).to_dict(orient='index').items())
             for j, (col, val) in enumerate(col_dict.items())
         ]
+
+    def get_stock_return(self,
+                         stock_list=None,
+                         start_time='2020-01-01',
+                         end_time='2020-06-30'):
+        if stock_list is None:
+            stock_list = ['000538', '000652']
+        result = self.stock_daily.loc[start_time:end_time][stock_list]
+        return [{'row': stock, 'val': np.exp(result[stock].log.sum())} for stock in stock_list]
 
     '''
     Pinus view related

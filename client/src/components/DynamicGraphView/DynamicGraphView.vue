@@ -19,7 +19,6 @@ export default {
       svg: null,
       width: 0,
       height: 1175,
-      margin: { top: 10, right: 10, bottom: 10, left: 10 },
 
       distWidth: 80,
       distHeight: 105,
@@ -96,7 +95,7 @@ export default {
 
       let graphY = d3.scalePoint()
           .domain(Object.keys(this.corrCluster).sort().reverse())
-          .range([this.distHeight*0.75, this.distHeight*0.75+graphHeight*9]);
+          .range([this.distHeight*0.75+3, this.distHeight*0.75+3+graphHeight*9]);
 
       let container = this.svg
           .selectAll('.graph')
@@ -110,13 +109,13 @@ export default {
       container
           .append("rect")
           .attr('class', 'background')
-          .attr('y', -this.distHeight*0.68)
+          .attr('y', this.distPaddingHeight-this.distHeight*0.75)
           .attr("width", graphWidth)
           .attr("height", graphHeight-this.distPaddingHeight)
           .style("fill", "#D6DBDF")
           .style('opacity', 0.25)
           .on("click", (_, d) => {
-            _this.$emit("clickedYear", d, topNodes[d]);
+            _this.$emit("clickedYear", topNodes[d], d);
           });
 
 

@@ -13,9 +13,19 @@ def json_dumps(data):
     return simplejson.dumps(data, ensure_ascii=False, ignore_nan=True)
 
 
+'''
+Initialization
+'''
+
+
 @app.route('/get_stock_list', methods=['GET'])
 def get_stock_list():
     return json_dumps(CORR.get_stock_list())
+
+
+'''
+Control Panel
+'''
 
 
 @app.route('/get_corr_dist', methods=['POST'])
@@ -52,13 +62,18 @@ def get_business_tag_table():
     return json_dumps(response)
 
 
+'''
+Correlation Matrix
+'''
+
+
 @app.route('/get_correlation_matrix', methods=['POST'])
 def get_correlation_matrix():
     post_data = request.data.decode()
     corr_matrix = []
     if post_data != "":
         post_data = simplejson.loads(post_data)
-        corr_matrix = CORR.list_to_corr_matrix(year=post_data[0], stock_list=post_data[1])
+        corr_matrix = CORR.list_to_corr_matrix(stock_list=post_data[0], start_time=post_data[1], end_time=post_data[2])
         corr_matrix = CORR.two_phase_hierarchical_clustering(corr_matrix)
         if corr_matrix is not False:
             corr_matrix = {
@@ -70,17 +85,21 @@ def get_correlation_matrix():
     return json_dumps(corr_matrix)
 
 
-@app.route('/set_period', methods=['POST'])
-def set_period():
+@app.route('/get_stock_return', methods=['POST'])
+def get_stock_return():
     post_data = request.data.decode()
+    response = {}
     if post_data != "":
         post_data = simplejson.loads(post_data)
-        CORR.corr_community_detection(
-            start_date=post_data[0][:10],
-            end_date=post_data[1][:10],
-            # method='spearman'
-        )
-    return json_dumps(post_data != "")
+        response = CORR.get_stock_return(stock_list=post_data[0], start_time=post_data[1], end_time=post_data[2])
+        # with open(f'../client/src/components/stock_return.json', 'w+') as file:
+        #     simplejson.dump(response, file)
+    return json_dumps(response)
+
+
+'''
+Prism View
+'''
 
 
 @app.route('/get_corr_tri_market', methods=['POST'])
@@ -91,8 +110,8 @@ def get_corr_tri_market():
         post_data = simplejson.loads(post_data)
         pinus = CORR.rolling_corr_market(
             query_code=post_data[0],
-            start_date=post_data[1][:10],
-            end_date=post_data[2][:10]
+            start_date=post_data[1],
+            end_date=post_data[2]
         )
         response = {
             'name': 'SSE Composite Index',
@@ -101,7 +120,7 @@ def get_corr_tri_market():
             'corr': [
                 i
                 for num, row in pinus.iterrows()
-                for i in row.fillna(2).to_list()[-(len(pinus)+2-num):]
+                for i in row.fillna(2).to_list()[-(len(pinus) + 2 - num):]
             ]
         }
         # with open(f'../client/src/components/pinus_market_{post_data[0]}.json', 'w+') as file:
@@ -120,8 +139,8 @@ def get_corr_tri_sector():
         pinus = CORR.rolling_corr_market(
             query_code=post_data[0],
             index_code=sector_info.in_code,
-            start_date=post_data[1][:10],
-            end_date=post_data[2][:10]
+            start_date=post_data[1],
+            end_date=post_data[2]
         )
         response = {
             'name': sector_info['name'],
@@ -130,7 +149,7 @@ def get_corr_tri_sector():
             'corr': [
                 i
                 for num, row in pinus.iterrows()
-                for i in row.fillna(2).to_list()[-(len(pinus)+2-num):]
+                for i in row.fillna(2).to_list()[-(len(pinus) + 2 - num):]
             ]
         }
         # with open(f'../client/src/components/pinus_sector_{post_data[0]}.json', 'w+') as file:
@@ -148,8 +167,8 @@ def get_corr_tri_stock():
         pinus = CORR.rolling_corr_stock(
             query_code_left=post_data[0],
             query_code_right=post_data[1],
-            start_date=post_data[2][:10],
-            end_date=post_data[3][:10]
+            start_date=post_data[2],
+            end_date=post_data[3]
         )
         response = {
             'name': f'{post_data[0]} against {post_data[1]}',
@@ -158,7 +177,7 @@ def get_corr_tri_stock():
             'corr': [
                 i
                 for num, row in pinus.iterrows()
-                for i in row.fillna(2).to_list()[-(len(pinus)+2-num):]
+                for i in row.fillna(2).to_list()[-(len(pinus) + 2 - num):]
             ]
         }
         # with open(f'../client/src/components/pinus_stock_{post_data[0]}.json', 'w+') as file:
@@ -180,6 +199,23 @@ def get_stock_daily():
 
 @app.route('/get_stock_index_daily', methods=['POST'])
 def get_stock_index_daily():
+    post_data = request.data.decode()
+    response = {}
+    if post_data != "":
+        post_data = simplejson.loads(post_data)
+        response = CORR.query_stock_index_daily(post_data[0], post_data[1], post_data[2], post_data[3])
+        # with open(f'../client/src/components/pinus_stock_{post_data[0]}.json', 'w+') as file:
+        #     simplejson.dump(response, file)
+    return json_dumps(response)
+
+
+'''
+Control Panel
+'''
+
+
+@app.route('/get_knowledge_graph', methods=['POST'])
+def get_knowledge_graph():
     post_data = request.data.decode()
     response = {}
     if post_data != "":
