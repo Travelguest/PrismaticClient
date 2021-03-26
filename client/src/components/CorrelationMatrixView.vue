@@ -59,6 +59,9 @@ export default {
     },
   },
   mounted() {
+    // console.log("矩阵数据:", this.correlationMatrix);
+    // console.log("col:", this.correlationMatrix.columns);
+    // console.log("corr:", this.correlationMatrix.corr);
     this.initMatrix();
     this.renderMatrix();
   },
@@ -126,7 +129,7 @@ export default {
         .data(this.matrixCorr)
         .enter();
 
-      var cellRect = cell
+      cell
         .append("rect")
         .attr("class", "cell")
         .attr("x", function (d) {
@@ -135,12 +138,28 @@ export default {
         .attr("y", (d) => y(d.row))
         .attr("width", x.bandwidth())
         .attr("height", y.bandwidth())
-        .style("fill", (d) => colorScale(d.val))
+        .style("fill", function(d){
+          if(d.col!=d.row) return colorScale(d.val);
+          else return "white";
+        })
         .style("opacity", 1e-6)
         .transition()
         .style("opacity", 1);
 
-      // var cellCircle = cell
+      cell//对角线上的矩形 涂白
+        .filter((d) => d.col == d.row)
+        .append("rect")
+        .attr("x", function (d) {
+          return x(d.col);
+        })
+        .attr("y", (d) => y(d.row))
+        .attr("width", x.bandwidth())
+        .attr("height", y.bandwidth())
+        .style("fill", "white")
+        .style("opacity", 1e-6)
+        .transition()
+        .style("opacity", 1);
+
       cell
         .filter((k) => k.col == k.row)
         .append("circle")
@@ -276,7 +295,7 @@ export default {
 
       // The diagonal cells
 
-      cellRect.filter((k) => k.col === k.row).style("fill", "white");
+      //cellRect.filter((k) => k.col === k.row).style("fill", "white");
 
       d3.selectAll(".cell")
         //.filter((k) => k.col !== k.row)

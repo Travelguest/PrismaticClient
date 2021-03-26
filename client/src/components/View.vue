@@ -1,8 +1,5 @@
 <template>
   <div id="vue">
-    Knowledge Graph
-
-
     <!--    <a-row type="flex" justify="space-around" class="second-row" style="padding: 0px">-->
     <!--      <a-col :span="21" class="second-row">-->
     <!--        <a-range-picker-->
@@ -74,7 +71,7 @@ export default {
 #triangle {
   position: absolute;
   top: 0px;
-  right: 350px;
+  right: 50%;
   border-top: 40px solid #777;
   border-right: 45px solid #ffffff;
   border-bottom: 3px solid #ffff;
