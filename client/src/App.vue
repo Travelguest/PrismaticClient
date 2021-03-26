@@ -122,8 +122,8 @@ export default {
       this.selectedStockRight = stock_right;
       this.getCorrelationTriangleStock();
     },
-    getCorrelationMatrix() {
-      DataService.get("get_correlation_matrix", (data) => {
+    getCorrelationMatrix(year, stock_list) {
+      DataService.post("get_correlation_matrix", [year, stock_list], (data) => {
         this.correlationMatrix = data ? data : [];
       });
     },
