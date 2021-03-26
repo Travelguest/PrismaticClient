@@ -263,6 +263,9 @@ export default {
           this.$emit("selectedStockFromMatrixDiagonal", d.row);
         });
 
+      // eslint-disable-next-line vue/no-mutating-props
+      this.correlationMatrix.columns = this;
+
       pies
         //.attr("class", "cell")
         .append("path")
