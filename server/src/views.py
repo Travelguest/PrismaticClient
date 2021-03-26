@@ -2,7 +2,6 @@ from src import app
 from src.models import Model
 from flask import request
 import simplejson
-import math
 
 # initialize the model
 CORR = Model()
@@ -214,13 +213,13 @@ Control Panel
 '''
 
 
-@app.route('/get_knowledge_graph', methods=['POST'])
-def get_knowledge_graph():
+@app.route('/get_knowledge_graph_count', methods=['POST'])
+def get_knowledge_graph_count():
     post_data = request.data.decode()
     response = {}
     if post_data != "":
         post_data = simplejson.loads(post_data)
-        response = CORR.query_stock_index_daily(post_data[0], post_data[1], post_data[2], post_data[3])
-        # with open(f'../client/src/components/pinus_stock_{post_data[0]}.json', 'w+') as file:
-        #     simplejson.dump(response, file)
+        response = CORR.query_stock_knowledge_graph_count(post_data[0])
+        # with open(f'../client/src/components/knowledge_count.json', 'w+') as file:
+        #     simplejson.dump(response, file, ensure_ascii=False, ignore_nan=True)
     return json_dumps(response)

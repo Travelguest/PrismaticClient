@@ -78,14 +78,6 @@ export default {
       dragging: false,
       enabled: true,
 
-      lineData: [
-        { row: "600436", col: "600200", val: -0.00632, type: "vol" },
-        { row: "000623", col: "000078", val: 0.07383, type: "vol" },
-        { row: "600763", col: "000078", val: -0.15669, type: "vol" },
-        { row: "603288", col: "000652", val: -0.13302, type: "vol" },
-        { row: "600269", col: "000078", val: -0.06548, type: "vol" },
-      ],
-
       periodRange: [moment.utc('2020-01-01', 'YYYY-MM-DD'), moment.utc('2020-06-30', 'YYYY-MM-DD')],
       periodPresetRange: {
         'All': [moment.utc('2011-01-01', 'YYYY-MM-DD'), moment.utc('2020-12-31', 'YYYY-MM-DD')],

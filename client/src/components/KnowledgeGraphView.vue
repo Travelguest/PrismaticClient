@@ -10,13 +10,21 @@
 export default {
   name: "KnowledgeGraphView",
   props: {
-    stockA: String,
-    stockB: String,
+    stockCode: String,
+    knowledgeGraphCount: Object,
+  },
+  watch: {
+    knowledgeGraphCount: function () {
+      // console.log(this.knowledgeGraphCount)
+    },
   },
   data() {
     return {
-
     }
+  },
+  mounted: function () {
+  },
+  methods: {
   },
 }
 </script>

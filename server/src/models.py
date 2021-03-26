@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
-import networkx as nx
 import math
+import networkx as nx
+from collections import defaultdict
 
 import scipy.cluster.hierarchy as sch
 
@@ -50,7 +51,7 @@ class Model:
         self.index_daily = pd.read_pickle(PATH_INDEX_DAILY)
 
         # Knowledge graph
-        # self.knowledge_graph = nx.read_gpickle(PATH_KNOWLEDGE_GRAPH)
+        self.knowledge_graph = nx.read_gpickle(PATH_KNOWLEDGE_GRAPH)
 
         # Default
         self.community_default = pd.read_pickle(PATH_DEFAULT_COMMUNITY)
@@ -351,3 +352,15 @@ class Model:
             'index_name': index_name,
             'stock_name': stock_code
         }
+
+    '''
+    Knowledge Graph
+    '''
+    def query_stock_knowledge_graph_count(self,
+                                          stock_code='000538'):
+        count = {key: defaultdict(int) for key in ['city', 'province', 'industry', 'concept', 'investor', 'management']}
+        for link in self.knowledge_graph[stock_code]:
+            for k, v in self.knowledge_graph[stock_code][link].items():
+                for c in v:
+                    count[k][c] += 1
+        return {k: dict(v)  for k, v in count.items()}

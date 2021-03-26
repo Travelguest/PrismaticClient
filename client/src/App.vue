@@ -25,8 +25,8 @@
           <a-col :span="12">
             <div id="knowledge_graph_container">
               <KnowledgeGraphView>
-                :stock-a="selectedStockLeft"
-                :stock-b="selectedStockRight"
+                :stock-code="selectedStockLeft"
+                :knowledge-graph-count="knowledgeGraphCount"
               </KnowledgeGraphView>
             </div>
           </a-col>
@@ -63,6 +63,8 @@ import PinusLayout from "@/components/PinusView/PinusLayout";
 import KnowledgeGraphView from "@/components/KnowledgeGraphView";
 
 import _ from "lodash";
+import moment from "moment";
+import 'moment/dist/locale/zh-cn';
 import DataService from "@/utils/data-service";
 
 import matrix from "./components/data/matrix.json";
@@ -72,7 +74,8 @@ import pinus_market_left from "./components/data/pinus_market_left.json";
 import pinus_market_right from "./components/data/pinus_market_right.json";
 import pinus_sector_left from "./components/data/pinus_sector_left.json";
 import pinus_sector_right from "./components/data/pinus_sector_right.json";
-import moment from "moment";
+import knowledge_count from "./components/data/knowledge_count.json";
+
 
 export default {
   name: "App",
@@ -107,6 +110,8 @@ export default {
       loadingTriangleMarketRight: false,
 
       numberOfSelectedPinus: 0,
+
+      knowledgeGraphCount: knowledge_count,
     };
   },
   watch: {},
@@ -122,6 +127,7 @@ export default {
       this.selectedStockLeft = stock_left;
       this.selectedStockRight = stock_right;
       this.getCorrelationTriangle();
+      this.getKnowledgeCount();
     },
     getCorrelationMatrixByYear(stock_list, year) {
       this.selectedYear = year;
@@ -192,6 +198,13 @@ export default {
           }
       );
     },
+    getKnowledgeCount() {
+      DataService.post("get_knowledge_graph_count",
+          [this.selectedStockLeft],
+          (data) => {
+            this.knowledgeGraphCount = data;
+          });
+    }
   },
 };
 </script>
