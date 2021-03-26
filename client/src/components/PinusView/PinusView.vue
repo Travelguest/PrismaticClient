@@ -153,7 +153,7 @@ export default {
             context.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'))
           });
     },
-  
+
   }
 }
 </script>

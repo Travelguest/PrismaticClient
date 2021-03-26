@@ -65,7 +65,6 @@ class Model:
     """
     Initiation
     """
-
     # entrance get stock list
     def get_stock_list(self):
         stock_list = self.stock_list[['ts_code', 'name']].merge(
@@ -373,9 +372,14 @@ class Model:
 
     def query_stock_index_daily(self,
                                 stock_code='000538',
-                                index_code='market',
+                                index_type='market',
                                 start_date='2020-02-01',
                                 end_date='2020-04-30'):
+        if index_type == 'market':
+            index_code = '000001.SH'
+        else:
+            index_code = self.find_index_code(stock_code)
+
         columns = list([(item, index_code) for item in ['close', 'pct', 'log']])
         result = self.index_daily.loc[start_date:end_date][columns].round(5)
         return {
