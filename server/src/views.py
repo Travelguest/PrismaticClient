@@ -52,17 +52,21 @@ def get_business_tag_table():
     return json_dumps(response)
 
 
-@app.route('/get_correlation_matrix', methods=['GET'])
+@app.route('/get_correlation_matrix', methods=['POST'])
 def get_correlation_matrix():
-    corr_matrix = CORR.list_to_corr_matrix()
-    corr_matrix = CORR.two_phase_hierarchical_clustering(corr_matrix)
-    if corr_matrix is not False:
-        corr_matrix = {
-            'columns': corr_matrix[0],
-            'corr': corr_matrix[1],
-        }
-        # with open('../client/src/components/matrix.json', 'w+') as file:
-        #     simplejson.dump(corr_matrix, file)
+    post_data = request.data.decode()
+    corr_matrix = []
+    if post_data != "":
+        post_data = simplejson.loads(post_data)
+        corr_matrix = CORR.list_to_corr_matrix(year=post_data[0], stock_list=post_data[1])
+        corr_matrix = CORR.two_phase_hierarchical_clustering(corr_matrix)
+        if corr_matrix is not False:
+            corr_matrix = {
+                'columns': corr_matrix[0],
+                'corr': corr_matrix[1],
+            }
+            # with open('../client/src/components/matrix.json', 'w+') as file:
+            #     simplejson.dump(corr_matrix, file)
     return json_dumps(corr_matrix)
 
 

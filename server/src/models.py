@@ -112,14 +112,15 @@ class Model:
     def get_corr_clusters_one_year(self, year, left_threshold, right_threshold):
         print(f'Running cluster analysis for {year}')
         year = str(year)
-        corr = {}
         corr_matrix = self.get_corr_matrix_filtered(year, left_threshold, right_threshold)
         corr_graph = self.get_corr_graph(corr_matrix, left_threshold, right_threshold)
         corr_betweenness = self.get_betweenness_centrality(corr_graph)
-        corr_components = self.get_connected_components(corr_graph, corr_betweenness)
-        corr['betweenness'] = corr_betweenness
-        corr['components'] = corr_components
-        return corr
+        corr_nodes, corr_components = self.get_connected_components(corr_graph, corr_betweenness)
+        return {
+            'betweenness': corr_betweenness,
+            'nodes': corr_nodes,
+            'components': corr_components
+        }
 
     # Get the correlation filtered matrix
     def get_corr_matrix_filtered(self, year, left_threshold, right_threshold):
@@ -144,11 +145,13 @@ class Model:
         return nx.algorithms.centrality.betweenness_centrality(graph, endpoints=True, weight='weight')
 
     def get_connected_components(self, graph, sort_dict):
+        connected_components = sorted(nx.connected_components(graph), key=len, reverse=True)
+        component_dict = {node: i for i, components in enumerate(connected_components) for node in list(components)}
         sorted_components = []
-        for components in sorted(nx.connected_components(graph), key=len, reverse=True):
+        for components in connected_components:
             for node in sorted(list(components), key=lambda x: sort_dict[x], reverse=True):
                 sorted_components.append(node)
-        return sorted_components
+        return sorted_components, component_dict
 
     # Get business tag table
     def get_business_tag_table(self, left_threshold, right_threshold):
@@ -174,73 +177,22 @@ class Model:
             'concept': concept_tags.to_dict(orient='records')
         }
 
-    # Output to matrix view
-
-    def corr_community_detection(self,
-                                 method='pearson',
-                                 start_date='2020-01-01',
-                                 end_date='2020-06-30',
-                                 min_period=0.8):
-        # Default case for fast access
-        if self.query_codes == ['000652', '000538'] and start_date == '2020-01-01' and end_date == '2020-06-30':
-            self.cummunity = self.community_default
-            return
-
-        self.query_dates = [start_date, end_date]
-        self.method = method
-        # filter stock price by timeframe
-        stock_price = self.stock_daily_log.loc[start_date:end_date]
-        # filter stock price by 0.8*total trade days in the timeframe
-        trade_days = self.trade_cal.query('@start_date <= cal_date <= @end_date')['is_open'].sum() * min_period
-        trade_days_filter = [(~pd.isna(stock_price.close[column])).sum() > trade_days for column in
-                             stock_price.close.columns] * 2
-        stock_price = stock_price.transpose()[trade_days_filter].transpose()
-
-        # find individual correlation with other assets
-        selected_corr = []
-        for feature in self.features:
-            selected_stocks = [
-                stock_price[feature].corrwith(stock_price[feature][query_code], method=method, drop=True)
-                for query_code in self.query_codes
-            ]
-            selected_corr.append(pd.DataFrame(selected_stocks, index=self.query_codes).transpose())
-        self.cummunity = pd.concat(selected_corr, axis=1, keys=self.features)
-
-    def corr_community_filter(self,
-                              by='close',
-                              left_threshold=0.6,
-                              right_threshold=1.0):
-        corr_filtered = self.cummunity[by]
-        corr_filter_left = pd.eval(
-            '|'.join([f'(corr_filtered["{query_code}"]>={left_threshold})' for query_code in self.query_codes]))
-        corr_filtered = corr_filtered[corr_filter_left]
-        corr_filter_right = pd.eval(
-            '|'.join([f'(corr_filtered["{query_code}"]<={right_threshold})' for query_code in self.query_codes]))
-        corr_filtered = corr_filtered[corr_filter_right]
-        self.community = list(corr_filtered.index.values) if len(corr_filtered) != 0 else None
-        if self.community is None:
-            return False
-        else:
-            return self.stock_list[['ts_code', 'name']].merge(pd.Series(self.community, name='ts_code')).merge(
-                self.industry_list.query('level == "L1"')[['ts_code', 'industry_name']]).to_dict('records')
-
     '''
     Correlation matrix
     '''
-
     # entrance
     def list_to_corr_matrix(self,
-                            method='pearson',
-                            start_date='2020-01-01',
-                            end_date='2020-06-30'):
-        if self.community is None:
-            return None
-        self.query_dates = [start_date, end_date]
+                            year='2020',
+                            stock_list=None,
+                            method='pearson'):
+        if stock_list is None:
+            stock_list = ['000538', '000652']
+        self.query_dates = [year+'-01-01', year+'-12-31']
         self.method = method
         # filter stock price by timeframe and query_codes
-        stock_price = self.stock_daily_log.loc[start_date:end_date]
+        stock_price = self.stock_daily_log.loc[self.query_dates[0]:self.query_dates[1]]
         stock_price = stock_price.transpose().loc[
-            [(feature, index) for feature in self.features for index in self.community]].transpose()
+            [(feature, stock) for feature in self.features for stock in stock_list]].transpose()
 
         # find individual correlation with other assets
         selected_corr = []
@@ -303,7 +255,6 @@ class Model:
     '''
     Pinus view related
     '''
-
     def find_index_code(self, query_code='000652'):
         industry_code = self.industry_list.query(
             'ts_code == @query_code and level == "L1"').industry_code.to_list()[0]
@@ -377,14 +328,18 @@ class Model:
                                 end_date='2020-04-30'):
         if index_type == 'market':
             index_code = '000001.SH'
+            index_name = 'SSE Composite Index'
         else:
             index_code = self.find_index_code(stock_code)
+            index_name = index_code['name']
+            index_code = index_code['in_code']
 
         columns = list([(item, index_code) for item in ['close', 'pct', 'log']])
         result = self.index_daily.loc[start_date:end_date][columns].round(5)
         return {
             'date': list(result.index.astype(str)),
-            stock_code: self.stock_daily.loc[start_date:end_date][stock_code].round(5).to_dict(
-                orient='records'),
-            index_code: [{k[0]: v for k, v in record.items()} for record in result.to_dict(orient='records')]
+            'stock': self.stock_daily.loc[start_date:end_date][stock_code].round(5).to_dict(orient='records'),
+            'index': [{k[0]: v for k, v in record.items()} for record in result.to_dict(orient='records')],
+            'index_name': index_name,
+            'stock_name': stock_code
         }
