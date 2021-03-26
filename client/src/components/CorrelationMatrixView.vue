@@ -1,14 +1,37 @@
 <template>
-  <div id="matrix" style="height: 100%; width: 100%"></div>
+  <div>
+    <div id="matrix" style="height: 100%; width: 100%"></div>
+    <draggable
+      :list="matrixColumn"
+      :disabled="!enabled"
+      class="testClass"
+      item-key="name"
+      ghost-class="ghost"
+      :move="checkMove"
+      @start="dragging = true"
+      @end="dragging = false"
+    >
+      <template #item="{ element }">
+        <div class="list-group-item" :class="{ 'not-draggable': !enabled }">
+          {{ element }}
+        </div>
+      </template>
+    </draggable>
+  </div>
 </template>
 
 <script>
 import _ from "lodash";
 import * as d3 from "d3";
 
+import draggable from "vuedraggable"; //补充
+//let id = 1;
+
 export default {
   name: "CorrelationMatrixView",
-  components: {},
+  components: {
+    draggable, //补充
+  },
   props: {
     correlationMatrix: Object,
   },
@@ -51,6 +74,16 @@ export default {
       // colorScheme: d3.interpolateYlGnBu,
       // colorScheme: d3.interpolateYlGn,
       // colorScheme: d3.interpolateYlOrRd,
+
+      //补充
+      testList: [
+        { name: "John", id: 0 },
+        { name: "Joao", id: 1 },
+        { name: "Jean", id: 2 },
+      ],
+
+      dragging: false,
+      enabled: true,
     };
   },
   watch: {
@@ -59,13 +92,22 @@ export default {
     },
   },
   mounted() {
-    // console.log("矩阵数据:", this.correlationMatrix);
-    // console.log("col:", this.correlationMatrix.columns);
+    //console.log("矩阵数据:", this.correlationMatrix);
+    //console.log("col:", this.correlationMatrix.columns);
     // console.log("corr:", this.correlationMatrix.corr);
     this.initMatrix();
     this.renderMatrix();
   },
   methods: {
+    checkMove: function (e) {
+      //window.console.log("Future index: " + e.draggedContext.futureIndex);
+      //console.log(list);
+      window.console.log("List: ", e.relatedContext.list);
+      window.console.log("Element: ", e.draggedContext.element);
+      this.matrixColumn = e.relatedContext.list;
+      this.renderMatrix();
+    },
+
     initMatrix() {
       // Initialize svg
       // this.width = this.$el.clientWidth;
@@ -92,15 +134,17 @@ export default {
         .scaleSequential()
         .domain([-1, 1])
         .interpolator(this.colorScheme);
-        
+
+      var currentColumn = this.matrixColumn; //获取现在的数据
+
       let x = d3
         .scaleBand()
-        .domain(this.matrixColumn)
+        .domain(currentColumn)
         .padding(this.padding)
         .range([0, this.width - this.margin.right - this.margin.left]);
       let y = d3
         .scaleBand()
-        .domain(this.matrixColumn)
+        .domain(currentColumn)
         .padding(this.padding)
         .range([0, this.height - this.margin.bottom - this.margin.top]);
       //let r = (x(this.matrixColumn[1]) - x(this.matrixColumn[0])) / 2;
@@ -139,15 +183,15 @@ export default {
         .attr("y", (d) => y(d.row))
         .attr("width", x.bandwidth())
         .attr("height", y.bandwidth())
-        .style("fill", function(d){
-          if(d.col!=d.row) return colorScale(d.val);
+        .style("fill", function (d) {
+          if (d.col != d.row) return colorScale(d.val);
           else return "white";
         })
         .style("opacity", 1e-6)
         .transition()
         .style("opacity", 1);
 
-      cell//对角线上的矩形 涂白
+      cell //对角线上的矩形 涂白
         .filter((d) => d.col == d.row)
         .append("rect")
         .attr("x", function (d) {
@@ -181,7 +225,10 @@ export default {
       //pieChart
       let radius = x.bandwidth() / 2.75;
       let pie = d3.pie().value((d) => d);
-      let arc = d3.arc().innerRadius(x.bandwidth() / 3.25).outerRadius(radius);
+      let arc = d3
+        .arc()
+        .innerRadius(x.bandwidth() / 3.25)
+        .outerRadius(radius);
 
       let points = heatmapContainer
         .selectAll("g")
@@ -216,8 +263,11 @@ export default {
           this.$emit("selectedStockFromMatrixDiagonal", d.row);
         });
 
+      // eslint-disable-next-line vue/no-mutating-props
+      this.correlationMatrix.columns = this;
+
       pies
-      //.attr("class", "cell")
+        //.attr("class", "cell")
         .append("path")
         .attr("d", arc)
         .attr("fill", (d, i) => {
@@ -242,7 +292,6 @@ export default {
           } else return "white";
         })
         .style("stroke-width", 3);
-      
 
       let mouseover = function (_, d) {
         d3.selectAll(".cell")
@@ -268,10 +317,8 @@ export default {
               return "2 2";
             } else return "0";
           });
-          d3.selectAll(".cell")
-          .filter(
-            (k) => (k.col === d.col || k.row === d.row) && k.col == k.row
-          ) // when in the same row or column
+        d3.selectAll(".cell")
+          .filter((k) => (k.col === d.col || k.row === d.row) && k.col == k.row) // when in the same row or column
           .style("opacity", 0.3)
           .style("stroke-width", 0);
       };
@@ -284,9 +331,7 @@ export default {
             else return 0;
           });
         d3.selectAll(".cell")
-          .filter(
-            (k) => k.col == k.row
-          ) // when in the same row or column
+          .filter((k) => k.col == k.row) // when in the same row or column
           .style("opacity", 0.3)
           .style("stroke-width", 0);
       };
@@ -295,14 +340,9 @@ export default {
       d3.selectAll(".cell").on("mouseover", mouseover).on("mouseout", mouseout);
 
       // The diagonal cells
-
-      //cellRect.filter((k) => k.col === k.row).style("fill", "white");
-
-      d3.selectAll(".cell")
-        //.filter((k) => k.col !== k.row)
-        .on("click", (_, d) => {
-          this.$emit("selectedStockFromMatrix", d.row, d.col);
-        });
+      d3.selectAll(".cell").on("click", (_, d) => {
+        this.$emit("selectedStockFromMatrix", d.row, d.col);
+      });
 
       //barChart
       let yScale = d3
@@ -387,4 +427,32 @@ export default {
 
 
 <style scoped>
+.ghost {
+  opacity: 0.5;
+  background: #c8ebfb;
+}
+.testClass{
+  position:absolute;
+  top:550px;
+  right:80px;
+}
+.list-group-item {
+  display: inline;
+  /* position: relative; */
+  width: 50px;
+  height: 20px;
+  line-height: 3px;
+  font-size: 3px;
+  background: #777;
+  color: #fcfcfc;
+  margin: 4px;
+
+  /* display: flex; */
+  top: 0px;
+  font-weight: bold;
+}
+
+.not-draggable {
+  cursor: no-drop;
+}
 </style>

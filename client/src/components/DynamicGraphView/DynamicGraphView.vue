@@ -158,7 +158,7 @@ export default {
                 let path = [
                   {x: graphX[lastD](node), y:-graphHeight},
                   {x: graphX[lastD](node), y:-graphHeight+20},
-                  {x: graphX[d](node), y:-40},
+                  {x: graphX[d](node), y:-20},
                   {x: graphX[d](node), y:0}
                 ]
                 return d3.line()
@@ -225,7 +225,6 @@ export default {
                 .attr("class", "yAxis")
                 .attr("transform", `translate(${_this.distWidth},0)`)
                 .call(d3.axisRight(distY).ticks(3));
-            // .call(d3.axisRight(distY).ticks(3));
             // index area plot
             container
                 .append("path")
@@ -238,7 +237,6 @@ export default {
                 .append("g")
                 .selectAll('.stockLine')
                 .data(Object.entries(d[1]).filter((d) => d[0] !== 'sci'))
-                // .data(Object.entries(data[1]))
                 .enter()
                 .append('path')
                 .attr('class', 'stock-line')
