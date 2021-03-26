@@ -36,6 +36,8 @@
             :correlation-triangle-market-right="correlationTriangleMarketRight"
             :correlation-triangle-sector-left="correlationTriangleSectorLeft"
             :correlation-triangle-sector-right="correlationTriangleSectorRight"
+            :stock-a="selectedStockLeft"
+            :stock-b="selectedStockRight"
             :loading-triangle-market="loadingTriangleMarket"
             :loading-triangle-sector="loadingTriangleSector"
           />

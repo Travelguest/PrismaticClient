@@ -67,6 +67,7 @@
               :period-range="periodRange"
               :correlation-triangle="showBottomPinusData"
               :loading-triangle="loadingTriangleMarket"
+              v-on:updateBrush="handleUpdateBrush"
             ></PrismView>
           </a-row>
         </div>
@@ -105,6 +106,10 @@ export default {
     correlationTriangleSectorLeft: Object,
     correlationTriangleSectorRight: Object,
 
+    //股票A,B
+    stockA: String,
+    stockB: String,
+
     loadingTriangleMarket: Boolean,
     loadingTriangleSector: Boolean,
   },
@@ -128,6 +133,8 @@ export default {
       showBottomPinusTitle: "",
       start_date: "2010-02-01",
       end_date: "2020-04-30",
+      stock_code:this.stockA,
+      index_type:'',
     };
   },
   computed: {},
@@ -154,8 +161,45 @@ export default {
         this.showBottomPinusTitle = "";
       }
     },
-    handleUpdateBrush(start, end) {
-      console.log("得到start,end:", start, end);
+    handleUpdateBrush(start, end, title) {
+      this.start_date = start;
+      this.end_date = end;
+      console.log("得到start,end:", start, end,title,this.stockA,this.stockB);
+      if (title === "Stock") {
+        // can only get AB
+        DataService.post(
+          "get_stock_daily",
+          [[this.stockA,this.stockB], this.start_date, this.end_date],
+          (data) => {
+            // this.businessTag = data;
+            console.log("Stock得到的数据：", data);
+          }
+        );
+      } else {
+        console.log("不是Stock")
+        if(title === "MarketLeft" || title === "SectorLeft") {
+          this.stock_code = this.stockA;
+        }
+        else if(title === "MarketRight" || title === "SectorRight") {
+           this.stock_code = this.stockB;
+        }
+        if(title === "SectorLeft" || title === "SectorRight") {
+          this.index_type = "industry";
+        }
+        else {
+          this.index_type = "market";
+        }
+        console.log("传入：",this.stock_code, this.index_type, this.start_date, this.end_date);
+        // can get AM, AI, BI, BM
+        DataService.post(
+          "get_stock_index_daily",
+          [this.stock_code, this.index_type, this.start_date, this.end_date],
+          (data) => {
+            // this.businessTag = data;
+            console.log("其余的得到的数据：",data);
+          }
+        );
+      }
     },
     handleBrush() {
       // can only get AB

@@ -44,17 +44,16 @@ export default {
   },
   watch: {
     correlationTriangle: function () {
-      // console.log(this.id);
+      console.log("correlationTriangle改变了:", this.correlationTriangle);
       this.bindPinus();
       this.initTooltip();
-      
 
       let _this = this;
       let t = d3.timer(function (elapsed) {
         _this.renderPinus();
         if (elapsed > 2000) t.stop();
       });
-    this.renderArea();
+      this.renderArea();
     },
   },
   computed: {
@@ -103,26 +102,17 @@ export default {
     },
   },
   mounted() {
-    // console.log("correlationTriangle:", this.correlationTriangle);
     this.initPinus();
   },
-  emits:["updateBrush"],
+  emits: ["updateBrush"],
   methods: {
     updateDate({ selection }) {
       if (selection) {
-        let start = this.xScale
-          .invert(selection[0])
-          .toISOString()
-          .slice(0, 10)
-          // .replace(/-/g, "");
-        let end = this.xScale
-          .invert(selection[1])
-          .toISOString()
-          .slice(0, 10)
-          // .replace(/-/g, "");
+        let start = this.xScale.invert(selection[0]).toISOString().slice(0, 10);
+        let end = this.xScale.invert(selection[1]).toISOString().slice(0, 10);
         if (start !== end) {
-          console.log("start,end",start,end);
-          this.$emit("updateBrush", start, end);
+          // const queryCodes = this.correlationTriangle.name.split(" against ");
+          this.$emit("updateBrush", start, end, this.title);
         }
       }
     },
@@ -176,9 +166,7 @@ export default {
         .domain([-1, 1])
         .interpolator(this.colorScheme);
 
-      let join = this.custom
-        .selectAll("custom.rect")
-        .data(this.matrixCorr);
+      let join = this.custom.selectAll("custom.rect").data(this.matrixCorr);
       let enterSel = join
         .enter()
         .append("custom")
@@ -222,7 +210,7 @@ export default {
     renderArea() {
       this.date = this.matrixColumn.map((d) => new Date(d));
       this.svg.selectAll("g").remove();
-      
+
       this.svg
         .append("g")
         .attr("class", "xAxis")
@@ -232,7 +220,7 @@ export default {
             // .ticks(d3.timeMonth.every(1))
             .tickFormat(d3.timeFormat("%b"))
         )
-        .attr("transform", `translate(0,${this.height -6})`)
+        .attr("transform", `translate(0,${this.height - 6})`)
         .select(".domain")
         .remove();
       this.svg
@@ -254,14 +242,16 @@ export default {
         .attr("height", "15")
         .style("fill", "#E9E9E9")
         .attr("transform", `translate(0,${this.height - 6})`);
-      
+
       //
 
-      let brush = d3.brushX().extent([
-        [0, 0],
-        [this.innerWidth, 38],
-      ])
-      .on("end", this.updateDate);
+      let brush = d3
+        .brushX()
+        .extent([
+          [0, 0],
+          [this.innerWidth, 38],
+        ])
+        .on("end", this.updateDate);
       this.svg.select(".brush").remove();
       this.svg
         .append("g")
