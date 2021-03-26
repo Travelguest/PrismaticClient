@@ -19,6 +19,7 @@ export default {
     id: String,
     loadingTriangle: Boolean,
     correlationTriangle: Object,
+    title: String,
   },
 
   data() {
@@ -43,15 +44,17 @@ export default {
   },
   watch: {
     correlationTriangle: function () {
+      // console.log(this.id);
       this.bindPinus();
       this.initTooltip();
-      this.renderArea();
+      
 
       let _this = this;
       let t = d3.timer(function (elapsed) {
         _this.renderPinus();
         if (elapsed > 2000) t.stop();
       });
+    this.renderArea();
     },
   },
   computed: {
@@ -103,7 +106,26 @@ export default {
     // console.log("correlationTriangle:", this.correlationTriangle);
     this.initPinus();
   },
+  emits:["updateBrush"],
   methods: {
+    updateDate({ selection }) {
+      if (selection) {
+        let start = this.xScale
+          .invert(selection[0])
+          .toISOString()
+          .slice(0, 10)
+          // .replace(/-/g, "");
+        let end = this.xScale
+          .invert(selection[1])
+          .toISOString()
+          .slice(0, 10)
+          // .replace(/-/g, "");
+        if (start !== end) {
+          console.log("start,end",start,end);
+          this.$emit("updateBrush", start, end);
+        }
+      }
+    },
     initPinus() {
       // Initialize canvas
       // this.width = this.$el.clientWidth;
@@ -111,8 +133,6 @@ export default {
       this.width = 220;
       this.height = 220;
       // console.log("width height:",this.width,this.height);
-
-      this.date = this.matrixColumn.map((d) => new Date(d));
 
       this.canvas = d3
         .select(`#pinus_${this.id}`)
@@ -158,7 +178,7 @@ export default {
 
       let join = this.custom
         .selectAll("custom.rect")
-        .data(this.correlationTriangle.corr);
+        .data(this.matrixCorr);
       let enterSel = join
         .enter()
         .append("custom")
@@ -200,17 +220,19 @@ export default {
       join.exit().transition().attr("width", 0).attr("height", 0).remove();
     },
     renderArea() {
+      this.date = this.matrixColumn.map((d) => new Date(d));
       this.svg.selectAll("g").remove();
+      
       this.svg
         .append("g")
         .attr("class", "xAxis")
         .call(
           d3
             .axisBottom(this.xScale)
-            .ticks(d3.timeMonth.every(1))
+            // .ticks(d3.timeMonth.every(1))
             .tickFormat(d3.timeFormat("%b"))
         )
-        .attr("transform", `translate(0,${this.height - 6})`)
+        .attr("transform", `translate(0,${this.height -6})`)
         .select(".domain")
         .remove();
       this.svg
@@ -232,12 +254,15 @@ export default {
         .attr("height", "15")
         .style("fill", "#E9E9E9")
         .attr("transform", `translate(0,${this.height - 6})`);
+      
+      //
 
       let brush = d3.brushX().extent([
         [0, 0],
         [this.innerWidth, 38],
-      ]);
-      // .on("end", this.updateDate);
+      ])
+      .on("end", this.updateDate);
+      this.svg.select(".brush").remove();
       this.svg
         .append("g")
         .attr("class", "brush")
@@ -250,7 +275,7 @@ export default {
         .append("text")
         .attr("x", 10)
         .attr("y", 20)
-        .text(this.id)
+        .text(this.title)
         .style("font-size", "20px");
     },
     renderPinus() {
@@ -302,6 +327,7 @@ export default {
         }
         // console.log("x,y", x, y);
         if (x && y) {
+          // console.log(d3.select(`#tooltip_${id}`));
           d3.select(`#tooltip_${id}`)
             .style("opacity", 0.8)
             .style("top", mouseY + 5 + "px")

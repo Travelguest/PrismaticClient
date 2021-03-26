@@ -52,7 +52,6 @@ export default {
       colorScheme: d3.interpolateRdYlGn,
       // colorScheme: d3.interpolateYlGn,
       // colorScheme: d3.interpolateYlOrRd,
-
     }
   },
   watch: {
@@ -89,7 +88,6 @@ export default {
       this.custom = d3.select(document.createElement('custom'));
 
       this.bindPinus();
-
 
       let _this = this;
       let t = d3.timer(function(elapsed) {
@@ -162,18 +160,4 @@ export default {
 
 
 <style scoped>
-.tooltip {
-  position: absolute;
-  display: inline-block;
-  padding: 10px;
-  /*font-family: 'Open Sans' sans-serif;*/
-  width: 200px;
-  height: 85px;
-  background-color: #fff;
-  border: 1px solid #999;
-  border-radius: 2px;
-  pointer-events: none;
-  opacity: 0;
-  z-index: 1;
-}
 </style>

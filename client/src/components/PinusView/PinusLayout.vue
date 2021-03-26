@@ -52,15 +52,18 @@
         <div>
           <a-row class="pinus_view_switch_two">
             <PrismView
-              :id="showTopPinusID"
+              :id="'topDetail'"
+              :title="showTopPinusTitle"
               :period-range="periodRange"
               :correlation-triangle="showTopPinusData"
               :loading-triangle="loadingTriangleMarket"
+              v-on:updateBrush="handleUpdateBrush"
             ></PrismView>
           </a-row>
           <a-row class="pinus_view_switch_two">
             <PrismView
-              :id="showBottomPinusID"
+              :id="'bottomDetail'"
+              :title="showBottomPinusTitle"
               :period-range="periodRange"
               :correlation-triangle="showBottomPinusData"
               :loading-triangle="loadingTriangleMarket"
@@ -68,7 +71,14 @@
           </a-row>
         </div>
       </a-col>
-      <a-col :span="17">LineChart</a-col>
+      <a-col :span="17">
+        <a-row>
+          <LineChart> </LineChart>
+        </a-row>
+        <a-row>
+          <LineChart> </LineChart>
+        </a-row>
+      </a-col>
     </a-row>
   </div>
 </template>
@@ -76,12 +86,15 @@
 <script>
 import PinusView from "@/components/PinusView/PinusView";
 import PrismView from "@/components/PinusView/PrismView";
+import LineChart from "@/components/PinusView/LineChart";
+import DataService from "@/utils/data-service";
 
 export default {
   name: "PinusLayout",
   components: {
     PinusView,
     PrismView,
+    LineChart,
   },
   props: {
     periodRange: Array,
@@ -97,17 +110,24 @@ export default {
   },
   data() {
     return {
-      showMap: {
-        MarketLeft: false,
-        SectorLeft: false,
-        Stock: false,
-        SectorRight: false,
-        MarketRight: false,
+      pinusDataMap: {
+        MarketLeft: this.correlationTriangleMarketLeft,
+        SectorLeft: this.correlationTriangleSectorLeft,
+        Stock: this.correlationTriangleStock,
+        SectorRight: this.correlationTriangleSectorRight,
+        MarketRight: this.correlationTriangleMarketRight,
       },
-      showTopPinusData: this.correlationTriangleMarketLeft,
-      showBottomPinusData: this.correlationTriangleMarketRight,
-      showTopPinusID: "MarketLeftDetail",
-      showBottomPinusID: "MarketRightDetail",
+      showMap: {
+        top: "",
+        bottom: "",
+      },
+      //传给Prism的信息
+      showTopPinusData: null,
+      showBottomPinusData: null,
+      showTopPinusTitle: "",
+      showBottomPinusTitle: "",
+      start_date: "2010-02-01",
+      end_date: "2020-04-30",
     };
   },
   computed: {},
@@ -116,48 +136,51 @@ export default {
   mounted() {},
   methods: {
     handleClick(id) {
-      this.showMap[id] = !this.showMap[id];
-      console.log(id);
-      //前两个画图
-      let cnt = 0;
-      for (let key in this.showMap) {
-        if (this.showMap[key]) {
-          cnt++;
-          if (cnt === 1) {
-            if (key === "MarketLeft") {
-              this.showTopPinusData = this.correlationTriangleMarketLeft;
-            //   this.showTopPinusID = "MarketLeft";
-            } else if (key === "SectorLeft") {
-              this.showTopPinusData = this.correlationTriangleSectorLeft;
-            //   this.showTopPinusID = "SectorLeft";
-            } else if (key === "Stock") {
-              this.showTopPinusData = this.correlationTriangleStock;
-            //   this.showTopPinusID = "Stock";
-            } else if (key === "SectorRight") {
-              this.showTopPinusData = this.correlationTriangleSectorRight;
-            //   this.showTopPinusID = "SectorRight";
-            } else {
-              this.showTopPinusData = this.correlationTriangleMarketRight;
-            //   this.showTopPinusID = "MarketRight";
-            }
-            this.showTopPinusID = key+"Detail";
-          } else if (cnt === 2) {
-            if (key === "MarketLeft") {
-              this.showBottomPinusData = this.correlationTriangleMarketLeft;
-             
-            } else if (key === "SectorLeft") {
-              this.showBottomPinusData = this.correlationTriangleSectorLeft;
-            } else if (key === "Stock") {
-              this.showBottomPinusData = this.correlationTriangleStock;
-            } else if (key === "SectorRight") {
-              this.showBottomPinusData = this.correlationTriangleSectorRight;
-            } else {
-              this.showBottomPinusData = this.correlationTriangleMarketRight;
-            }
-             this.showBottomPinusID = key + "Detail";
-          }
-        }
+      if (!this.showMap.top) {
+        this.showMap.top = id;
+        this.showTopPinusData = this.pinusDataMap[id];
+        this.showTopPinusTitle = id;
+      } else if (id === this.showMap.top) {
+        this.showTopPinusData = null;
+        this.showMap.top = "";
+        this.showTopPinusTitle = "";
+      } else if (!this.showMap.bottom) {
+        this.showMap.bottom = id;
+        this.showBottomPinusData = this.pinusDataMap[id];
+        this.showBottomPinusTitle = id;
+      } else if (id === this.showMap.bottom) {
+        this.showBottomPinusData = null;
+        this.showMap.bottom = "";
+        this.showBottomPinusTitle = "";
       }
+    },
+    handleUpdateBrush(start, end) {
+      console.log("得到start,end:", start, end);
+    },
+    handleBrush() {
+      // can only get AB
+      DataService.post(
+        "get_stock_daily",
+        [
+          [this.stock_code_left, this.stock_code_right],
+          this.start_date,
+          this.end_date,
+        ],
+        (data) => {
+          // this.businessTag = data;
+          console.log(data);
+        }
+      );
+
+      // can get AM, AI, BI, BM
+      DataService.post(
+        "get_stock_index_daily",
+        [this.stock_code, this.index_type, this.start_date, this.end_date],
+        (data) => {
+          // this.businessTag = data;
+          console.log(data);
+        }
+      );
     },
   },
 };

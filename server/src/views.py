@@ -160,3 +160,27 @@ def get_corr_tri_stock():
         # with open(f'../client/src/components/pinus_stock_{post_data[0]}.json', 'w+') as file:
         #     simplejson.dump(response, file)
     return json_dumps(response)
+
+
+@app.route('/get_stock_daily', methods=['POST'])
+def get_stock_daily():
+    post_data = request.data.decode()
+    response = {}
+    if post_data != "":
+        post_data = simplejson.loads(post_data)
+        response = CORR.query_stock_daily(post_data[0], post_data[1], post_data[2])
+        # with open(f'../client/src/components/pinus_stock_{post_data[0]}.json', 'w+') as file:
+        #     simplejson.dump(response, file)
+    return json_dumps(response)
+
+
+@app.route('/get_stock_index_daily', methods=['POST'])
+def get_stock_index_daily():
+    post_data = request.data.decode()
+    response = {}
+    if post_data != "":
+        post_data = simplejson.loads(post_data)
+        response = CORR.query_stock_index_daily(post_data[0], post_data[1], post_data[2], post_data[3])
+        # with open(f'../client/src/components/pinus_stock_{post_data[0]}.json', 'w+') as file:
+        #     simplejson.dump(response, file)
+    return json_dumps(response)
