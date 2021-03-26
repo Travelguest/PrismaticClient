@@ -73,7 +73,7 @@
         </div>
       </a-col>
       <a-col :span="17">
-        <a-row>
+        <a-row style="height: 260px; width: 100%">
           <LineChart
             v-if="isShowTopLineChart"
             :id="'top'"
@@ -84,7 +84,7 @@
           >
           </LineChart>
         </a-row>
-        <a-row>
+        <a-row style="height: 260px; width: 100%">
           <LineChart
             v-if="isShowBottomLineChart"
             :id="'bottom'"
@@ -169,6 +169,10 @@ export default {
       this.showBottomPinusData = null;
       this.showTopPinusTitle = "";
       this.showBottomPinusTitle = "";
+      this.showMap.top="";
+      this.showMap.bottom="";
+      this.isShowTopLineChart = false;
+      this.isShowBottomLineChart = false;
     },
   },
   mounted() {},
@@ -184,13 +188,13 @@ export default {
     handleClick(id) {
       if (!this.showMap.top) {
         this.showMap.top = id;
-
         this.showTopPinusData = this.pinusDataMap(id);
         this.showTopPinusTitle = id;
       } else if (id === this.showMap.top) {
         this.showTopPinusData = null;
         this.showMap.top = "";
         this.showTopPinusTitle = "";
+        this.isShowTopLineChart = false;
       } else if (!this.showMap.bottom) {
         this.showMap.bottom = id;
         this.showBottomPinusData = this.pinusDataMap(id);
@@ -199,6 +203,7 @@ export default {
         this.showBottomPinusData = null;
         this.showMap.bottom = "";
         this.showBottomPinusTitle = "";
+        this.isShowBottomLineChart = false;
       }
     },
     handleUpdateBrush(start, end, title) {
@@ -220,12 +225,12 @@ export default {
           (data) => {
             // this.businessTag = data;
             console.log("Stock得到的数据：", data);
-            if (title === this.showTopPinusTitle) {
+            if (title === this.showTopPinusTitle) { //如果是top触发的Brush
               console.log("Stock在Top");
               this.topLineChartData = data;
-              this.topLineChartTitle = title;
+              this.topLineChartTitle = title;  
               this.isShowTopLineChart = true;
-            } else if (title === this.showBottomPinusData) {
+            } else if (title === this.showBottomPinusTitle) { //bottom触发的Brush
               console.log("Stock在Bottom");
               this.bottomLineChartData = data;
               this.bottomLineChartTitle = title;
@@ -244,20 +249,30 @@ export default {
         } else {
           this.index_type = "market";
         }
-        console.log(
-          "不是Stock,传入：",
-          this.stock_code,
-          this.index_type,
-          this.start_date,
-          this.end_date
-        );
+        // console.log(
+        //   "不是Stock,传入：",
+        //   this.stock_code,
+        //   this.index_type,
+        //   this.start_date,
+        //   this.end_date
+        // );
         // can get AM, AI, BI, BM
         DataService.post(
           "get_stock_index_daily",
           [this.stock_code, this.index_type, this.start_date, this.end_date],
           (data) => {
-            // this.businessTag = data;
             console.log(`其余的${title}得到的数据：`, data);
+            if (title === this.showTopPinusTitle) {
+              console.log(`${title}在Top`);
+              this.topLineChartData = data;
+              this.topLineChartTitle = title;
+              this.isShowTopLineChart = true;
+            } else if (title === this.showBottomPinusTitle) {
+              console.log(`${title}在Bottom`);
+              this.bottomLineChartData = data;
+              this.bottomLineChartTitle = title;
+              this.isShowBottomLineChart = true;
+            }
           }
         );
       }

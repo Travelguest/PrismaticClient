@@ -1,5 +1,12 @@
 <template>
   <div class="container">
+    <div>
+      <a-menu mode="horizontal" @click="handleSwitchClick" style="width: 300px">
+        <a-menu-item key="close">close</a-menu-item>
+        <a-menu-item key="pct">pct</a-menu-item>
+        <a-menu-item key="log">log</a-menu-item>
+      </a-menu>
+    </div>
     <div :id="`line_chart_${id}`"></div>
   </div>
 </template>
@@ -12,7 +19,7 @@ export default {
   props: {
     id: String,
     title: String,
-    stockA: String,
+    stockA: String, //stockA的ID
     stockB: String,
     preprocessedData: Object,
   },
@@ -20,32 +27,33 @@ export default {
   data() {
     return {
       svg: null,
-      margin: { top: 10, right: 40, bottom: 30, left: 35 },
+      margin: { top: 30, right: 40, bottom: 30, left: 35 },
       width: 1055,
-      height: 259,
+      height: 212,
       date: null,
-      stockDataA: null,
-      stockDataB: null,
-
-      //   date: Object.keys(market_nav_date),
-      //   marketNav: Object.values(market_nav_date),
-      //   marketShares: Object.values(market_number_date),
-      keys: ["Fund Market Total Asset", "Fund Market NAV"],
+      dataA: null,
+      dataB: null,
+      keys: [],
+      nowTag: "close",
     };
   },
   watch: {
     preprocessedData: function () {
-      console.log("title,a,b:", this.title, this.stockA, this.stockB);
-      console.log("Data:", this.preprocessedData);
+      //第x(x>1)次刷触发的事件
+      // console.log("title,a,b:", this.title, this.stockA, this.stockB);
+      // console.log("Data:", this.preprocessedData);
       if (this.title === "Stock") {
-        this.dataInit();
-        console.log("预处理后的", this.stockDataA, this.stockDataB);
-        this.renderUpdate();
+        this.dataA = this.preprocessedData[this.stockA];
+        this.dataB = this.preprocessedData[this.stockB];
+      } else {
+        this.dataA = this.preprocessedData.index;
+        this.dataB = this.preprocessedData.stock;
       }
+      this.renderUpdate();
     },
   },
   mounted: function () {
-    this.dataInit();
+    console.log(this.title, this.preprocessedData);
     this.renderInit();
     this.renderUpdate();
   },
@@ -68,11 +76,17 @@ export default {
       return d3.scaleLinear().range([this.innerHeight, 0]).nice();
     },
     linePath() {
-      return d3
+      let path = d3
         .line()
         .curve(d3.curveCatmullRom)
-        .x((d, i) => this.xScale(this.date[i]))
-        .y((d) => this.yScale(d.close));
+        .x((d, i) => this.xScale(this.date[i]));
+      if (this.nowTag === "close") {
+        return path.y((d) => this.yScale(d.close));
+      } else if (this.nowTag === "pct") {
+        return path.y((d) => this.yScale(d.pct));
+      } else {
+        return path.y((d) => this.yScale(d.log));
+      }
     },
     colorScale() {
       return d3
@@ -89,15 +103,27 @@ export default {
     },
   },
   methods: {
-    dataInit() {
-      this.date = this.preprocessedData.date.map((d) => new Date(d));
-      if (this.title === "Stock") {
-        this.stockDataA = this.preprocessedData[this.stockA];
-        this.stockDataB = this.preprocessedData[this.stockB];
-      }
+    handleSwitchClick(event) {
+      //切换事件
+      console.log(event.key);
+      this.nowTag = event.key;
+      this.renderUpdate();
     },
     renderInit() {
       //date数据处理
+      this.date = this.preprocessedData.date.map((d) => new Date(d));
+      if (this.title === "Stock") {
+        this.keys = [this.stockA, this.stockB];
+        this.dataA = this.preprocessedData[this.stockA];
+        this.dataB = this.preprocessedData[this.stockB];
+      } else {
+        this.keys = [
+          this.preprocessedData.index_name,
+          this.preprocessedData.stock_name,
+        ];
+        this.dataA = this.preprocessedData.index; //其余的dataA存储index
+        this.dataB = this.preprocessedData.stock; //其余的dataB存储stock
+      }
 
       this.svg = d3
         .select(`#line_chart_${this.id}`)
@@ -109,8 +135,7 @@ export default {
         .attr("transform", `translate(${this.margin.left},${this.margin.top})`);
     },
     renderUpdate() {
-      console.log("renderUpdate了！", this.svg);
-      // this.svg.selectAll("g").remove();
+      this.svg.selectAll("g").remove();
       // Add X axis
       this.svg
         .append("g")
@@ -122,7 +147,6 @@ export default {
         .attr("transform", `translate(0,${this.innerHeight})`);
       // .select(".domain")
       // .remove();
-
       this.svg
         .select(".xAxis")
         .selectAll(".tick text")
@@ -130,60 +154,44 @@ export default {
         .style("font-family", "PingFangSC-Regular")
         .style("letter-spacing", "-0.08px")
         .style("color", "#6C7B8A");
-      // this.svg
-      //   .append("g")
-      //   .attr("class", "yAxis")
-      //   .call(
-      //     d3.axisLeft(this.yScale).tickFormat(d3.format(".0%")).ticks(5)
-      //     // .ticks(d3.timeYear.every(2))
-      //     // .tickValues([2010,2020])
-      //     // .tickSize(this.innerHeight / 2 - 3)
-      //   )
+
+      //画y轴——左边dataA的
+      if (this.nowTag === "close") {
+        this.yScale.domain(d3.extent(this.dataA, (d) => d.close));
+      } else if (this.nowTag === "pct") {
+        this.yScale.domain(d3.extent(this.dataA, (d) => d.pct));
+      } else {
+        this.yScale.domain(d3.extent(this.dataA, (d) => d.log));
+      }
+
+      this.svg.append("g").attr("id", "yAxis_A").call(
+        d3.axisLeft(this.yScale)
+        // .tickFormat(d3.format("~s"))
+        // .ticks(5)
+        // .tickFormat(d3.format(".0%")).ticks(5)
+        // .ticks(d3.timeYear.every(2))
+        // .tickValues([2010,2020])
+        // .tickSize(this.innerHeight / 2 - 3)
+      );
       // .select(".domain")
       // .remove();
-
-      // this.svg
-      //   .select(".yAxis")
-      //   .selectAll(".tick text")
-      //   .style("font-family", "Helvetica")
-      //   .style("font-size", "10px")
-      //   .style("color", "#6C7B8A");
-
-      let curveChart = this.svg.append("g");
-
-      //market shares
-      //画y轴
-      this.yScale.domain(d3.extent(this.stockDataA, (d) => d.close));
       this.svg
-        .append("g")
-        .attr("id", "yAxis_Stock_A")
-        .call(
-          d3.axisLeft(this.yScale)
-          // .tickFormat(d3.format("~s"))
-          // .ticks(5)
-          // .tickFormat(d3.format(".0%")).ticks(5)
-          // .ticks(d3.timeYear.every(2))
-          // .tickValues([2010,2020])
-          // .tickSize(this.innerHeight / 2 - 3)
-        )
-        .select(".domain")
-        .remove();
-      this.svg
-        .select("#yAxis_Stock_A")
+        .select("#yAxis_A")
         .selectAll(".tick text")
         .style("font-family", "Helvetica")
         .style("font-size", "10px")
         .style("color", "#6C7B8A");
 
+      let curveChart = this.svg.append("g");
       curveChart
         .append("g")
         .append("path")
-        .attr("class", "line_path_stock_A")
-        .attr("d", this.linePath(this.stockDataA))
+        .attr("class", "line_path_A")
+        .attr("d", this.linePath(this.dataA))
         .attr("fill", "none")
         .attr("stroke-width", 1.5)
-        // .attr("stroke", "rgba(80,161,255,0.30)");
-        .attr("stroke", "red");
+        .attr("stroke", "rgba(80,161,255,0.30)");
+      // .attr("stroke", "red");
 
       //面积图
       // curveChart
@@ -195,20 +203,26 @@ export default {
       //   .style("fill", "rgba(80,161,255,0.30)")
       //   .attr("d", this.area);
 
-      //marketNav
-      this.yScale.domain(d3.extent(this.stockDataB, (d) => d.close));
+      if (this.nowTag === "close") {
+        this.yScale.domain(d3.extent(this.dataB, (d) => d.close));
+      } else if (this.nowTag === "pct") {
+        this.yScale.domain(d3.extent(this.dataB, (d) => d.pct));
+      } else {
+        this.yScale.domain(d3.extent(this.dataB, (d) => d.log));
+      }
+      // this.yScale.domain(d3.extent(this.dataB, (d) => d.close));
       this.svg
         .append("g")
-        .attr("id", "yAxis_Stock_B")
+        .attr("id", "yAxis_B")
         .call(
           d3.axisRight(this.yScale)
           // .ticks(6)
         )
-        .attr("transform", `translate(${this.innerWidth},0)`)
-        .select(".domain")
-        .remove();
+        .attr("transform", `translate(${this.innerWidth},0)`);
+      // .select(".domain")
+      // .remove();
       this.svg
-        .select("#yAxis_Stock_B")
+        .select("#yAxis_B")
         .selectAll(".tick text")
         .style("font-family", "Helvetica")
         .style("font-size", "10px")
@@ -217,37 +231,37 @@ export default {
       curveChart
         .append("g")
         .append("path")
-        .attr("class", "line_path_stock_B")
-        .attr("d", this.linePath(this.stockDataB))
+        .attr("class", "line_path_B")
+        .attr("d", this.linePath(this.dataB))
         .attr("fill", "none")
         .attr("stroke-width", 2)
         .attr("stroke", "#FE6AAC");
 
-      //legend
-      // this.svg
-      //   .selectAll(".legend")
-      //   .data(this.keys)
-      //   .enter()
-      //   .append("circle")
-      //   .attr("cx", (d, i) => 15 + i * 230)
-      //   .attr("cy", -49)
-      //   .attr("r", "6px")
-      //   .style("fill", (d) => this.colorScale(d));
+      // legend
+      this.svg
+        .selectAll(".legend")
+        .data(this.keys)
+        .enter()
+        .append("circle")
+        .attr("cx", (d, i) => 700 + i * 180)
+        .attr("cy", -10)
+        .attr("r", "6px")
+        .style("fill", (d) => this.colorScale(d));
 
-      // this.svg
-      //   .selectAll(".labels")
-      //   .data(this.keys)
-      //   .enter()
-      //   .append("text")
-      //   .attr("x", (d, i) => 30 + i * 230)
-      //   .attr("y", -48)
-      //   .style("fill", "#9F9F9F")
-      //   .style("font-family", "PingFangSC-Medium")
-      //   .style("font-size", "14px")
-      //   .style("letter-spacing", "-0.18px")
-      //   .text((d) => d)
-      //   .attr("text-anchor", "left")
-      //   .style("alignment-baseline", "middle");
+      this.svg
+        .selectAll(".labels")
+        .data(this.keys)
+        .enter()
+        .append("text")
+        .attr("x", (d, i) => 715 + i * 180)
+        .attr("y", -8)
+        .style("fill", "#9F9F9F")
+        .style("font-family", "PingFangSC-Medium")
+        .style("font-size", "14px")
+        .style("letter-spacing", "-0.18px")
+        .text((d) => d)
+        .attr("text-anchor", "left")
+        .style("alignment-baseline", "middle");
 
       //删除刻度线
       // this.svg.selectAll(".tick line").remove();
@@ -270,30 +284,10 @@ export default {
 .container {
   height: 260px;
   width: 100%;
-  border: 1px solid red;
+  /* border: 1px solid red; */
 }
 /* #line_chart {
   height: 253px;
   width: 100%;
 } */
-.funds_market_style {
-  margin-top: 3%;
-  margin-bottom: 1%;
-}
-.funds_market_style text {
-  font-family: "PingFangSC-Semibold";
-  font-size: 19px;
-  height: 32px;
-  font-weight: 800;
-  color: #185bbd;
-  letter-spacing: 0;
-  margin-left: 25px;
-}
-.funds_market_style .menu_icon {
-  position: relative;
-  color: #185bbd;
-  font-size: 23px;
-  bottom: 4px;
-  left: 20px;
-}
 </style>
