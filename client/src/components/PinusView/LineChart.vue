@@ -10,8 +10,6 @@ import * as d3 from "d3";
 export default {
   name: "LineChart",
   props: {
-    start: Number,
-    end: Number,
   },
   components: {},
   data() {
@@ -20,7 +18,6 @@ export default {
       margin: { top: 70, right: 30, bottom: 30, left: 55 },
       width: 520,
       height: 253,
-      isSelf: true,
       //   date: Object.keys(market_nav_date),
       //   marketNav: Object.values(market_nav_date),
       //   marketShares: Object.values(market_number_date),
@@ -28,14 +25,6 @@ export default {
     };
   },
   watch: {
-    start: function () {
-      this.isSelf = false;
-      this.updateTimeBrush();
-    },
-    end: function () {
-      this.isSelf = false;
-      this.updateTimeBrush();
-    },
   },
   mounted: function () {
     // this.renderInit();
@@ -81,43 +70,9 @@ export default {
     },
   },
   methods: {
-    updateTimeBrush() {
-      //Time Brush
-      let brush = d3
-        .brushX()
-        .extent([
-          [0, -this.margin.top + 65],
-          [this.innerWidth, this.innerHeight],
-        ])
-        .on("end", this.updateDate);
-      this.svg.select(".brush").remove();
-      this.svg
-        .append("g")
-        .attr("class", "brush")
-        .call(brush)
-        .call(brush.move, [this.start, this.end]);
-    },
-    updateDate({ selection }) {
-      if (selection && this.isSelf) {
-        let start = this.xScale
-          .invert(selection[0])
-          .toISOString()
-          .slice(0, 10)
-          .replace(/-/g, "");
-        let end = this.xScale
-          .invert(selection[1])
-          .toISOString()
-          .slice(0, 10)
-          .replace(/-/g, "");
-        if (start !== end) {
-          this.$emit("updateBrush", start, end, selection[0], selection[1]);
-        }
-      }
-      this.isSelf = true;
-
-      // this.svg.select(".brush").call(this.brush.move, null);  //情况brush后会报错，但是不影响
-    },
+   
     renderInit() {
+      //date数据处理
       this.date = this.date.map(
         (d) =>
           new Date(
@@ -138,7 +93,9 @@ export default {
       this.svg
         .append("g")
         .attr("class", "xAxis")
-        .call(d3.axisBottom(this.xScale).ticks(d3.timeYear.every(1), "%Y"))
+        .call(d3.axisBottom(this.xScale)
+        // .ticks(d3.timeYear.every(1), "%Y")
+        )
         .attr("transform", `translate(0,${this.innerHeight})`)
         .select(".domain")
         .remove();
@@ -176,7 +133,7 @@ export default {
       this.yScale.domain([0, d3.max(this.marketShares)]);
       this.svg
         .append("g")
-        .attr("id", "marketShares_yAxis")
+        .attr("id", "yAxis")
         .call(
           d3.axisLeft(this.yScale).tickFormat(d3.format("~s"))
           // .ticks(5)
