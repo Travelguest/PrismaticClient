@@ -1,51 +1,77 @@
 <template>
   <div id="vue">
-    <!--    <a-row type="flex" justify="space-around" class="second-row" style="padding: 0px">-->
-    <!--      <a-col :span="21" class="second-row">-->
-    <!--        <a-range-picker-->
-    <!--            style="width: 100%"-->
-    <!--            v-model:value="periodRange"-->
-    <!--            :disabledDate="periodDisabledRange"-->
-    <!--            :ranges="periodPresetRange"-->
-    <!--        />-->
-    <!--      </a-col>-->
-    <!--      <a-col :span="2" class="second-row">-->
-    <!--        <a-button-->
-    <!--            shape="circle"-->
-    <!--            type="primary"-->
-    <!--            :loading="periodButtonLoading"-->
-    <!--            :disabled="periodButtonDisabled"-->
-    <!--            @click="onPeriodButtonClick"-->
-    <!--        >-->
-    <!--          <template #icon><CalendarOutlined/></template>-->
-    <!--        </a-button>-->
-    <!--      </a-col>-->
-    <!--    </a-row>-->
     <div id="knowledge_graph_title">Knowledge Graph</div>
     <div id="triangle"></div>
+
+    <span :style="{ marginRight: '8px' }">Categories:</span>
+    <template v-for="tag in tags" :key="tag">
+      <a-checkable-tag
+        :checked="selectedTags.indexOf(tag) > -1"
+        @change="(checked) => handleChange(tag, checked)"
+      >
+        {{ tag }}
+      </a-checkable-tag>
+    </template>
   </div>
 </template>
 
 <script>
 import moment from "moment";
-import 'moment/dist/locale/zh-cn';
+import "moment/dist/locale/zh-cn";
 
 export default {
   name: "View",
   data() {
     return {
-      periodRange: [moment.utc('2020-01-01', 'YYYY-MM-DD'), moment.utc('2020-06-30', 'YYYY-MM-DD')],
+      periodRange: [
+        moment.utc("2020-01-01", "YYYY-MM-DD"),
+        moment.utc("2020-06-30", "YYYY-MM-DD"),
+      ],
       periodPresetRange: {
-        'All': [moment.utc('2011-01-01', 'YYYY-MM-DD'), moment.utc('2020-12-31', 'YYYY-MM-DD')],
-        '3Y': [moment.utc('2018-01-01', 'YYYY-MM-DD'), moment.utc('2020-12-31', 'YYYY-MM-DD')],
-        '1Y': [moment.utc('2020-01-01', 'YYYY-MM-DD'), moment.utc('2020-12-31', 'YYYY-MM-DD')],
-        '3M': [moment.utc('2020-01-01', 'YYYY-MM-DD'), moment.utc('2020-03-31', 'YYYY-MM-DD')],
+        All: [
+          moment.utc("2011-01-01", "YYYY-MM-DD"),
+          moment.utc("2020-12-31", "YYYY-MM-DD"),
+        ],
+        "3Y": [
+          moment.utc("2018-01-01", "YYYY-MM-DD"),
+          moment.utc("2020-12-31", "YYYY-MM-DD"),
+        ],
+        "1Y": [
+          moment.utc("2020-01-01", "YYYY-MM-DD"),
+          moment.utc("2020-12-31", "YYYY-MM-DD"),
+        ],
+        "3M": [
+          moment.utc("2020-01-01", "YYYY-MM-DD"),
+          moment.utc("2020-03-31", "YYYY-MM-DD"),
+        ],
       },
-      periodDisabledRange: (cur) => { return cur < moment.utc('2011-01-01', 'YYYY-MM-DD') || cur > moment.utc('2020-12-31', 'YYYY-MM-DD')},
+      periodDisabledRange: (cur) => {
+        return (
+          cur < moment.utc("2011-01-01", "YYYY-MM-DD") ||
+          cur > moment.utc("2020-12-31", "YYYY-MM-DD")
+        );
+      },
       periodButtonLoading: false,
-    }
+
+      checked1: false,
+      checked2: false,
+      checked3: false,
+      tags: ["Movies", "Books", "Music", "Sports"],
+      selectedTags: [],
+    };
   },
-}
+  methods: {
+    handleChange(tag, checked) {
+      console.log("tag:",tag);
+      const { selectedTags } = this;
+      const nextSelectedTags = checked
+        ? [...selectedTags, tag]//如果用户“选中”，就在selectedTag中添加这个新标签；
+        : selectedTags.filter((t) => t !== tag);//如果用户取消选择，就在selectedTag中把除了这个标签之外的标签筛选出来
+      console.log("You are interested in: ", nextSelectedTags);
+      this.selectedTags = nextSelectedTags;
+    },
+  },
+};
 </script>
 
 <style scoped>
