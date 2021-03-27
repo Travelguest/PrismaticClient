@@ -19,22 +19,23 @@
                   :correlation-return="correlationReturn"
                   @selected-stock-from-matrix="updateSelectedStock"
                   @update-period-range="updatePeriodRange"
-                >
-                </CorrelationMatrixView>
-              </div>
-            </a-col>
-            <a-col :span="12">
-              <div id="knowledge_graph_container">
-                <KnowledgeGraphView>
-                  :stock-code="selectedStockLeft"
-                  :knowledge-graph-count="knowledgeGraphCount"
-                </KnowledgeGraphView>
-              </div>
-            </a-col>
-          </a-row>
+                  @remove-stock-from-matrix="removeMatrixStock"
+              >
+              </CorrelationMatrixView>
+            </div>
+          </a-col>
+          <a-col :span="12">
+            <div id="knowledge_graph_container">
+              <KnowledgeGraphView>
+                :stock-code="selectedStockLeft"
+                :knowledge-graph-count="knowledgeGraphCount"
+              </KnowledgeGraphView>
+            </div>
+          </a-col>
+        </a-row>
 
-          <a-row id="detail_time_series_container">
-            <PinusLayout
+        <a-row id="detail_time_series_container">
+          <PinusLayout
               :period-range="periodRange"
               :correlation-triangle-stock="correlationTriangleStock"
               :correlation-triangle-market-left="correlationTriangleMarketLeft"
@@ -138,6 +139,11 @@ export default {
       this.selectedStockRight = stock_right;
       this.getCorrelationTriangle();
       this.getKnowledgeCount();
+    },
+    removeMatrixStock(cur_stock) {
+      this.correlationMatrix.columns = cur_stock;
+      this.getCorrelationMatrix();
+      this.getMatrixStockReturn();
     },
     getCorrelationMatrixByYear(stock_list, year) {
       this.selectedYear = year;
