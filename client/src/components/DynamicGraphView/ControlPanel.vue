@@ -1,33 +1,31 @@
 <template>
   <div style="height: 100%">
-    <div class="panel-header">
-      Prismatic
-    </div>
+    <div class="panel-header">Prismatic</div>
     <div class="panel-header-end"></div>
     <div>
       <a-row>
-        <a-col :span="9" style="line-height: 40px; font-size: 14px;">
+        <a-col :span="9" style="line-height: 40px; font-size: 14px">
           Select stocks and correlation
         </a-col>
         <a-col :span="12">
           <a-slider
-              range
-              :tooltipVisible="false"
-              v-model:value="correlationRange"
-              :min="-1"
-              :max="1"
-              :step="0.01"
-              :marks="correlationMarks"
-              @change="onCorrelationSliderChange"
+            range
+            :tooltipVisible="false"
+            v-model:value="correlationRange"
+            :min="-1"
+            :max="1"
+            :step="0.01"
+            :marks="correlationMarks"
+            @change="onCorrelationSliderChange"
           />
         </a-col>
         <a-col :span="3" align="middle" style="padding: 2px">
           <a-button
-              shape="circle"
-              type="primary"
-              :loading="correlationButtonLoading"
-              :disabled="stockButtonDisabled"
-              @click="onCorrelationButtonClick"
+            shape="circle"
+            type="primary"
+            :loading="correlationButtonLoading"
+            :disabled="stockButtonDisabled"
+            @click="onCorrelationButtonClick"
           >
             <template #icon><FilterOutlined /></template>
           </a-button>
@@ -35,21 +33,21 @@
       </a-row>
       <a-row type="flex" class="panel">
         <a-select
-            style="
+          style="
             width: 100%;
             border: 1px solid #aeaeae;
             box-shadow: 0 10px 10px -6px rgba(21, 85, 194, 0.13);
             border-radius: 5px;
           "
-            v-model:value="stockSelected"
-            mode="multiple"
-            allowClear
-            placeholder="Search by stocks"
-            option-label-prop="label"
+          v-model:value="stockSelected"
+          mode="multiple"
+          allowClear
+          placeholder="Search by stocks"
+          option-label-prop="label"
         >
           <a-select-option
-              disabled
-              style="
+            disabled
+            style="
               color: steelblue;
               font-size: 14px;
               line-height: 50px;
@@ -70,13 +68,13 @@
             </p>
           </a-select-option>
           <a-select-option
-              v-for="stock in stockList"
-              :key="stock.ts_code"
-              :label="stock.ts_code"
-              style="font-size: 12px"
+            v-for="stock in stockList"
+            :key="stock.ts_code"
+            :label="stock.ts_code"
+            style="font-size: 12px"
           >
             <p
-                style="
+              style="
                 text-align: center;
                 width: 20%;
                 display: inline-block;
@@ -87,7 +85,7 @@
               {{ stock.ts_code }}
             </p>
             <p
-                style="
+              style="
                 text-align: center;
                 width: 25%;
                 display: inline-block;
@@ -98,7 +96,7 @@
               {{ stock.name }}
             </p>
             <p
-                style="
+              style="
                 text-align: center;
                 width: 25%;
                 display: inline-block;
@@ -109,7 +107,7 @@
               {{ stock.level1 }}
             </p>
             <p
-                style="
+              style="
                 text-align: center;
                 width: 30%;
                 display: inline-block;
@@ -125,67 +123,84 @@
     </div>
 
     <a-divider
-        style="font-size: 18px; font-weight: bold; padding-top: 10px; margin: 0px"
-    >Correlated clusters</a-divider>
+      style="font-size: 18px; font-weight: bold; padding-top: 10px; margin: 0px"
+      >Correlated clusters</a-divider
+    >
     <dynamic-graph-view
-        class="dynamic-graph"
-        :corr-distribution="corrDistribution"
-        :corr-cluster="corrCluster"
-        @clicked-year="onYearClick"
+      class="dynamic-graph"
+      :corr-distribution="corrDistribution"
+      :corr-cluster="corrCluster"
+      @clicked-year="onYearClick"
     >
     </dynamic-graph-view>
 
     <a-divider
-        style="
+      style="
         font-size: 18px;
         font-weight: bold;
         padding-top: 10px;
         padding-bottom: 2px;
         margin: 0px;
       "
-    >Business tag filters</a-divider
+      >Business tag filters</a-divider
     >
     <a-row justify="space-around" class="tag-cards">
       <a-tabs tabPosition="top" size="small">
-        <a-tab-pane key="L1" tab="Industry" force-render>
-          <a-tag
-              color="purple"
-              v-for="tag in businessTag.L1"
-              :key="tag"
-              style="margin: 5px"
+        <a-tab-pane key="L1" tab="Industry" force-render class="tagOfIndustry">
+          <a-checkable-tag
+            v-for="tag in businessTag.L1"
+            :key="tag"
+            style="margin: 5px"
+            :checked="selectedTagsIndustry.indexOf(tag) !== -1"
+            @change="(checked) => handleChangeIndustry(tag, checked)"
           >
+            <!--color: #884ed8;
+              background-color: #faf2ff;
+              border: #dbbcf8 1px solid;-->
             {{ tag.name }}({{ tag.count }})
-          </a-tag>
+          </a-checkable-tag>
         </a-tab-pane>
-        <a-tab-pane key="L2" tab="Sector">
-          <a-tag
-              color="blue"
-              v-for="tag in businessTag.L2"
-              :key="tag"
-              style="margin: 5px"
+        <a-tab-pane key="L2" tab="Sector" class="tagOfSector">
+          <a-checkable-tag
+            v-for="tag in businessTag.L2"
+            :key="tag"
+            style="margin: 5px"
+            :checked="selectedTagsSector.indexOf(tag) !== -1"
+            @change="(checked) => handleChangeSector(tag, checked)"
           >
+            <!--color: #50abff;
+              background-color: #eaf8ff;
+              border: #a2dbff 1px solid;-->
             {{ tag.name }}({{ tag.count }})
-          </a-tag>
+          </a-checkable-tag>
         </a-tab-pane>
-        <a-tab-pane key="L3" tab="Subsector">
-          <a-tag
-              color="cyan"
-              v-for="tag in businessTag.L3"
-              :key="tag"
-              style="margin: 5px"
+        <a-tab-pane key="L3" tab="Subsector" class="tagOfSubsector">
+          <a-checkable-tag
+            v-for="tag in businessTag.L3"
+            :key="tag"
+            style="margin: 5px"
+            :checked="selectedTagsSubsector.indexOf(tag) !== -1"
+            @change="(checked) => handleChangeSubsector(tag, checked)"
           >
+            <!--color: #51d3d2;
+              background-color: #eafffc;
+              border: #99ece3 1px solid;  -->
             {{ tag.name }}({{ tag.count }})
-          </a-tag>
+          </a-checkable-tag>
         </a-tab-pane>
-        <a-tab-pane key="Concept" tab="Concept">
-          <a-tag
-              color="orange"
-              v-for="tag in businessTag.concept"
-              :key="tag"
-              style="margin: 5px"
+        <a-tab-pane key="Concept" tab="Concept" class="tagOfConcept">
+          <a-checkable-tag
+            v-for="tag in businessTag.concept"
+            :key="tag"
+            style="margin: 5px"
+            :checked="selectedTagsConcept.indexOf(tag) !== -1"
+            @change="(checked) => handleChangeConcept(tag, checked)"
           >
+            <!--color: #fba343;
+              background-color: #fff8ea;
+              border: #ffdba2 1px solid;-->
             {{ tag.name }}({{ tag.count }})
-          </a-tag>
+          </a-checkable-tag>
         </a-tab-pane>
         <!--        <template #tabBarExtraContent>-->
         <!--          <a-button>Filter</a-button>-->
@@ -212,22 +227,42 @@ export default {
   emits: ["get-correlation-matrix"],
   data() {
     return {
-      stockList: [{ts_code:'000001.SH', name:'上证指数', level1:'index', level3:'composite'}],
+      stockList: [
+        {
+          ts_code: "000001.SH",
+          name: "上证指数",
+          level1: "index",
+          level3: "composite",
+        },
+      ],
       stockSelectionNumMax: 10,
-      stockSelected: ['000652', '000538'],
+      stockSelected: ["000652", "000538"],
 
       corrDistribution: index_corr_dist,
 
       correlationRange: [0.7, 1],
       correlationMarks: {
-        0.7: {'style': {'top': '-30px', 'font-size': '12px'}, 'label': '0.7'},
-        0: {'style': {'top': '-30px', 'font-size': '12px'}, 'label': '0'},
-        1: {'style': {'top': '-30px', 'font-size': '12px'}, 'label': '1'},
+        0.7: { style: { top: "-30px", "font-size": "12px" }, label: "0.7" },
+        0: { style: { top: "-30px", "font-size": "12px" }, label: "0" },
+        1: { style: { top: "-30px", "font-size": "12px" }, label: "1" },
       },
       correlationButtonLoading: false,
 
       corrCluster: corr_clusters_all_years,
       businessTag: business_tag_table,
+
+      //tagsIndustry: business_tag_table.L1,
+      selectedTagsIndustry: business_tag_table.L1,
+      unselectedTagsIndustry: [],
+
+      selectedTagsSector: business_tag_table.L2,
+      unselectedTagsSector: [],
+
+      selectedTagsSubsector: business_tag_table.L3,
+      unselectedTagsSubsector: [],
+
+      selectedTagsConcept: business_tag_table.concept,
+      unselectedTagsConcept: [],
     };
   },
   computed: {
@@ -255,33 +290,110 @@ export default {
   },
   methods: {
     onCorrelationSliderChange(val) {
-      this.correlationMarks = { 0: {'style': {'top': '-32px', 'font-size': '12px'}, 'label': '0'} };
-      this.correlationMarks[val[0]] = {'style': {'top': '-32px', 'font-size': '12px'}, 'label': ''+val[0]};
-      this.correlationMarks[val[1]] = {'style': {'top': '-32px', 'font-size': '12px'}, 'label': ''+val[1]};
+      this.correlationMarks = {
+        0: { style: { top: "-32px", "font-size": "12px" }, label: "0" },
+      };
+      this.correlationMarks[val[0]] = {
+        style: { top: "-32px", "font-size": "12px" },
+        label: "" + val[0],
+      };
+      this.correlationMarks[val[1]] = {
+        style: { top: "-32px", "font-size": "12px" },
+        label: "" + val[1],
+      };
     },
     onCorrelationButtonClick() {
       this.correlationButtonLoading = !this.correlationButtonLoading;
       DataService.post(
-          "get_corr_clusters_all_years",
-          this.correlationRange,
-          (data) => {
-            this.correlationButtonLoading = !this.correlationButtonLoading;
-            this.corrCluster = data;
-          }
+        "get_corr_clusters_all_years",
+        this.correlationRange,
+        (data) => {
+          this.correlationButtonLoading = !this.correlationButtonLoading;
+          this.corrCluster = data;
+        }
       );
       DataService.post(
-          "get_business_tag_table",
-          this.correlationRange,
-          (data) => {
-            this.businessTag = data;
-          }
+        "get_business_tag_table",
+        this.correlationRange,
+        (data) => {
+          this.businessTag = data;
+        }
       );
     },
     onYearClick(topNodes, year) {
       // TODO: put a button to select filter
       // eslint-disable-next-line no-constant-condition
-      let nodes = true? topNodes: this.corrCluster[year].nodes;
+      let nodes = true ? topNodes : this.corrCluster[year].nodes;
       this.$emit("get-correlation-matrix", nodes, year);
+    },
+
+    handleChangeIndustry(tag, checked) {
+      //console.log("this.color"+this.);
+      const { selectedTagsIndustry } = this;
+      const { unselectedTagsIndustry } = this;
+      const nextSelectedTagsIndustry = checked
+        ? [...selectedTagsIndustry, tag] //如果用户“选中”，就在selectedTag中添加这个新标签；
+        : selectedTagsIndustry.filter((t) => t !== tag); //如果用户取消选择，就在selectedTag中把除了这个标签之外的标签筛选出来
+
+      const nextUnselectedTagsIndustry = checked
+        ? unselectedTagsIndustry.filter((t) => t !== tag) //如果用户选中，就在selectedTag中把除了这个标签之外的标签筛选出来
+        : [...unselectedTagsIndustry, tag]; //如果用户取消选择，就在selectedTag中添加这个新标签；
+      console.log("You are interested in: ", nextSelectedTagsIndustry);
+      console.log("You are not interested in: ", nextUnselectedTagsIndustry);
+
+      this.selectedTagsIndustry = nextSelectedTagsIndustry;
+      this.unselectedTagsIndustry = nextUnselectedTagsIndustry;
+    },
+
+    handleChangeSector(tag, checked) {
+      const { selectedTagsSector } = this;
+      const { unselectedTagsSector } = this;
+      const nextSelectedTagsSector = checked
+        ? [...selectedTagsSector, tag] //如果用户“选中”，就在selectedTag中添加这个新标签；
+        : selectedTagsSector.filter((t) => t !== tag); //如果用户取消选择，就在selectedTag中把除了这个标签之外的标签筛选出来
+
+      const nextUnselectedTagsSector = checked
+        ? unselectedTagsSector.filter((t) => t !== tag) //如果用户选中，就在selectedTag中把除了这个标签之外的标签筛选出来
+        : [...unselectedTagsSector, tag]; //如果用户取消选择，就在selectedTag中添加这个新标签；
+      console.log("You are interested in: ", nextSelectedTagsSector);
+      console.log("You are not interested in: ", nextUnselectedTagsSector);
+
+      this.selectedTagsSector = nextSelectedTagsSector;
+      this.unselectedTagsSector = nextUnselectedTagsSector;
+    },
+
+    handleChangeSubsector(tag, checked) {
+      const { selectedTagsSubsector } = this;
+      const { unselectedTagsSubsector } = this;
+      const nextSelectedTagsSubsector = checked
+        ? [...selectedTagsSubsector, tag] //如果用户“选中”，就在selectedTag中添加这个新标签；
+        : selectedTagsSubsector.filter((t) => t !== tag); //如果用户取消选择，就在selectedTag中把除了这个标签之外的标签筛选出来
+
+      const nextUnselectedTagsSubsector = checked
+        ? unselectedTagsSubsector.filter((t) => t !== tag) //如果用户选中，就在selectedTag中把除了这个标签之外的标签筛选出来
+        : [...unselectedTagsSubsector, tag]; //如果用户取消选择，就在selectedTag中添加这个新标签；
+      console.log("You are interested in: ", nextSelectedTagsSubsector);
+      console.log("You are not interested in: ", nextUnselectedTagsSubsector);
+
+      this.selectedTagsSubsector = nextSelectedTagsSubsector;
+      this.unselectedTagsSubsector = nextUnselectedTagsSubsector;
+    },
+
+    handleChangeConcept(tag, checked) {
+      const { selectedTagsConcept } = this;
+      const { unselectedTagsConcept } = this;
+      const nextSelectedTagsConcept = checked
+        ? [...selectedTagsConcept, tag] //如果用户“选中”，就在selectedTag中添加这个新标签；
+        : selectedTagsConcept.filter((t) => t !== tag); //如果用户取消选择，就在selectedTag中把除了这个标签之外的标签筛选出来
+
+      const nextUnselectedTagsConcept = checked
+        ? unselectedTagsConcept.filter((t) => t !== tag) //如果用户选中，就在selectedTag中把除了这个标签之外的标签筛选出来
+        : [...unselectedTagsConcept, tag]; //如果用户取消选择，就在selectedTag中添加这个新标签；
+      console.log("You are interested in: ", nextSelectedTagsConcept);
+      console.log("You are not interested in: ", nextUnselectedTagsConcept);
+
+      this.selectedTagsConcept = nextSelectedTagsConcept;
+      this.unselectedTagsConcept = nextUnselectedTagsConcept;
     },
   },
 };
@@ -323,5 +435,37 @@ export default {
 .tag-cards {
   height: 210px;
   overflow: auto;
+}
+
+/deep/.ant-tag-checkable {
+  background-color: #f2f4f5;
+  border-color: #f0f0f1 1px solid;
+  cursor: pointer;
+  margin: 5px;
+  color: #565657;
+}
+
+/deep/ .tagOfIndustry .ant-tag-checkable-checked {
+  color: #884ed8;
+  background-color: #faf2ff;
+  border: #dbbcf8 1px solid;
+}
+
+/deep/ .tagOfSector .ant-tag-checkable-checked {
+  color: #50abff;
+  background-color: #eaf8ff;
+  border: #a2dbff 1px solid;
+}
+
+/deep/ .tagOfSubsector .ant-tag-checkable-checked {
+  color: #51d3d2;
+  background-color: #eafffc;
+  border: #99ece3 1px solid;
+}
+
+/deep/ .tagOfConcept .ant-tag-checkable-checked {
+  color: #fba343;
+  background-color: #fff8ea;
+  border: #ffdba2 1px solid;
 }
 </style>
