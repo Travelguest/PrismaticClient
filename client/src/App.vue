@@ -227,7 +227,7 @@ export default {
         }
       );
 
-      this.loadingTriangleStock = true;
+      this.loadingTriangleSectorRight = true;
       DataService.post(
         "get_corr_tri_sector",
         _.flatten([

@@ -170,8 +170,8 @@ export default {
       this.showBottomPinusData = null;
       this.showTopPinusTitle = "";
       this.showBottomPinusTitle = "";
-      this.showMap.top="";
-      this.showMap.bottom="";
+      this.showMap.top = "";
+      this.showMap.bottom = "";
       this.isShowTopLineChart = false;
       this.isShowBottomLineChart = false;
     },
@@ -226,12 +226,14 @@ export default {
           (data) => {
             // this.businessTag = data;
             console.log("Stock得到的数据：", data);
-            if (title === this.showTopPinusTitle) { //如果是top触发的Brush
+            if (title === this.showTopPinusTitle) {
+              //如果是top触发的Brush
               console.log("Stock在Top");
               this.topLineChartData = data;
-              this.topLineChartTitle = title;  
+              this.topLineChartTitle = title;
               this.isShowTopLineChart = true;
-            } else if (title === this.showBottomPinusTitle) { //bottom触发的Brush
+            } else if (title === this.showBottomPinusTitle) {
+              //bottom触发的Brush
               console.log("Stock在Bottom");
               this.bottomLineChartData = data;
               this.bottomLineChartTitle = title;

@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div>
-      <a-menu mode="horizontal" @click="handleSwitchClick" style="width: 300px">
+      <a-menu mode="horizontal" @click="handleSwitchClick" style="width: 300px; position: absolute;">
         <a-menu-item key="close">close</a-menu-item>
         <a-menu-item key="pct">pct</a-menu-item>
         <a-menu-item key="log">log</a-menu-item>
@@ -27,9 +27,9 @@ export default {
   data() {
     return {
       svg: null,
-      margin: { top: 30, right: 40, bottom: 30, left: 35 },
+      margin: { top: 48, right: 40, bottom: 20, left: 35 },
       width: 1055,
-      height: 212,
+      height: 259,
       date: null,
       dataA: null,
       dataB: null,
@@ -244,7 +244,7 @@ export default {
         .enter()
         .append("circle")
         .attr("cx", (d, i) => 700 + i * 180)
-        .attr("cy", -10)
+        .attr("cy", -22)
         .attr("r", "6px")
         .style("fill", (d) => this.colorScale(d));
 
@@ -254,7 +254,7 @@ export default {
         .enter()
         .append("text")
         .attr("x", (d, i) => 715 + i * 180)
-        .attr("y", -8)
+        .attr("y", -20)
         .style("fill", "#9F9F9F")
         .style("font-family", "PingFangSC-Medium")
         .style("font-size", "14px")
