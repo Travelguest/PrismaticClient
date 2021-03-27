@@ -147,6 +147,7 @@ export default {
   },
   watch: {
     correlationMatrix: function() {
+      this.curMatrixColumn = this.matrixColumn;
       this.renderMatrix();
     },
     selectedYear: function(year) {
@@ -158,10 +159,9 @@ export default {
     periodRange: function() {
       this.$emit("update-period-range", this.periodRange);
     },
-    correlationReturn: function() {
-      this.curMatrixColumn = this.matrixColumn;
-      this.renderMatrix();
-    },
+    // correlationReturn: function() {
+    //   this.curMatrixColumn = this.matrixColumn;
+    // },
   },
   mounted() {
     this.initMatrix();
@@ -313,7 +313,7 @@ export default {
           `translate(0,${this.height - this.margin.bottom - this.margin.top})`
         )
         .selectAll(".tick text")
-        .attr("transform", "rotate(15)");
+        .attr("transform", "rotate(45)");
 
       // use divs to implement dragging
       // so remove texts here
@@ -486,8 +486,8 @@ export default {
       //barChart
       let xScale = d3
         .scaleLinear()
-        .domain(d3.extent(this.correlationReturn, (d) => d.val))
-        .range([(this.margin.left / 4) * 3, 5])
+        .domain([0, d3.max(this.correlationReturn, (d) => Math.abs(d.val))])
+        .range([this.margin.left, 5])
         .nice();
 
       this.heatmapContainer
@@ -496,7 +496,7 @@ export default {
         .enter()
         .append("rect")
         .attr("class", "bar")
-        .attr("x", (d) => xScale(d.val))
+        .attr("x", (d) => xScale(Math.abs(d.val)))
         .attr("y", (d) => y(d.row))
         .attr("width", (d) => Math.abs(xScale(d.val) - xScale(0)))
         .attr("height", y.bandwidth())
@@ -603,7 +603,7 @@ export default {
   background: white;
   height: 13px;
   width: 60px;
-  transform: rotate(45deg);
+  transform: rotate(15deg);
   cursor: move;
 }
 

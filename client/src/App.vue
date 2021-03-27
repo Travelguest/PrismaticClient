@@ -20,22 +20,22 @@
                   @selected-stock-from-matrix="updateSelectedStock"
                   @update-period-range="updatePeriodRange"
                   @remove-stock-from-matrix="removeMatrixStock"
-              >
-              </CorrelationMatrixView>
-            </div>
-          </a-col>
-          <a-col :span="12">
-            <div id="knowledge_graph_container">
-              <KnowledgeGraphView>
-                :stock-code="selectedStockLeft"
-                :knowledge-graph-count="knowledgeGraphCount"
-              </KnowledgeGraphView>
-            </div>
-          </a-col>
-        </a-row>
+                >
+                </CorrelationMatrixView>
+              </div>
+            </a-col>
+            <a-col :span="12">
+              <div id="knowledge_graph_container">
+                <KnowledgeGraphView>
+                  :stock-code="selectedStockLeft"
+                  :knowledge-graph-count="knowledgeGraphCount"
+                </KnowledgeGraphView>
+              </div>
+            </a-col>
+          </a-row>
 
-        <a-row id="detail_time_series_container">
-          <PinusLayout
+          <a-row id="detail_time_series_container">
+            <PinusLayout
               :period-range="periodRange"
               :correlation-triangle-stock="correlationTriangleStock"
               :correlation-triangle-market-left="correlationTriangleMarketLeft"
@@ -127,7 +127,7 @@ export default {
     };
   },
   watch: {},
-  mounted: function () {},
+  mounted: function() {},
   methods: {
     updatePeriodRange(range) {
       this.periodRange = range;
@@ -157,24 +157,23 @@ export default {
           this.periodRange[0].format("YYYY-MM-DD"),
           this.periodRange[1].format("YYYY-MM-DD"),
         ],
-        (data) => {
-          this.correlationMatrix = data ? data : [];
+        (matrixData) => {
+          DataService.post(
+            "get_stock_return",
+            [
+              this.correlationMatrix.columns,
+              this.periodRange[0].format("YYYY-MM-DD"),
+              this.periodRange[1].format("YYYY-MM-DD"),
+            ],
+            (returnData) => {
+              this.correlationReturn = returnData ? returnData : [];
+              this.correlationMatrix = matrixData ? matrixData : [];
+            }
+          );
         }
       );
     },
-    getMatrixStockReturn() {
-      DataService.post(
-        "get_stock_return",
-        [
-          this.correlationMatrix.columns,
-          this.periodRange[0].format("YYYY-MM-DD"),
-          this.periodRange[1].format("YYYY-MM-DD"),
-        ],
-        (data) => {
-          this.correlationReturn = data ? data : [];
-        }
-      );
-    },
+    getMatrixStockReturn() {},
     getCorrelationTriangle() {
       this.loadingTriangleStock = true;
       DataService.post(
