@@ -19,24 +19,6 @@
                   :correlation-return="correlationReturn"
                   @selected-stock-from-matrix="updateSelectedStock"
                   @update-period-range="updatePeriodRange"
-<<<<<<< Updated upstream
-                >
-                </CorrelationMatrixView>
-              </div>
-            </a-col>
-            <a-col :span="12">
-              <div id="knowledge_graph_container">
-                <KnowledgeGraphView>
-                  :stock-code="selectedStockLeft"
-                  :knowledge-graph-count="knowledgeGraphCount"
-                </KnowledgeGraphView>
-              </div>
-            </a-col>
-          </a-row>
-
-          <a-row id="detail_time_series_container">
-            <PinusLayout
-=======
                   @remove-stock-from-matrix="removeMatrixStock"
               >
               </CorrelationMatrixView>
@@ -54,7 +36,6 @@
 
         <a-row id="detail_time_series_container">
           <PinusLayout
->>>>>>> Stashed changes
               :period-range="periodRange"
               :correlation-triangle-stock="correlationTriangleStock"
               :correlation-triangle-market-left="correlationTriangleMarketLeft"
