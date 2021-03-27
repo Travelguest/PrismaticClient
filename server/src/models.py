@@ -356,6 +356,7 @@ class Model:
     '''
     Knowledge Graph
     '''
+
     def query_stock_knowledge_graph_count(self,
                                           stock_code='000538'):
         count = {key: defaultdict(int) for key in ['city', 'province', 'industry', 'concept', 'investor', 'management']}
@@ -363,4 +364,17 @@ class Model:
             for k, v in self.knowledge_graph[stock_code][link].items():
                 for c in v:
                     count[k][c] += 1
-        return {k: dict(v)  for k, v in count.items()}
+
+        return {k: dict(v) if k != 'concept' else {_k: _v for _k, _v in v.items() if _v < 150} for k, v in
+                count.items()}
+
+    def query_stock_knowledge_graph_links(self, stock_code='000538', key='city', value='昆明市'):
+        graph = self.knowledge_graph
+
+        stocks = {}
+
+        for neighbor in graph[stock_code]:
+            if key in graph[stock_code][neighbor] and value in graph[stock_code][neighbor][key]:
+                stocks[neighbor] = [graph[stock_code][neighbor]]
+
+        return stocks
