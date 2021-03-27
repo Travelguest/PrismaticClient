@@ -4,8 +4,7 @@
       <a-col :span="6">
         <div id="control_panel_container">
           <ControlPanel
-            @get-correlation-matrix="getCorrelationMatrix"
-            @update-period-range="updatePeriodRange"
+              @get-correlation-matrix="getCorrelationMatrixByYear"
           ></ControlPanel>
         </div>
       </a-col>
@@ -14,32 +13,40 @@
           <a-col :span="12">
             <div id="correlation_matrix_view_container">
               <CorrelationMatrixView
-                :correlation-matrix="correlationMatrix"
-                @selected-stock-from-matrix-diagonal="updateSelectedStockMarket"
-                @selected-stock-from-matrix="updateSelectedStockAgainst"
+                  :selected-year="selectedYear"
+                  :correlation-matrix="correlationMatrix"
+                  :correlation-return="correlationReturn"
+                  @selected-stock-from-matrix="updateSelectedStock"
+                  @update-period-range="updatePeriodRange"
               >
               </CorrelationMatrixView>
             </div>
           </a-col>
           <a-col :span="12">
             <div id="knowledge_graph_container">
-              <View></View>
+              <KnowledgeGraphView>
+                :stock-code="selectedStockLeft"
+                :knowledge-graph-count="knowledgeGraphCount"
+              </KnowledgeGraphView>
             </div>
           </a-col>
         </a-row>
 
         <a-row id="detail_time_series_container">
-          <PinusLayout 
-            :period-range="selectedRange"
-            :correlation-triangle-stock="correlationTriangleStock"
-            :correlation-triangle-market-left="correlationTriangleMarketLeft"
-            :correlation-triangle-market-right="correlationTriangleMarketRight"
-            :correlation-triangle-sector-left="correlationTriangleSectorLeft"
-            :correlation-triangle-sector-right="correlationTriangleSectorRight"
-            :stock-a="selectedStockLeft"
-            :stock-b="selectedStockRight"
-            :loading-triangle-market="loadingTriangleMarket"
-            :loading-triangle-sector="loadingTriangleSector"
+          <PinusLayout
+              :period-range="periodRange"
+              :correlation-triangle-stock="correlationTriangleStock"
+              :correlation-triangle-market-left="correlationTriangleMarketLeft"
+              :correlation-triangle-market-right="correlationTriangleMarketRight"
+              :correlation-triangle-sector-left="correlationTriangleSectorLeft"
+              :correlation-triangle-sector-right="correlationTriangleSectorRight"
+              :stock-a="selectedStockLeft"
+              :stock-b="selectedStockRight"
+              :loading-triangle-stock="loadingTriangleStock"
+              :loading-triangle-market-left="loadingTriangleMarketLeft"
+              :loading-triangle-market-right="loadingTriangleMarketRight"
+              :loading-triangle-sector-left="loadingTriangleSectorLeft"
+              :loading-triangle-sector-right="loadingTriangleSectorRight"
           />
         </a-row>
 
@@ -53,174 +60,151 @@
 import ControlPanel from "@/components/DynamicGraphView/ControlPanel";
 import CorrelationMatrixView from "@/components/CorrelationMatrixView";
 import PinusLayout from "@/components/PinusView/PinusLayout";
-import View from "@/components/View";
+import KnowledgeGraphView from "@/components/KnowledgeGraphView";
 
 import _ from "lodash";
 import moment from "moment";
+import 'moment/dist/locale/zh-cn';
 import DataService from "@/utils/data-service";
 
 import matrix from "./components/data/matrix.json";
+import stock_return from "./components/data/stock_return.json";
 import pinus_stock from "./components/data/pinus_stock.json";
 import pinus_market_left from "./components/data/pinus_market_left.json";
 import pinus_market_right from "./components/data/pinus_market_right.json";
 import pinus_sector_left from "./components/data/pinus_sector_left.json";
 import pinus_sector_right from "./components/data/pinus_sector_right.json";
+import knowledge_count from "./components/data/knowledge_count.json";
+
 
 export default {
   name: "App",
   components: {
-    PinusLayout,
-    CorrelationMatrixView,
     ControlPanel,
-    View,
+    CorrelationMatrixView,
+    PinusLayout,
+    KnowledgeGraphView,
   },
   computed: {
-    selectedRange() {
-      return this.periodRange === undefined || this.periodRange.length === 0
-        ? [
-            moment.utc("2020-01-01", "YYYY-MM-DD"),
-            moment.utc("2020-06-30", "YYYY-MM-DD"),
-          ]
-        : this.periodRange;
-    },
   },
   data() {
     return {
-      periodRange: [],
+      periodRange: [moment.utc('2020-01-01', 'YYYY-MM-DD'), moment.utc('2020-06-30', 'YYYY-MM-DD')],
+      selectedYear: null,
       selectedStockLeft: "000652",
       selectedStockRight: "000538",
 
       correlationMatrix: matrix,
+      correlationReturn: stock_return,
+
       correlationTriangleStock: pinus_stock,
       correlationTriangleMarketLeft: pinus_market_left,
       correlationTriangleMarketRight: pinus_market_right,
       correlationTriangleSectorLeft: pinus_sector_left,
       correlationTriangleSectorRight: pinus_sector_right,
 
-      loadingTriangleMarket: false,
-      loadingTriangleSector: false,
+      loadingTriangleMarketLeft: false,
+      loadingTriangleSectorLeft: false,
+      loadingTriangleStock: false,
+      loadingTriangleSectorRight: false,
+      loadingTriangleMarketRight: false,
 
       numberOfSelectedPinus: 0,
+
+      knowledgeGraphCount: knowledge_count,
     };
   },
   watch: {},
-  mounted: function () {},
+  mounted: function () {
+  },
   methods: {
-    handlePinusViewClick(event,d){
-      console.log("被点击了：",event,d);
-    },
     updatePeriodRange(range) {
       this.periodRange = range;
+      this.getCorrelationMatrix();
+      this.getMatrixStockReturn();
     },
-    updateSelectedStockMarket(stock) {
-      this.selectedStockLeft = stock;
-      this.selectedStockRight = stock;
-      this.getCorrelationTriangleMarket();
-    },
-    updateSelectedStockAgainst(stock_left, stock_right) {
+    updateSelectedStock(stock_left, stock_right) {
       this.selectedStockLeft = stock_left;
       this.selectedStockRight = stock_right;
-      this.getCorrelationTriangleStock();
+      this.getCorrelationTriangle();
+      this.getKnowledgeCount();
     },
-    getCorrelationMatrix(year, stock_list) {
-      DataService.post("get_correlation_matrix", [year, stock_list], (data) => {
-        this.correlationMatrix = data ? data : [];
-      });
+    getCorrelationMatrixByYear(stock_list, year) {
+      this.selectedYear = year;
+      this.correlationMatrix.columns = stock_list;
     },
-    getCorrelationTriangleMarket() {
-      this.loadingTriangleMarket = true;
-      DataService.post(
-        "get_corr_tri_market",
-        _.flatten([this.selectedStockLeft, this.selectedRange]),
-        (data) => {
-          this.correlationTriangleMarketLeft = data;
-          this.loadingTriangleMarket = false;
-        }
-      );
-      DataService.post(
-        "get_corr_tri_market",
-        _.flatten([this.selectedStockRight, this.selectedRange]),
-        (data) => {
-          this.correlationTriangleMarketRight = data;
-          this.loadingTriangleMarket = false;
-        }
-      );
-
-      this.loadingTriangleSector = true;
-      DataService.post(
-        "get_corr_tri_sector",
-        _.flatten([this.selectedStockLeft, this.selectedRange]),
-        (data) => {
-          this.correlationTriangleSectorLeft = data;
-          this.loadingTriangleSector = false;
-        }
-      );
-
-      this.loadingTriangleSector = true;
-      DataService.post(
-        "get_corr_tri_sector",
-        _.flatten([this.selectedStockRight, this.selectedRange]),
-        (data) => {
-          this.correlationTriangleSectorRight = data;
-          this.loadingTriangleSector = false;
-        }
-      );
+    getCorrelationMatrix() {
+      DataService.post("get_correlation_matrix",
+          [this.correlationMatrix.columns, this.periodRange[0].format('YYYY-MM-DD'), this.periodRange[1].format('YYYY-MM-DD')],
+          (data) => {
+            this.correlationMatrix = data ? data : [];
+          });
     },
-    getCorrelationTriangleStock() {
-      this.loadingTriangleMarket = true;
+    getMatrixStockReturn() {
+      DataService.post("get_stock_return",
+          [this.correlationMatrix.columns, this.periodRange[0].format('YYYY-MM-DD'), this.periodRange[1].format('YYYY-MM-DD')],
+          (data) => {
+            this.correlationReturn = data ? data : [];
+          });
+    },
+    getCorrelationTriangle() {
+      this.loadingTriangleStock = true;
       DataService.post(
-        "get_corr_tri_market",
-        _.flatten([this.selectedStockLeft, this.selectedRange]),
-        (data) => {
-          this.correlationTriangleMarketLeft = data;
-          this.loadingTriangleMarket = false;
-        }
+          "get_corr_tri_stock",
+          _.flatten([this.selectedStockLeft, this.selectedStockRight, this.periodRange[0].format('YYYY-MM-DD'), this.periodRange[1].format('YYYY-MM-DD')]),
+          (data) => {
+            this.correlationTriangleStock = data;
+            this.loadingTriangleStock = false;
+          }
       );
 
-      this.loadingTriangleMarket = true;
+      this.loadingTriangleMarketLeft = true;
       DataService.post(
-        "get_corr_tri_market",
-        _.flatten([this.selectedStockRight, this.selectedRange]),
-        (data) => {
-          this.correlationTriangleMarketRight = data;
-          this.loadingTriangleMarket = false;
-        }
+          "get_corr_tri_market",
+          _.flatten([this.selectedStockLeft, this.periodRange[0].format('YYYY-MM-DD'), this.periodRange[1].format('YYYY-MM-DD')]),
+          (data) => {
+            this.correlationTriangleMarketLeft = data;
+            this.loadingTriangleMarketLeft = false;
+          }
       );
 
-      this.loadingTriangleSector = true;
+      this.loadingTriangleMarketRight = true;
       DataService.post(
-        "get_corr_tri_stock",
-        _.flatten([
-          this.selectedStockLeft,
-          this.selectedStockRight,
-          this.selectedRange,
-        ]),
-        (data) => {
-          this.correlationTriangleStock = data;
-          this.loadingTriangleSector = false;
-        }
+          "get_corr_tri_market",
+          _.flatten([this.selectedStockRight, this.periodRange[0].format('YYYY-MM-DD'), this.periodRange[1].format('YYYY-MM-DD')]),
+          (data) => {
+            this.correlationTriangleMarketRight = data;
+            this.loadingTriangleMarketRight = false;
+          }
       );
 
-      this.loadingTriangleSector = true;
+      this.loadingTriangleSectorLeft = true;
       DataService.post(
-        "get_corr_tri_sector",
-        _.flatten([this.selectedStockLeft, this.selectedRange]),
-        (data) => {
-          this.correlationTriangleSectorLeft = data;
-          this.loadingTriangleSector = false;
-        }
+          "get_corr_tri_sector",
+          _.flatten([this.selectedStockLeft, this.periodRange[0].format('YYYY-MM-DD'), this.periodRange[1].format('YYYY-MM-DD')]),
+          (data) => {
+            this.correlationTriangleSectorLeft = data;
+            this.loadingTriangleSectorLeft = false;
+          }
       );
 
-      this.loadingTriangleSector = true;
+      this.loadingTriangleStock = true;
       DataService.post(
-        "get_corr_tri_sector",
-        _.flatten([this.selectedStockRight, this.selectedRange]),
-        (data) => {
-          this.correlationTriangleSectorRight = data;
-          this.loadingTriangleSector = false;
-        }
+          "get_corr_tri_sector",
+          _.flatten([this.selectedStockRight, this.periodRange[0].format('YYYY-MM-DD'), this.periodRange[1].format('YYYY-MM-DD')]),
+          (data) => {
+            this.correlationTriangleSectorRight = data;
+            this.loadingTriangleSectorRight = false;
+          }
       );
     },
+    getKnowledgeCount() {
+      DataService.post("get_knowledge_graph_count",
+          [this.selectedStockLeft],
+          (data) => {
+            this.knowledgeGraphCount = data;
+          });
+    }
   },
 };
 </script>
@@ -236,18 +220,6 @@ export default {
   margin: 2px;
   border: 1px solid lightblue;
 }
-
-/* .upper_row {
-  border: 1px dotted steelblue;
-  width: 100%;
-  height: 600px;
-}
-
-.lower_row {
-  border: 1px dotted steelblue;
-  width: 100%;
-  height: 520px;
-} */
 
 #control_panel_container {
   height: 1123px;
@@ -265,8 +237,6 @@ export default {
   box-sizing: border-box;
   height: 600px;
   width: 100%;
-
-  /* margin-right: 2px; */
   border: 1px solid steelblue;
 }
 #knowledge_graph_container {
@@ -278,10 +248,5 @@ export default {
   height: 520px;
   width: 100%;
   border: 1px solid steelblue;
-}
-.pinus_view_container{
-  height: 104px;
-  width: 100%;
-  /* border: 1px solid red; */
 }
 </style>

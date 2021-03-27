@@ -1,422 +1,325 @@
 <template>
   <div>
+    <div id="knowledge_graph_title">Correlation Matrix</div>
+    <div id="triangle"></div>
     <div id="matrix" style="height: 100%; width: 100%"></div>
-    <draggable
-      :list="matrixColumn"
-      :disabled="!enabled"
-      class="testClass"
-      item-key="name"
-      ghost-class="ghost"
-      :move="checkMove"
-      @start="dragging = true"
-      @end="dragging = false"
-    >
-      <template #item="{ element }">
-        <div class="list-group-item" :class="{ 'not-draggable': !enabled }">
-          {{ element }}
-        </div>
-      </template>
-    </draggable>
+    <a-range-picker
+        id="date-picker"
+        v-model:value="periodRange"
+        :disabledDate="periodDisabledRange"
+        :ranges="periodPresetRange"
+        :size="'small'"
+        :format="'MM/YY'"
+        :allowClear="false"
+    />
+    <!--    <draggable-->
+    <!--        :list="matrixColumn"-->
+    <!--        :disabled="!enabled"-->
+    <!--        class="testClass"-->
+    <!--        item-key="name"-->
+    <!--        ghost-class="ghost"-->
+    <!--        :move="checkMove"-->
+    <!--        @start="dragging = true"-->
+    <!--        @end="dragging = false"-->
+    <!--    >-->
+    <!--      <template #item="{ element }">-->
+    <!--        <div class="list-group-item" :class="{ 'not-draggable': !enabled }">-->
+    <!--          {{ element }}-->
+    <!--        </div>-->
+    <!--      </template>-->
+    <!--    </draggable>-->
   </div>
 </template>
 
 <script>
 import _ from "lodash";
 import * as d3 from "d3";
-
-import draggable from "vuedraggable"; //补充
-//let id = 1;
+import moment from "moment";
+import 'moment/dist/locale/zh-cn';
+// import draggable from "vuedraggable";
 
 export default {
   name: "CorrelationMatrixView",
   components: {
-    draggable, //补充
+    // draggable,
   },
   props: {
+    selectedYear: String,
     correlationMatrix: Object,
+    correlationReturn: Object,
   },
-  emits: ["selectedStockFromMatrixDiagonal", "selectedStockFromMatrix"],
+  emits: ["selectedStockFromMatrix", "update-period-range"],
   computed: {
-    matrixColumn() {
-      return !_.isEmpty(this.correlationMatrix)
-        ? this.correlationMatrix.columns
-        : [];
-    },
     matrixCorr() {
       return !_.isEmpty(this.correlationMatrix)
-        ? this.correlationMatrix.corr
-        : [];
+          ? this.correlationMatrix.corr
+          : [];
+    },
+    matrixColumn() {
+      return !_.isEmpty(this.correlationMatrix)
+          ? this.correlationMatrix.columns
+          : [];
     },
   },
   data() {
     return {
       svg: null,
+      heatmapContainer: null,
       width: 759,
-      height: 598,
-      margin: { top: 108, right: 150, bottom: 80, left: 199 },
+      height: 599,
+      margin: { top: 45, right: 145, bottom: 60, left: 120 },
       padding: 0.1,
-      legend: { yaxis: 40, xaxis: 20 },
-      lineData: [
-        { row: "000955", col: "600200", val: 0.52342, type: "price" },
-        { row: "600200", col: "000538", val: -0.05813, type: "price" },
-        { row: "000078", col: "000652", val: 0.66309, type: "price" },
-        { row: "603301", col: "600763", val: -0.12519, type: "price" },
-        { row: "000652", col: "603288", val: -0.10912, type: "price" },
-        { row: "000538", col: "600269", val: 0.60816, type: "price" },
-        { row: "600436", col: "600200", val: -0.00632, type: "vol" },
-        { row: "000623", col: "000078", val: 0.07383, type: "vol" },
-        { row: "600763", col: "000078", val: -0.15669, type: "vol" },
-        { row: "603288", col: "000652", val: -0.13302, type: "vol" },
-        { row: "600269", col: "000078", val: -0.06548, type: "vol" },
-      ],
 
       colorScheme: d3.interpolateBrBG,
       // colorScheme: d3.interpolateYlGnBu,
       // colorScheme: d3.interpolateYlGn,
       // colorScheme: d3.interpolateYlOrRd,
 
-      //补充
-      testList: [
-        { name: "John", id: 0 },
-        { name: "Joao", id: 1 },
-        { name: "Jean", id: 2 },
-      ],
-
       dragging: false,
       enabled: true,
+
+      periodRange: [moment.utc('2020-01-01', 'YYYY-MM-DD'), moment.utc('2020-06-30', 'YYYY-MM-DD')],
+      periodPresetRange: {
+        'All': [moment.utc('2011-01-01', 'YYYY-MM-DD'), moment.utc('2020-12-31', 'YYYY-MM-DD')],
+        '3Y': [moment.utc('2018-01-01', 'YYYY-MM-DD'), moment.utc('2020-12-31', 'YYYY-MM-DD')],
+        '1Y': [moment.utc('2020-01-01', 'YYYY-MM-DD'), moment.utc('2020-12-31', 'YYYY-MM-DD')],
+        '3M': [moment.utc('2020-01-01', 'YYYY-MM-DD'), moment.utc('2020-03-31', 'YYYY-MM-DD')],
+      },
+      periodDisabledRange: (cur) => { return cur < moment.utc('2011-01-01', 'YYYY-MM-DD') || cur > moment.utc('2020-12-31', 'YYYY-MM-DD')},
     };
   },
   watch: {
     correlationMatrix: function () {
       this.renderMatrix();
     },
+    selectedYear: function (year) {
+      this.periodRange = [
+        moment.utc(`${year}-01-01`, "YYYY-MM-DD"),
+        moment.utc(`${year}-12-31`, "YYYY-MM-DD")
+      ]
+    },
+    periodRange: function () {
+      this.$emit("update-period-range", this.periodRange);
+    },
+    correlationReturn: function () {
+      this.renderMatrix();
+    },
   },
   mounted() {
-    //console.log("矩阵数据:", this.correlationMatrix);
-    //console.log("col:", this.correlationMatrix.columns);
-    // console.log("corr:", this.correlationMatrix.corr);
     this.initMatrix();
     this.renderMatrix();
   },
   methods: {
-    checkMove: function (e) {
-      //window.console.log("Future index: " + e.draggedContext.futureIndex);
-      //console.log(list);
-      window.console.log("List: ", e.relatedContext.list);
-      window.console.log("Element: ", e.draggedContext.element);
-      this.matrixColumn = e.relatedContext.list;
-      this.renderMatrix();
-    },
-
     initMatrix() {
-      // Initialize svg
-      // this.width = this.$el.clientWidth;
-      // this.height = this.$el.clientHeight;
-
-      // if (this.margin.left === 0) {
-      //   this.margin.left =
-      //     this.width - (this.height - this.margin.top - this.margin.bottom);
-      // }
       this.svg = d3
-        .select(this.$el)
-        .append("svg")
-        .attr("viewBox", [0, 0, this.width, this.height])
-        .append("g")
-        .attr("transform", `translate(${this.margin.left},${this.margin.top})`);
-    },
-    renderMatrix() {
-      // Remove all groups in svg
-      this.svg.selectAll("g").remove();
+          .select("#matrix")
+          .append("svg")
+          .attr("viewBox", [0, 0, this.width, this.height]);
 
-      let heatmapContainer = this.svg.append("g");
-
-      let colorScale = d3
-        .scaleSequential()
-        .domain([-1, 1])
-        .interpolator(this.colorScheme);
-
-      var currentColumn = this.matrixColumn; //获取现在的数据
-
-      let x = d3
-        .scaleBand()
-        .domain(currentColumn)
-        .padding(this.padding)
-        .range([0, this.width - this.margin.right - this.margin.left]);
-      let y = d3
-        .scaleBand()
-        .domain(currentColumn)
-        .padding(this.padding)
-        .range([0, this.height - this.margin.bottom - this.margin.top]);
-      //let r = (x(this.matrixColumn[1]) - x(this.matrixColumn[0])) / 2;
-
-      // Heatmap
-      this.svg
-        .append("g")
-        .attr("class", "xAxis")
-        .call(d3.axisBottom(x).tickSizeOuter(0))
-        .attr(
-          "transform",
-          `translate(0,${this.height - this.margin.bottom - this.margin.top})`
-        );
-      this.svg.selectAll(".xAxis .tick text").attr("transform", "rotate(12)");
-
-      this.svg
-        .append("g")
-        .attr("class", "yAxis")
-        .call(d3.axisRight(y).tickSizeOuter(0))
-        .attr(
-          "transform",
-          `translate(${this.width - this.margin.right - this.margin.left},0)`
-        );
-
-      var cell = heatmapContainer
-        .selectAll(".cell")
-        .data(this.matrixCorr)
-        .enter();
-
-      cell
-        .append("rect")
-        .attr("class", "cell")
-        .attr("x", function (d) {
-          return x(d.col);
-        })
-        .attr("y", (d) => y(d.row))
-        .attr("width", x.bandwidth())
-        .attr("height", y.bandwidth())
-        .style("fill", function (d) {
-          if (d.col != d.row) return colorScale(d.val);
-          else return "white";
-        })
-        .style("opacity", 1e-6)
-        .transition()
-        .style("opacity", 1);
-
-      cell //对角线上的矩形 涂白
-        .filter((d) => d.col == d.row)
-        .append("rect")
-        .attr("x", function (d) {
-          return x(d.col);
-        })
-        .attr("y", (d) => y(d.row))
-        .attr("width", x.bandwidth())
-        .attr("height", y.bandwidth())
-        .style("fill", "white")
-        .style("opacity", 1e-6)
-        .transition()
-        .style("opacity", 1);
-
-      cell
-        .filter((k) => k.col == k.row)
-        .append("circle")
-        .attr("class", "cell")
-        .attr("cx", function (d) {
-          return x(d.col) + x.bandwidth() / 2;
-        })
-        .attr("cy", (d) => y(d.row) + y.bandwidth() / 2)
-        .attr("r", x.bandwidth() / 3.25)
-        .style("fill", function (d) {
-          if (d.val >= 0) return colorScale(0.75);
-          else return colorScale(-0.75);
-        })
-        .style("opacity", 0.3)
-        .transition()
-        .style("opacity", 0.3);
-
-      //pieChart
-      let radius = x.bandwidth() / 2.75;
-      let pie = d3.pie().value((d) => d);
-      let arc = d3
-        .arc()
-        .innerRadius(x.bandwidth() / 3.25)
-        .outerRadius(radius);
-
-      let points = heatmapContainer
-        .selectAll("g")
-        .data(this.matrixCorr.filter((k) => k.col === k.row))
-        .enter()
-        .append("g")
-        .attr(
-          "transform",
-          (d) =>
-            `translate(${x(d.col) + x.bandwidth() / 2},${
-              y(d.row) + y.bandwidth() / 2
-            })`
-        )
-        .attr("class", "pies");
-
-      let pies = points
-        .selectAll(".pies")
-        .data((d) => {
-          let res = pie([Math.abs(d.val), 1 - Math.abs(d.val)]); //pie()只能接受正值数组，用于pieChart的分段画弧
-          res.forEach((dd) => {
-            dd.dataValue = [d.val, 1];
-          });
-          // console.log(res);
-          return res;
-        })
-        .enter()
-        .append("g")
-        .attr("class", "arc")
-        //.attr("class", "cell")
-        .on("click", (_, d) => {
-          //把事件加到整体group上
-          this.$emit("selectedStockFromMatrixDiagonal", d.row);
-        });
-
-      pies
-        //.attr("class", "cell")
-        .append("path")
-        .attr("d", arc)
-        .attr("fill", (d, i) => {
-          // console.log("d.dataValuel:", d.dataValue); //不知道d是啥，可以console出来看看
-          if (i == 0) {
-            if (d.dataValue[i] < 0) {
-              return colorScale(-0.75);
-            } else {
-              return colorScale(0.75);
-            }
-            //return colorScale(d.dataValue[i]);
-          } else return "white";
-        })
-        .style("stroke", function (d, i) {
-          if (i == 0) {
-            if (d.dataValue[i] < 0) {
-              return colorScale(-0.75);
-            } else {
-              return colorScale(0.75);
-            }
-            //return colorScale(d.dataValue[i]);
-          } else return "white";
-        })
-        .style("stroke-width", 3);
-
-      let mouseover = function (_, d) {
-        d3.selectAll(".cell")
-          .filter((k) => !(k.col === d.col || k.row === d.row)) // when not in the same row or column
-          .style("opacity", 0.3)
-          .style("stroke-width", 0);
-        d3.selectAll(".cell")
-          .filter(
-            (k) => (k.col === d.col || k.row === d.row) && k.col !== k.row
-          ) // when in the same row or column
-          .style("stroke-width", 1)
-          .style("stroke", (d) => {
-            if (d.type === "vol") {
-              //交易量下三角
-              return "black";
-            } else if (d.type === "price") {
-              //股价上三角
-              return "black";
-            } else return "none";
-          })
-          .style("stroke-dasharray", (d) => {
-            if (d.type === "vol") {
-              return "2 2";
-            } else return "0";
-          });
-        d3.selectAll(".cell")
-          .filter((k) => (k.col === d.col || k.row === d.row) && k.col == k.row) // when in the same row or column
-          .style("opacity", 0.3)
-          .style("stroke-width", 0);
-      };
-
-      let mouseout = function () {
-        d3.selectAll(".cell")
-          .style("opacity", 1)
-          .style("stroke-width", (d) => {
-            if (d.col === d.row) return 4;
-            else return 0;
-          });
-        d3.selectAll(".cell")
-          .filter((k) => k.col == k.row) // when in the same row or column
-          .style("opacity", 0.3)
-          .style("stroke-width", 0);
-      };
-
-      // Heatmap interaction
-      d3.selectAll(".cell").on("mouseover", mouseover).on("mouseout", mouseout);
-
-      // The diagonal cells
-      d3.selectAll(".cell").on("click", (_, d) => {
-        this.$emit("selectedStockFromMatrix", d.row, d.col);
-      });
-
-      //barChart
-      let yScale = d3
-        .scaleLinear()
-        .domain(d3.extent(this.lineData, (d) => d.val))
-        .range([this.margin.top / 3, 0])
-        .nice();
-      this.svg
-        .selectAll(".barChart")
-        .data(this.lineData)
-        .enter()
-        .append("rect")
-        .attr("x", (d) => x(d.col))
-        .attr("y", (d) => yScale(Math.max(0, d.val)))
-        .attr("height", (d) => Math.abs(yScale(d.val) - yScale(0)))
-        .attr("width", x.bandwidth())
-        .style("fill", (d) => {
-          if (d.val < 0) return "#C65A21";
-          else return "#407FB4";
-        })
-        .attr("transform", "translate(0,-110)");
-
-      let xScale = d3
-        .scaleLinear()
-        .domain(d3.extent(this.lineData, (d) => d.val))
-        .range([0, this.margin.left / 3])
-        .nice();
-
-      this.svg
-        .selectAll(".barChart")
-        .data(this.lineData)
-        .enter()
-        .append("rect")
-        .attr("x", (d) => xScale(Math.min(0, d.val)))
-        .attr("y", (d) => y(d.row))
-        .attr("width", (d) => Math.abs(xScale(d.val) - xScale(0)))
-        .attr("height", y.bandwidth())
-        .style("fill", (d) => {
-          if (d.val < 0) return "#C65A21";
-          else return "#407FB4";
-        })
-        .attr("transform", "translate(-110,0)");
+      this.heatmapContainer = this.svg
+          .append("g")
+          .attr("transform", `translate(${this.margin.left},${this.margin.top})`);
 
       // legend scale
-      let legendWidth = 138;
-      let legendHeight = 15;
-      let legend = this.svg.append("g").attr("transform", "translate(410,-30)");
+      let legendWidth = 100;
+      let legendHeight = 10;
+      let legend = this.svg
+          .append("g")
+          .attr("transform", `translate(${this.width-legendWidth*2.5},${this.margin.top-legendHeight*1.5})`);
+      let colorScale = d3.scaleSequential().domain([-1, 1]).interpolator(this.colorScheme);
 
       let stops = d3.range(-1, 1.01, 0.2).map((d) => {
         return { offset: (d + 1) / 2, color: colorScale(d), value: d };
       });
       legend
-        .append("linearGradient")
-        .attr("id", "linear-gradient")
-        .attr("x2", "100%")
-        .attr("y2", "0%")
-        .selectAll("stop")
-        .data(stops)
-        .enter()
-        .append("stop")
-        .attr("offset", (d) => 100 * d.offset + "%")
-        .attr("stop-color", (d) => d.color);
+          .append("linearGradient")
+          .attr("id", "linear-gradient")
+          .attr("x2", "100%")
+          .attr("y2", "0%")
+          .selectAll("stop")
+          .data(stops)
+          .enter()
+          .append("stop")
+          .attr("offset", (d) => 100 * d.offset + "%")
+          .attr("stop-color", (d) => d.color);
       legend
-        .append("rect")
-        .attr("width", legendWidth)
-        .attr("height", legendHeight)
-        .style("fill", "url(#linear-gradient)");
+          .append("rect")
+          .attr("width", legendWidth)
+          .attr("height", legendHeight)
+          .style("fill", "url(#linear-gradient)");
+      legend
+          .selectAll("text")
+          .data([-1, 1])
+          .enter()
+          .append("text")
+          .attr("y", legendHeight)
+          .attr("x", (d) => legendWidth/2 + d*(legendWidth/2+10) )
+          .style("text-anchor", "middle")
+          .style('font-size', '12')
+          .text((d) => d);
+    },
+    renderMatrix() {
+      // Remove all groups in svg
+      this.heatmapContainer.selectAll("g").remove();
 
-      legend
-        .selectAll("text")
-        .data([-1.0, 1.0])
-        .enter()
-        .append("text")
-        .attr("dy", -5)
-        .attr("x", (_, i) => i * 138)
-        .style("text-anchor", "middle")
-        .text((d) => d.toFixed(1));
+      let colorScale = d3.scaleSequential().domain([-1, 1]).interpolator(this.colorScheme);
+      let x = d3
+          .scaleBand()
+          .domain(this.matrixColumn)
+          .padding(this.padding)
+          .range([0, this.width - this.margin.right - this.margin.left]);
+      let y = d3
+          .scaleBand()
+          .domain(this.matrixColumn)
+          .padding(this.padding)
+          .range([0, this.height - this.margin.bottom - this.margin.top]);
+
+      // Heatmap
+      this.heatmapContainer
+          .append("g")
+          .attr("class", "xAxis")
+          .call(d3.axisBottom(x).tickSizeOuter(0))
+          .attr("transform", `translate(0,${this.height - this.margin.bottom - this.margin.top})`)
+          .selectAll(".tick text")
+          .attr("transform", "rotate(15)");
+
+      this.heatmapContainer
+          .append("g")
+          .attr("class", "yAxis")
+          .call(d3.axisRight(y).tickSizeOuter(0))
+          .attr("transform", `translate(${this.width - this.margin.right - this.margin.left},0)`);
+
+
+      let cells = this.heatmapContainer
+          .selectAll('.cell')
+          .data(this.matrixCorr)
+          .enter()
+          .append('g')
+          .attr("class", "cell")
+          .attr("transform", d => `translate(${x(d.col)+x.bandwidth()/2},${y(d.row)+y.bandwidth()/2})`);
+
+      let dx = x.bandwidth()/2;
+      let dy = y.bandwidth()/2;
+      let w = x.bandwidth();
+      let h = y.bandwidth();
+      // draw rectangles
+      cells.filter((d) => d.col !== d.row)
+          .append("rect")
+          .attr("class", "cell")
+          .attr("x", -dx)
+          .attr("y", -dy)
+          .attr("width", w)
+          .attr("height", h)
+          .style("fill", (d) => colorScale(d.val))
+      // .style("stroke", (d) => colorScale(Math.sign(d.val)*0.9))
+      // .style("stroke-width", 1);
+
+      // draw upper frame
+      cells.filter((d) => d.col !== d.row && d.type === 'price')
+          .append('path')
+          .attr("d", `M ${0} ${-dy} L ${dx} ${-dy} L ${dx/1.3} ${-dy/1.3} L ${dx/3} ${-dy/1.3} Z`)
+          .attr("fill", d => colorScale(Math.sign(d.val)*0.75));
+      cells.filter((d) => d.col !== d.row && d.type === 'price')
+          .append('path')
+          .attr("d", `M ${dx} ${-dy} L ${dx} ${0} L ${dx/1.3} ${-dy/3} L ${dx/1.3} ${-dy/1.3} Z`)
+          .attr("fill", d => colorScale(Math.sign(d.val)*0.5));
+      // draw lower frame
+      cells.filter((d) => d.col !== d.row && d.type === 'vol')
+          .append('path')
+          .attr("d", `M ${0} ${dy} L ${-dx} ${dy} L ${-dx/1.3} ${dy/1.3} L ${-dx/3} ${dy/1.3} Z`)
+          .attr("fill", d => colorScale(Math.sign(d.val)*0.75));
+      cells.filter((d) => d.col !== d.row && d.type === 'vol')
+          .append('path')
+          .attr("d", `M ${-dx} ${dy} L ${-dx} ${0} L ${-dx/1.3} ${dy/3} L ${-dx/1.3} ${dy/1.3} Z`)
+          .attr("fill", d => colorScale(Math.sign(d.val)*0.5));
+
+      // // draw upper triangle
+      // cells.filter((d) => d.col !== d.row && d.type === 'price')
+      //     .append('path')
+      //     .attr("d", `M ${dx/3} ${-dy} L ${dx} ${-dy} L ${dx} ${-dy/3} Z`)
+      //     .attr("fill", d => colorScale(Math.sign(d.val)*0.5));
+      // cells.filter((d) => d.col !== d.row && d.type === 'price')
+      //     .append('path')
+      //     .attr("d", `M ${-dx} ${dy/3} L ${-dx} ${dy} L ${-dx/3} ${dy} Z`)
+      //     .attr("fill", d => colorScale(Math.sign(d.val)*0.75));
+      // // draw lower triangle
+      // cells.filter((d) => d.col !== d.row && d.type === 'vol')
+      //     .append('path')
+      //     .attr("d", `M ${-dx} ${dy/3} L ${-dx} ${dy} L ${-dx/3} ${dy} Z`)
+      //     .attr("fill", d => colorScale(Math.sign(d.val)*0.5));
+      // cells.filter((d) => d.col !== d.row && d.type === 'vol')
+      //     .append('path')
+      //     .attr("d", `M ${dx/3} ${-dy} L ${dx} ${-dy} L ${dx} ${-dy/3} Z`)
+      //     .attr("fill", d => colorScale(Math.sign(d.val)*0.75));
+
+      // draw diagonal
+      let arc = d3.arc()
+          .startAngle(d => d[0])
+          .endAngle(d => d[1])
+          .innerRadius(x.bandwidth()/4)
+          .outerRadius(x.bandwidth()/2.4)
+          .cornerRadius(5);
+      cells.filter((d) => d.col === d.row)
+          .append("circle")
+          .attr("r", dx)
+          .style("fill", (d) => colorScale(Math.sign(d.val)*0.15));
+      cells.filter((d) => d.col === d.row)
+          .selectAll('.cell')
+          .data((d) => [
+            [0, Math.abs(d.val)*Math.PI*2, Math.sign(d.val)],
+            [Math.abs(d.val)*Math.PI*2, Math.PI*2, Math.sign(d.val)]
+          ])
+          .enter()
+          .append('path')
+          .attr("d", arc)
+          .attr("fill", (d, i) => i === 0? colorScale(d[2]*0.75): "white");
+
+      let mouseover = function (_, d) {
+        d3.selectAll(".cell")
+            .filter((k) => !(k.col === d.col || k.row === d.row)) // when not in the same row or column
+            .style("opacity", 0.3)
+            .style("stroke-width", 0);
+        d3.selectAll(".cell")
+            .filter((k) => (k.col === d.col || k.row === d.row)) // when in the same row or column
+            .style("stroke-width", 1)
+            .style("stroke-dasharray", (d) => (d.type === "vol")? "2 2": "0")
+            .filter((k) => k.col === k.row) // when in the same row or column
+            .style("stroke-width", 0);
+      };
+
+      let mouseout = function () {
+        d3.selectAll(".cell")
+            .style("opacity", 1)
+            .style("stroke-width", 0);
+      };
+
+      // Heatmap interaction
+      d3.selectAll(".cell")
+          .on("mouseover", mouseover)
+          .on("mouseout", mouseout)
+          .on("click", (_, d) => {
+            this.$emit("selectedStockFromMatrix", d.row, d.col);
+          });
+
+      //barChart
+      let xScale = d3
+          .scaleLinear()
+          .domain(d3.extent(this.correlationReturn, (d) => d.val))
+          .range([this.margin.left/3, 0])
+          .nice();
+
+      this.heatmapContainer
+          .selectAll(".bar")
+          .data(this.correlationReturn)
+          .enter()
+          .append("rect")
+          .attr("class", "bar")
+          .attr("x", (d) => xScale(d.val))
+          .attr("y", (d) => y(d.row))
+          .attr("width", (d) => Math.abs(xScale(d.val) - xScale(0)))
+          .attr("height", y.bandwidth())
+          .style("fill", (d) => (d.val < 0)? "#C65A21": "#407FB4")
+          .attr("transform", `translate(${-this.margin.left},0)`);
     },
   },
 };
@@ -424,11 +327,7 @@ export default {
 
 
 <style scoped>
-.ghost {
-  opacity: 0.5;
-  background: #c8ebfb;
-}
-.testClass{
+.draggableList{
   position:absolute;
   top:550px;
   right:80px;
@@ -448,8 +347,56 @@ export default {
   top: 0px;
   font-weight: bold;
 }
-
-.not-draggable {
-  cursor: no-drop;
+.flip-list-move {
+  transition: transform 0.5s;
+}
+.no-move {
+  transition: transform 0s;
+}
+.ghost {
+  opacity: 0.5;
+  background: #c8ebfb;
+}
+.list-group {
+  min-height: 20px;
+}
+.list-group-item {
+  cursor: move;
+}
+.list-group-item i {
+  cursor: pointer;
+}
+#knowledge_graph_title {
+  position: absolute;
+  top: 0;
+  padding: 0 20px;
+  width: 50%;
+  height: 40px;
+  line-height: 40px;
+  font-size: 26px;
+  background: #777;
+  color: #fcfcfc;
+  display: flex;
+  font-weight: bold;
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(26 26 26 0.2);
+}
+#triangle {
+  position: absolute;
+  top: 0;
+  right: 49%;
+  border-top: 40px solid #777;
+  border-right: 45px solid #ffffff;
+  border-bottom: 3px solid #ffff;
+}
+#matrix {
+  position: absolute;
+  top: 0;
+}
+#date-picker {
+  position: absolute;
+  bottom: 40px;
+  left: 5px;
+  width: 115px;
 }
 </style>

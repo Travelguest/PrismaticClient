@@ -6,7 +6,7 @@
     <span :style="{ marginRight: '8px' }">Categories:</span>
     <template v-for="tag in tags" :key="tag">
       <a-checkable-tag
-        :checked="selectedTags.indexOf(tag) > -1"
+        :checked="selectedTags.indexOf(tag) gi> -1"
         @change="(checked) => handleChange(tag, checked)"
       >
         {{ tag }}
@@ -57,13 +57,15 @@ export default {
       checked2: false,
       checked3: false,
       tags: ["Movies", "Books", "Music", "Sports"],
-      selectedTags: [],
+      selectedTags: ["Movies", "Books", "Music", "Sports"],
+      unselectedTags:[]
     };
   },
   methods: {
     handleChange(tag, checked) {
-      console.log("tag:",tag);
+      //console.log("tag:",tag);
       const { selectedTags } = this;
+      const{}
       const nextSelectedTags = checked
         ? [...selectedTags, tag]//如果用户“选中”，就在selectedTag中添加这个新标签；
         : selectedTags.filter((t) => t !== tag);//如果用户取消选择，就在selectedTag中把除了这个标签之外的标签筛选出来
