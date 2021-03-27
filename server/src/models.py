@@ -375,6 +375,6 @@ class Model:
 
         for neighbor in graph[stock_code]:
             if key in graph[stock_code][neighbor] and value in graph[stock_code][neighbor][key]:
-                stocks[neighbor] = [graph[stock_code][neighbor]]
+                stocks[neighbor] = graph[stock_code][neighbor]
 
         return stocks
