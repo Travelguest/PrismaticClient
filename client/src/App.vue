@@ -188,7 +188,7 @@ export default {
           }
       );
 
-      this.loadingTriangleStock = true;
+      this.loadingTriangleSectorRight = true;
       DataService.post(
           "get_corr_tri_sector",
           _.flatten([this.selectedStockRight, this.periodRange[0].format('YYYY-MM-DD'), this.periodRange[1].format('YYYY-MM-DD')]),
