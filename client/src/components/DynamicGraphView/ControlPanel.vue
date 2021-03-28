@@ -4,10 +4,13 @@
     <div class="panel-header-end"></div>
     <div>
       <a-row>
-        <a-col :span="9" style="line-height: 40px; font-size: 14px">
+        <a-col
+          :span="12"
+          style="line-height: 40px; font-size: 16px; font-weight: bold"
+        >
           Select stocks and correlation
         </a-col>
-        <a-col :span="12">
+        <a-col :span="9">
           <a-slider
             range
             :tooltipVisible="false"
@@ -49,7 +52,7 @@
             disabled
             style="
               color: steelblue;
-              font-size: 14px;
+              font-size: 12px;
               line-height: 50px;
               height: 50px;
             "
@@ -123,7 +126,7 @@
     </div>
 
     <a-divider
-      style="font-size: 18px; font-weight: bold; padding-top: 10px; margin: 0px"
+      style="font-size: 16px; font-weight: bold; padding-top: 10px; margin: 0px"
       >Correlated clusters</a-divider
     >
     <dynamic-graph-view
@@ -136,7 +139,7 @@
 
     <a-divider
       style="
-        font-size: 18px;
+        font-size: 16px;
         font-weight: bold;
         padding-top: 10px;
         padding-bottom: 2px;
@@ -269,6 +272,18 @@ export default {
     stockButtonDisabled() {
       return !this.stockSelected.length;
     },
+    // selectedTagsIndustry() {
+    //   return this.businessTag.L1;
+    // },
+    // selectedTagsSector() {
+    //   return this.businessTag.L2;
+    // },
+    // selectedTagsSubsector() {
+    //   return this.businessTag.L3;
+    // },
+    // selectedTagsConcept() {
+    //   return this.businessTag.concept;
+    // },
   },
   watch: {
     stockSelected: function (_, newVal) {
@@ -406,7 +421,7 @@ export default {
   width: 60%;
   height: 40px;
   line-height: 40px;
-  font-size: 26px;
+  font-size: 24px;
   background: #777;
   color: #fcfcfc;
   display: flex;

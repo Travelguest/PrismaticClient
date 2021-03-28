@@ -1,12 +1,13 @@
 <template>
   <div>
-    <div id="knowledge_graph_title"><div id="knowledge_graph_text">Knowledge Graph</div></div>
+    <div id="knowledge_graph_title">
+      <div id="knowledge_graph_text">Knowledge Graph</div>
+    </div>
     <div id="triangle"></div>
   </div>
 </template>
 
 <script>
-
 export default {
   name: "KnowledgeGraphView",
   props: {
@@ -19,26 +20,23 @@ export default {
     },
   },
   data() {
-    return {
-    }
+    return {};
   },
-  mounted: function () {
-  },
-  methods: {
-  },
-}
+  mounted: function () {},
+  methods: {},
+};
 </script>
 
 <style scoped>
 #knowledge_graph_title {
   position: absolute;
-  right:0;
+  right: 0;
   top: 0;
   padding: 0 20px;
   width: 50%;
   height: 40px;
   line-height: 40px;
-  font-size: 26px;
+  font-size: 24px;
   background: #777;
   color: #fcfcfc;
   display: flex;
@@ -47,11 +45,11 @@ export default {
   box-shadow: 0 1px 2px rgba(26 26 26 0.2);
 }
 
-#knowledge_graph_text{
+#knowledge_graph_text {
   position: absolute;
-  right:0;
-  padding-right:20px;
-  text-align:right;
+  right: 0;
+  padding-right: 20px;
+  text-align: right;
 }
 
 #triangle {

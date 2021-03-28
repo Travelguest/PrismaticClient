@@ -3,6 +3,7 @@
     <a-spin :spinning="loadingTriangle" :delay="100">
       <div :id='`pinus_${id}`' style='height: 100%'>
       </div>
+      <div :id="`pinus_${id}_svg`"></div><!--新增-->
     </a-spin>
   </div>
 </template>
@@ -46,7 +47,7 @@ export default {
       height: 0,
       margin: {top: 5, right: 0, bottom: 5, left: 15},
       padding: 0.0,
-
+      svg: null,//新增
       // colorScheme: d3.interpolateBrBG,
       // colorScheme: d3.interpolateYlGnBu,
       colorScheme: d3.interpolateRdYlGn,
@@ -65,6 +66,7 @@ export default {
         _this.renderPinus();
         if (elapsed > 2000) t.stop();
       });
+      this.renderArea();//新增
     }
   },
   mounted() {
@@ -87,7 +89,22 @@ export default {
 
       this.custom = d3.select(document.createElement('custom'));
 
+      this.svg = d3//新增
+        .select(`#pinus_${this.id}_svg`)
+        .append("svg")
+        .attr("width", this.width + 30)
+        .attr("height", this.height + 30)
+        // .attr("fill", "red")
+        // .attr("transform", `translate(0,${-this.height})`)
+        .style("position", "absolute")
+        .style("top", 6)
+        .style("left", 10)
+        .append("g")
+        .style("z-index", "1");
+
+
       this.bindPinus();
+      this.renderArea();//新增
 
       let _this = this;
       let t = d3.timer(function(elapsed) {
@@ -140,6 +157,52 @@ export default {
           .attr('height', 0)
           .remove();
     },
+
+
+    renderArea() {//新增
+      this.date = this.matrixColumn.map((d) => new Date(d));
+      this.svg.selectAll("g").remove();
+
+      this.svg
+        .append("rect")
+        .attr("class", "backGround")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", 4)
+        .attr("height", this.height/3)
+        .style("fill", "#2D5B81")
+
+
+      //Title
+      this.svg
+        .append("g")
+        .append("text")
+        .attr("class", "textContent")
+        .attr("x", 6)
+        .attr("y", 12)
+        .text("SSEC")
+        .style("fill","#2D5B81")
+        .style("font-size", "16px");
+
+      //文本4
+      this.svg
+        .append("g")
+        .append("text")
+        .attr("class", "textContent")
+        .attr("x", 6)
+        .attr("y", 25)
+        // .attr("x", 40)
+        // .attr("y", 29)
+        .text("corr")
+        .style("fill","#2D5B81")
+        .style("font-size", "12px");
+        
+        if(!this.correlationTriangle) this.svg.selectAll(".backGround").remove();
+        if(!this.correlationTriangle) this.svg.selectAll(".textContent").remove();      
+    },
+
+
+
     renderPinus() {
       let context = this.canvas.node().getContext('2d');
 

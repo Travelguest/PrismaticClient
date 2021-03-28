@@ -1,14 +1,13 @@
 <template>
-<div>
-<!-- <div id="knowledge_graph_title"><div id="knowledge_graph_text">Knowledge Graph</div></div>
+  <div>
+    <!-- <div id="knowledge_graph_title"><div id="knowledge_graph_text">Knowledge Graph</div></div>
     <div id="triangle"></div> -->
-  <div id="prism_view_container">
-    
-    <div :id="`pinus_${id}`" style="height: 100%; width: 100%"></div>
-    <div :id="`pinus_${id}_svg`"></div>
-    <div :id="`tooltip_${id}`" class="tooltip"></div>
+    <div id="prism_view_container">
+      <div :id="`pinus_${id}`" style="height: 100%; width: 100%"></div>
+      <div :id="`pinus_${id}_svg`"></div>
+      <div :id="`tooltip_${id}`" class="tooltip"></div>
+    </div>
   </div>
-</div>
 </template>
 
 <script>
@@ -222,8 +221,8 @@ export default {
         .attr("x", 2)
         .attr("y", 5)
         .attr("width", 8)
-        .attr("height", this.height/3)
-        .style("fill", "#2D5B81")
+        .attr("height", this.height / 3)
+        .style("fill", "#2D5B81");
 
       this.svg
         .append("g")
@@ -258,9 +257,58 @@ export default {
         .style("fill", "#E9E9E9")
         // .style("fill", "red")
         .attr("transform", `translate(0,${this.height - 6})`);
-        
-        if(!this.correlationTriangle) this.svg.selectAll(".brushBackGround").remove();
-        if(!this.correlationTriangle) this.svg.selectAll(".backGround").remove();
+
+      //Title
+      this.svg
+        .append("g")
+        .append("text")
+        .attr("class", "textContent")
+        .attr("x", 15)
+        .attr("y", 25)
+        .text(this.title)
+        .style("fill", "#2D5B81")
+        .style("font-size", "24px");
+
+      //文本2
+      this.svg
+        .append("g")
+        .append("text")
+        .attr("class", "textContent")
+        .attr("x", 15)
+        .attr("y", 45)
+        .text("market")
+        .style("fill", "#2D5B81")
+        .style("font-size", "16px");
+
+      //文本3
+      this.svg
+        .append("g")
+        .append("text")
+        .attr("class", "textContent")
+        .attr("x", 15)
+        .attr("y", 60)
+        .text("xxx" + " days")
+        .style("fill", "#2D5B81")
+        .style("font-size", "16px");
+
+      //文本4
+      this.svg
+        .append("g")
+        .append("text")
+        .attr("class", "textContent")
+        .attr("x", 15)
+        .attr("y", 75)
+        // .attr("x", 80)
+        // .attr("y", 60)
+        .text("corr")
+        .style("fill", "#2D5B81")
+        .style("font-size", "16px");
+
+      if (!this.correlationTriangle)
+        this.svg.selectAll(".brushBackGround").remove();
+      if (!this.correlationTriangle) this.svg.selectAll(".backGround").remove();
+      if (!this.correlationTriangle)
+        this.svg.selectAll(".textContent").remove();
 
       //
 
@@ -277,36 +325,6 @@ export default {
         .attr("class", "brush")
         .call(brush)
         .attr("transform", `translate(0,${this.height - 7})`);
-
-      //Title
-      this.svg
-        .append("g")
-        .append("text")
-        .attr("x", 15)
-        .attr("y", 25)
-        .text(this.title)
-        .style("fill","#2D5B81")
-        .style("font-size", "25px");
-
-      //文本2
-      this.svg
-        .append("g")
-        .append("text")
-        .attr("x", 15)
-        .attr("y", 45)
-        .text(this.title)
-        .style("fill","#2D5B81")
-        .style("font-size", "15px");
-
-      //文本3
-      this.svg
-        .append("g")
-        .append("text")
-        .attr("x", 15)
-        .attr("y", 60)
-        .text(this.title)
-        .style("fill","#2D5B81")
-        .style("font-size", "15px");
     },
     renderPinus() {
       let context = this.canvas.node().getContext("2d");
@@ -402,10 +420,9 @@ export default {
   position: absolute;
 }
 
-
 #knowledge_graph_title {
   position: absolute;
-  right:0;
+  right: 0;
   top: 0;
   padding: 0 20px;
   width: 50%;
@@ -420,11 +437,11 @@ export default {
   box-shadow: 0 1px 2px rgba(26 26 26 0.2);
 }
 
-#knowledge_graph_text{
+#knowledge_graph_text {
   position: absolute;
-  right:0;
-  padding-right:20px;
-  text-align:right;
+  right: 0;
+  padding-right: 20px;
+  text-align: right;
 }
 
 #triangle {
