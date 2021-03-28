@@ -156,18 +156,26 @@ export default {
         .style("color", "#6C7B8A");
 
       //画y轴——左边dataA的
+      
       if (this.nowTag === "close") {
-        this.yScale.domain(d3.extent(this.dataA, (d) => d.close));
+        var originalDataA_close=d3.extent(this.dataA, (d) => d.close);
+        var newDataA_close=[originalDataA_close[0]-(originalDataA_close[1]-originalDataA_close[0])/3,originalDataA_close[1]+(originalDataA_close[1]-originalDataA_close[0])/3];
+        this.yScale.domain(newDataA_close);
       } else if (this.nowTag === "pct") {
-        this.yScale.domain(d3.extent(this.dataA, (d) => d.pct));
+        var originalDataA_pct=d3.extent(this.dataA, (d) => d.pct);
+        var newDataA_pct=[originalDataA_pct[0]-(originalDataA_pct[1]-originalDataA_pct[0])/3,originalDataA_pct[1]+(originalDataA_pct[1]-originalDataA_pct[0])/3];
+        this.yScale.domain(newDataA_pct);
       } else {
-        this.yScale.domain(d3.extent(this.dataA, (d) => d.log));
+        var originalDataA_log=d3.extent(this.dataA, (d) => d.log);
+        var newDataA_log=[originalDataA_log[0]-(originalDataA_log[1]-originalDataA_log[0])/3,originalDataA_log[1]+(originalDataA_log[1]-originalDataA_log[0])/3];
+        this.yScale.domain(newDataA_log);
       }
+
 
       this.svg.append("g").attr("id", "yAxis_A").call(
         d3.axisLeft(this.yScale)
         // .tickFormat(d3.format("~s"))
-        // .ticks(5)
+        //.ticks(6)
         // .tickFormat(d3.format(".0%")).ticks(5)
         // .ticks(d3.timeYear.every(2))
         // .tickValues([2010,2020])
@@ -203,12 +211,19 @@ export default {
       //   .style("fill", "rgba(80,161,255,0.30)")
       //   .attr("d", this.area);
 
+      //右侧的Y轴
       if (this.nowTag === "close") {
-        this.yScale.domain(d3.extent(this.dataB, (d) => d.close));
+        var originalDataB_close=d3.extent(this.dataB, (d) => d.close);
+        var newDataB_close=[originalDataB_close[0]-(originalDataB_close[1]-originalDataB_close[0])/3,originalDataB_close[1]+(originalDataB_close[1]-originalDataB_close[0])/3];
+        this.yScale.domain(newDataB_close);
       } else if (this.nowTag === "pct") {
-        this.yScale.domain(d3.extent(this.dataB, (d) => d.pct));
+        var originalDataB_pct=d3.extent(this.dataB, (d) => d.pct);
+        var newDataB_pct=[originalDataB_pct[0]-(originalDataB_pct[1]-originalDataB_pct[0])/3,originalDataB_pct[1]+(originalDataB_pct[1]-originalDataB_pct[0])/3];
+        this.yScale.domain(newDataB_pct);
       } else {
-        this.yScale.domain(d3.extent(this.dataB, (d) => d.log));
+        var originalDataB_log=d3.extent(this.dataB, (d) => d.log);
+        var newDataB_log=[originalDataB_log[0]-(originalDataB_log[1]-originalDataB_log[0])/3,originalDataB_log[1]+(originalDataB_log[1]-originalDataB_log[0])/3];
+        this.yScale.domain(newDataB_log);
       }
       // this.yScale.domain(d3.extent(this.dataB, (d) => d.close));
       this.svg
@@ -216,7 +231,7 @@ export default {
         .attr("id", "yAxis_B")
         .call(
           d3.axisRight(this.yScale)
-          // .ticks(6)
+          //  .ticks(6)
         )
         .attr("transform", `translate(${this.innerWidth},0)`);
       // .select(".domain")
@@ -243,7 +258,7 @@ export default {
         .data(this.keys)
         .enter()
         .append("circle")
-        .attr("cx", (d, i) => 700 + i * 180)
+        .attr("cx", (d, i) => 350 + i * 180)
         .attr("cy", -22)
         .attr("r", "6px")
         .style("fill", (d) => this.colorScale(d));
@@ -253,7 +268,7 @@ export default {
         .data(this.keys)
         .enter()
         .append("text")
-        .attr("x", (d, i) => 715 + i * 180)
+        .attr("x", (d, i) => 365 + i * 180)
         .attr("y", -20)
         .style("fill", "#9F9F9F")
         .style("font-family", "PingFangSC-Medium")

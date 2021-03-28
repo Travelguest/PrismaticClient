@@ -6,24 +6,25 @@
           <div id="control_panel_container">
             <ControlPanel
               @get-correlation-matrix="getCorrelationMatrixByYear"
-            ></ControlPanel>
-          </div>
-        </a-col>
-        <a-col :span="18">
-          <a-row id="matrix_knowledge_graph_container" :gutter="2">
-            <a-col :span="12">
-              <div id="correlation_matrix_view_container">
-                <CorrelationMatrixView
+          ></ControlPanel>
+        </div>
+      </a-col>
+      <a-col :span="18">
+        <a-row id="matrix_knowledge_graph_container" :gutter="2">
+          <a-col :span="14">
+            <div id="correlation_matrix_view_container">
+              <CorrelationMatrixView
                   :selected-year="selectedYear"
                   :correlation-matrix="correlationMatrix"
                   :correlation-return="correlationReturn"
                   @selected-stock-from-matrix="updateSelectedStock"
                   @update-period-range="updatePeriodRange"
+                  @remove-stock-from-matrix="removeMatrixStock"
                 >
                 </CorrelationMatrixView>
               </div>
             </a-col>
-            <a-col :span="12">
+            <a-col :span="10">
               <div id="knowledge_graph_container">
                 <KnowledgeGraphView>
                   :stock-code="selectedStockLeft"
@@ -126,7 +127,7 @@ export default {
     };
   },
   watch: {},
-  mounted: function () {},
+  mounted: function() {},
   methods: {
     updatePeriodRange(range) {
       this.periodRange = range;
@@ -138,6 +139,11 @@ export default {
       this.selectedStockRight = stock_right;
       this.getCorrelationTriangle();
       this.getKnowledgeCount();
+    },
+    removeMatrixStock(cur_stock) {
+      this.correlationMatrix.columns = cur_stock;
+      this.getCorrelationMatrix();
+      this.getMatrixStockReturn();
     },
     getCorrelationMatrixByYear(stock_list, year) {
       this.selectedYear = year;
@@ -151,24 +157,23 @@ export default {
           this.periodRange[0].format("YYYY-MM-DD"),
           this.periodRange[1].format("YYYY-MM-DD"),
         ],
-        (data) => {
-          this.correlationMatrix = data ? data : [];
+        (matrixData) => {
+          DataService.post(
+            "get_stock_return",
+            [
+              this.correlationMatrix.columns,
+              this.periodRange[0].format("YYYY-MM-DD"),
+              this.periodRange[1].format("YYYY-MM-DD"),
+            ],
+            (returnData) => {
+              this.correlationReturn = returnData ? returnData : [];
+              this.correlationMatrix = matrixData ? matrixData : [];
+            }
+          );
         }
       );
     },
-    getMatrixStockReturn() {
-      DataService.post(
-        "get_stock_return",
-        [
-          this.correlationMatrix.columns,
-          this.periodRange[0].format("YYYY-MM-DD"),
-          this.periodRange[1].format("YYYY-MM-DD"),
-        ],
-        (data) => {
-          this.correlationReturn = data ? data : [];
-        }
-      );
-    },
+    getMatrixStockReturn() {},
     getCorrelationTriangle() {
       this.loadingTriangleStock = true;
       DataService.post(

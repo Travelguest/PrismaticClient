@@ -452,7 +452,23 @@ export default {
   overflow: auto;
 }
 
-/deep/.ant-tag-checkable {
+/* 滚动槽 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.06);
+  -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.08);
+}
+/* 滚动条滑块 */
+::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.12);
+  -webkit-box-shadow: inset 0 0 10px rgba(53, 31, 31, 0.2);
+}
+::v-deep .ant-tag-checkable {
   background-color: #f2f4f5;
   border-color: #f0f0f1 1px solid;
   cursor: pointer;
@@ -460,25 +476,25 @@ export default {
   color: #565657;
 }
 
-/deep/ .tagOfIndustry .ant-tag-checkable-checked {
+::v-deep  .tagOfIndustry .ant-tag-checkable-checked {
   color: #884ed8;
   background-color: #faf2ff;
   border: #dbbcf8 1px solid;
 }
 
-/deep/ .tagOfSector .ant-tag-checkable-checked {
+::v-deep  .tagOfSector .ant-tag-checkable-checked {
   color: #50abff;
   background-color: #eaf8ff;
   border: #a2dbff 1px solid;
 }
 
-/deep/ .tagOfSubsector .ant-tag-checkable-checked {
+::v-deep  .tagOfSubsector .ant-tag-checkable-checked {
   color: #51d3d2;
   background-color: #eafffc;
   border: #99ece3 1px solid;
 }
 
-/deep/ .tagOfConcept .ant-tag-checkable-checked {
+::v-deep  .tagOfConcept .ant-tag-checkable-checked {
   color: #fba343;
   background-color: #fff8ea;
   border: #ffdba2 1px solid;

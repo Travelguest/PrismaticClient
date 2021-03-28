@@ -1,15 +1,22 @@
 <template>
-  <div>
-    <div id="knowledge_graph_title">
-      <div id="knowledge_graph_text">Knowledge Graph</div>
-    </div>
+  <div class="knowledge-container">
+    <div id="knowledge_graph_title"><div id="knowledge_graph_text">Knowledge Graph</div></div>
     <div id="triangle"></div>
+    <div class="svg-wrapper">
+      <KnowledgeGraph :rawData="nodes" :stock-code="stockCode" />
+    </div>
   </div>
 </template>
 
 <script>
+import data from './data/knowledge_count.json';
+import KnowledgeGraph from './KnowledgeGraph/KnowlegeGraph';
+
 export default {
   name: "KnowledgeGraphView",
+  components:{
+    KnowledgeGraph
+  },
   props: {
     stockCode: String,
     knowledgeGraphCount: Object,
@@ -20,14 +27,24 @@ export default {
     },
   },
   data() {
-    return {};
+    return {
+      nodes: data,
+    }
   },
-  mounted: function () {},
+  mounted: function () {
+  },
   methods: {},
 };
 </script>
 
 <style scoped>
+
+.knowledge-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 #knowledge_graph_title {
   position: absolute;
   right: 0;
@@ -59,5 +76,12 @@ export default {
   border-top: 40px solid #777;
   border-left: 45px solid #ffffff;
   border-bottom: 3px solid #ffff;
+}
+
+.svg-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>

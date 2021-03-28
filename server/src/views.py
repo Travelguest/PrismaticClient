@@ -219,7 +219,16 @@ def get_knowledge_graph_count():
     response = {}
     if post_data != "":
         post_data = simplejson.loads(post_data)
-        response = CORR.query_stock_knowledge_graph_count(post_data[0])
-        # with open(f'../client/src/components/knowledge_count.json', 'w+') as file:
-        #     simplejson.dump(response, file, ensure_ascii=False, ignore_nan=True)
+        response = CORR.query_stock_knowledge_graph_count(*post_data)
     return json_dumps(response)
+
+
+@app.route('/get_knowledge_graph_links', methods=['POST'])
+def get_knowledge_graph_links():
+    post_data = request.data.decode()
+    response = {}
+    if post_data != "":
+        post_data = simplejson.loads(post_data)
+        response = CORR.query_stock_knowledge_graph_links(*post_data)
+    return json_dumps(response)
+

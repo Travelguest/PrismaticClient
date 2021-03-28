@@ -48,9 +48,9 @@ export default {
       margin: {top: 5, right: 0, bottom: 5, left: 15},
       padding: 0.0,
       svg: null,//新增
-      // colorScheme: d3.interpolateBrBG,
+      colorScheme: d3.interpolateBrBG,
       // colorScheme: d3.interpolateYlGnBu,
-      colorScheme: d3.interpolateRdYlGn,
+      // colorScheme: d3.interpolateRdYlGn,
       // colorScheme: d3.interpolateYlGn,
       // colorScheme: d3.interpolateYlOrRd,
     }
