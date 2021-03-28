@@ -130,6 +130,7 @@
       class="dynamic-graph"
       :corr-distribution="corrDistribution"
       :corr-cluster="corrCluster"
+      :selected-stock="selectedStock"
       @clicked-year="onYearClick"
     >
     </dynamic-graph-view>
@@ -217,6 +218,7 @@ import corr_clusters_all_years from "@/components/data/corr_clusters_all_years.j
 import business_tag_table from "@/components/data/business_tag_table.json";
 import DynamicGraphView from "@/components/DynamicGraphView/DynamicGraphView";
 import { FilterOutlined } from "@ant-design/icons-vue";
+import _ from "lodash";
 export default {
   name: "ControlPanel",
   components: {
@@ -263,6 +265,7 @@ export default {
 
       selectedTagsConcept: business_tag_table.concept,
       unselectedTagsConcept: [],
+      selectedStock: ["000652", "000538"],
     };
   },
   computed: {
@@ -271,13 +274,14 @@ export default {
     },
   },
   watch: {
-    stockSelected: function (_, newVal) {
+    stockSelected: function (newVal) {
       // Remove the last element if the selected number of stocks exceeds maximum
       if (newVal.length >= this.stockSelectionNumMax) {
         this.stockSelected.splice(this.stockSelectionNumMax, 1);
       } else {
         // Whenever stocks are selected, update the correlation distribution
         DataService.post("get_corr_dist", this.stockSelected, (data) => {
+          this.selectedStock = _.cloneDeep(this.stockSelected);
           this.corrDistribution = data;
         });
       }
@@ -308,8 +312,8 @@ export default {
         "get_corr_clusters_all_years",
         this.correlationRange,
         (data) => {
-          this.correlationButtonLoading = !this.correlationButtonLoading;
           this.corrCluster = data;
+          this.correlationButtonLoading = !this.correlationButtonLoading;
         }
       );
       DataService.post(
@@ -323,8 +327,8 @@ export default {
     onYearClick(topNodes, year) {
       // TODO: put a button to select filter
       // eslint-disable-next-line no-constant-condition
-      let nodes = true ? topNodes : this.corrCluster[year].nodes;
-      this.$emit("get-correlation-matrix", nodes, year);
+      // let nodes = true ? topNodes : this.corrCluster[year].nodes;
+      this.$emit("get-correlation-matrix", topNodes, year);
     },
 
     handleChangeIndustry(tag, checked) {
@@ -461,25 +465,25 @@ export default {
   color: #565657;
 }
 
-::v-deep  .tagOfIndustry .ant-tag-checkable-checked {
+::v-deep .tagOfIndustry .ant-tag-checkable-checked {
   color: #884ed8;
   background-color: #faf2ff;
   border: #dbbcf8 1px solid;
 }
 
-::v-deep  .tagOfSector .ant-tag-checkable-checked {
+::v-deep .tagOfSector .ant-tag-checkable-checked {
   color: #50abff;
   background-color: #eaf8ff;
   border: #a2dbff 1px solid;
 }
 
-::v-deep  .tagOfSubsector .ant-tag-checkable-checked {
+::v-deep .tagOfSubsector .ant-tag-checkable-checked {
   color: #51d3d2;
   background-color: #eafffc;
   border: #99ece3 1px solid;
 }
 
-::v-deep  .tagOfConcept .ant-tag-checkable-checked {
+::v-deep .tagOfConcept .ant-tag-checkable-checked {
   color: #fba343;
   background-color: #fff8ea;
   border: #ffdba2 1px solid;

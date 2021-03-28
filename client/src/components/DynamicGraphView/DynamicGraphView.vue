@@ -4,13 +4,14 @@
 
 <script>
 import * as d3 from "d3";
-
+import _ from "lodash";
 export default {
   name: "DynamicGraphView",
   components: {},
   props: {
     corrDistribution: Object,
     corrCluster: Object,
+    selectedStock: Array,
   },
   emits: ["clickedYear"],
   data() {
@@ -24,7 +25,7 @@ export default {
       distPaddingHeight: 12,
       distPaddingWidth: 20,
 
-      graphMaxNodes: 40,
+      graphMaxNodes: 30,
 
       color: d3.schemeTableau10,
 
@@ -36,12 +37,17 @@ export default {
   },
   watch: {
     corrDistribution: function () {
+      // console.log("corrDistribution改变了：", this.corrDistribution);
+      // console.log("selectedStock变了:", this.selectedStock);
       this.svg.selectAll(".dist").remove();
       this.renderDistChart();
+      // this.renderGraph();
     },
     corrCluster: function () {
+      // console.log("corrCluster改变了", this.corrCluster);
       this.svg.selectAll(".graph").remove();
       this.renderNodeLink();
+      // this.renderGraph();
     },
     periodRange: function () {
       this.$emit("update-period-range", this.periodRange);
@@ -49,8 +55,9 @@ export default {
   },
   computed: {},
   mounted: function () {
-    console.log("corrDistribution:", this.corrDistribution);
-    console.log("corrCluster:", this.corrCluster);
+    // console.log("corrDistribution:", this.corrDistribution);
+    // console.log("corrCluster:", this.corrCluster);
+    // console.log("selectedStock:", this.selectedStock);
     this.initGraph();
     this.renderGraph();
   },
@@ -80,22 +87,16 @@ export default {
         Object.entries(this.corrCluster).map(([k, v]) => [
           k,
           Object.entries(v.betweenness)
-            .sort((a, b) => (a[1] < b[1] ? 1 : -1)) // descending order
-            .slice(-this.graphMaxNodes) // select top n
+            .sort((a, b) => b[1] - a[1]) // descending order
+            .slice([0, this.graphMaxNodes]) // select top n
             .map((x) => x[0]) // keep only keys
             .sort((x, y) => v.components[x] - v.components[y]), //再按compoents升序排序
+          // .filter(id => this.selectedStock.includes(id))
         ])
       );
 
-      console.log("数组：", Object.entries(this.corrCluster));
-      console.log("topNodes", topNodes);
-
-      let xScale = Object.fromEntries(
-        Object.entries(topNodes).map(([k, v]) => [
-          k,
-          d3.scalePoint().domain(v).range([10, graphWidth-10]),
-        ])
-      );
+      // console.log("数组：", Object.entries(this.corrCluster));
+      // console.log("topNodes", topNodes);
 
       //graphY : yScale()
       let graphY = d3
@@ -105,8 +106,6 @@ export default {
           this.distHeight * 0.75 + 3,
           this.distHeight * 0.75 + 3 + graphHeight * 9,
         ]);
-
-      console.log("xScale", xScale);
 
       let container = this.svg
         .selectAll(".graph")
@@ -132,7 +131,7 @@ export default {
         .style("fill", "#D6DBDF")
         .style("opacity", 0.5)
         .on("click", (_, d) => {
-          _this.$emit("clickedYear", topNodes[d], d); //结点列表，年份
+          _this.$emit("clickedYear", topNodes[d], d); //该年的结点列表，年份
         });
 
       //text
@@ -148,18 +147,21 @@ export default {
         .style("font-weight", "700")
         .style("opacity", 1);
 
-      console.log(Object.keys(this.corrCluster).sort().reverse());
       // draw the node link diagram
       //year,index,group...
       container.each((d, i, c) => {
         let container = d3.select(c[i]);
-        console.log("each:", d, i, c);
+        // console.log("each:", d, i, c);
 
         let last = 0;
         let cnt = [];
         let temp = 0;
+        let showComponents = [];
         //计算每个族有几个结点
         topNodes[d].forEach((id) => {
+          if (this.selectedStock.includes(id)) {
+            showComponents.push(this.corrCluster[d].components[id]);
+          }
           if (this.corrCluster[d].components[id] != last) {
             last = this.corrCluster[d].components[id];
             cnt.push(temp);
@@ -169,7 +171,23 @@ export default {
           }
         });
         cnt.push(temp); //最后一组
-        console.log("cnt:", cnt);
+        showComponents = Array.from(new Set(showComponents));
+        // console.log("showComponents:",showComponents);
+
+        let xScale = Object.fromEntries(
+          Object.entries(topNodes).map(([k, v]) => [
+            k,
+            d3
+              .scalePoint()
+              .domain(
+                v
+                // v.filter((id) =>
+                //   showComponents.includes(this.corrCluster[d].components[id])
+                // )
+              ) //筛选出和选中的标签属于同一个组的
+              .range([10, graphWidth - 10]),
+          ])
+        );
 
         container
           .selectAll(".nodeContainer")
@@ -182,29 +200,32 @@ export default {
             for (let j in cnt) {
               if (j < i) start += cnt[j]; //不包含自己的长度
             }
-
-            return xScale[d](topNodes[d][start]) -10 ;
+            return xScale[d](topNodes[d][start]) - 10;
           })
-          .attr("y", -20)
+          .attr("y", -15)
           .attr("rx", 5)
           .attr("ry", 5)
-          .attr("height", 40)
+          .attr("height", 30)
           .attr("width", (length, i) => {
             let start = 0;
             for (let j in cnt) {
               if (j < i) start += cnt[j]; //不包含自己的长度
             }
             let end = start + length - 1;
-            console.log("start,end", start, end);
-            console.log(topNodes[d][start], topNodes[d][end]);
-            console.log(
-              "end,start",
-              xScale[d](topNodes[d][end]),
-              xScale[d](topNodes[d][start])
-            );
             if (start !== end) {
-              return xScale[d](topNodes[d][end]) - xScale[d](topNodes[d][start]) + 20;
-            } else return 20;
+              if (i === _.sum(cnt) - 1)
+                return (
+                  xScale[d](topNodes[d][end]) -
+                  xScale[d](topNodes[d][start]) +
+                  10
+                );
+              else
+                return (
+                  xScale[d](topNodes[d][end]) -
+                  xScale[d](topNodes[d][start]) +
+                  20
+                );
+            } else return 0;
           })
           .style("fill", "none")
           .style("stroke", "#5D83BE")
@@ -214,13 +235,13 @@ export default {
         container
           .append("g")
           .attr("class", "xAxis")
-          .call(d3.axisBottom(xScale[d]))
-        .call((g) => g.selectAll(".tick").remove());
+          .call(d3.axisBottom(xScale[d]).ticks(10))
+          .call((g) => g.selectAll(".tick").remove());
 
         // draw node to the axis
         container
           .selectAll(".node")
-          .data(topNodes[d])
+          .data(topNodes[d].filter((id) => this.selectedStock.includes(id)))
           .enter()
           .append("circle")
           .attr("class", "node")
@@ -234,7 +255,13 @@ export default {
           let lastD = "" + (2021 - i);
           container
             .selectAll(".linkage")
-            .data(topNodes[d].filter((x) => topNodes[lastD].includes(x))) //上一年出现过该股票
+            .data(
+              topNodes[d].filter(
+                (id) =>
+                  this.selectedStock.includes(id) &&
+                  topNodes[lastD].includes(id)
+              )
+            ) //上一年出现过该股票
             .enter()
             .append("path")
             .attr("class", "linkage")
