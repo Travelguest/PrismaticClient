@@ -6,14 +6,14 @@
           <div id="control_panel_container">
             <ControlPanel
               @get-correlation-matrix="getCorrelationMatrixByYear"
-            ></ControlPanel>
-          </div>
-        </a-col>
-        <a-col :span="18">
-          <a-row id="matrix_knowledge_graph_container" :gutter="2">
-            <a-col :span="12">
-              <div id="correlation_matrix_view_container">
-                <CorrelationMatrixView
+          ></ControlPanel>
+        </div>
+      </a-col>
+      <a-col :span="18">
+        <a-row id="matrix_knowledge_graph_container" :gutter="2">
+          <a-col :span="14">
+            <div id="correlation_matrix_view_container">
+              <CorrelationMatrixView
                   :selected-year="selectedYear"
                   :correlation-matrix="correlationMatrix"
                   :correlation-return="correlationReturn"
