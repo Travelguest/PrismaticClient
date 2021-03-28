@@ -24,7 +24,7 @@
                 </CorrelationMatrixView>
               </div>
             </a-col>
-            <a-col :span="12">
+            <a-col :span="10">
               <div id="knowledge_graph_container">
                 <KnowledgeGraphView>
                   :stock-code="selectedStockLeft"
