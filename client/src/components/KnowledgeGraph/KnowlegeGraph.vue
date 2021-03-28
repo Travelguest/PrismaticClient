@@ -1,8 +1,26 @@
 <template>
   <svg :viewbox="`0 0 ${width} ${height}`" :width="width" :height="height">
+    <defs>
+      <linearGradient 
+        v-for="(d,i) in linkData"
+        :key="i"  
+        :id="`linkGrad-${i}`"
+        gradientUnits="userSpaceOnUse" 
+        v-bind="graidentStart"
+        :x2="ribbonRadius * Math.cos(getAngle(d))" 
+        :y2="ribbonRadius * Math.sin(getAngle(d))"
+      >
+        <stop offset="0%" :stop-color="colorScale[source.type]"></stop>
+        <stop offset="45%" stop-color="#fff"></stop>
+        <stop offset="55%" stop-color="#fff"></stop>
+        <stop offset="100%" :stop-color="d.color"></stop>
+      </linearGradient>
+    </defs>
+
     <filter id="blur">
       <feGaussianBlur stdDeviation="5"/>
     </filter>
+
     <g :transform="`translate(${width/2}, ${height/2})`">
       <circle 
         v-for="i in 6"
@@ -13,14 +31,14 @@
         :id="i"
       />
 
-       <g>
+      <g>
         <path
           v-for="(d,i) in linkData"
           :key="i"  
           :d="ribbon(d)"
-          fill="#d9d9d9"
+          :fill="`url(#linkGrad-${i})`"
           :stroke="d.stocks.has(highlightStock)? '#333': '#eee'"
-          opacity="0.7"
+          opacity="0.5"
         />
       </g>
       
@@ -73,10 +91,11 @@
         />
       </g>
 
-      <!-- <g>
+      <g>
         <circle 
           v-for="(d,i) in stockPos"
           :key="i"
+          :type="d.type"
           r="5"
           :cx="d.radius * Math.cos(d.pos)"
           :cy="d.radius * Math.sin(d.pos)"
@@ -85,16 +104,7 @@
           opacity="0.7"
           @click="clickStock(d.name)"
         />
-      </g> -->
-
-      <!-- <g ref={chord}></g> -->
-      <circle 
-        r="5"
-        :cx="120 * Math.cos(Math.PI)"
-        :cy="-120 * Math.sin(Math.PI)"
-        fill="#ccc" 
-        opacity="0.7"
-      />
+      </g>
     </g>
   </svg>
 </template>
@@ -117,6 +127,16 @@ const childrenHash = {
   'location': ['city', 'province'],
   'people': ['investor', 'management']
 }
+
+/**
+ * 已完成: 点击外圈的点, 请求获得的链接, 绘制出相应的股票的点;
+ *  点击表示股票的点, 高亮/取消高亮相应的股票和弦;
+ *  
+ * 待完成: 弦的显示效果, 感觉可以再调整一下;
+ *  股票的位置编码, 现在是[0,5], 需要根据位置调整;
+ *  默认选择的股票, 现在是硬编码的. 再KnowledgeGraphView组件中;
+ *    以及处理没有数据时, 比如中间的圆点隐藏掉
+ */
 
 export default {
   name: 'KnowledgeGraph',
@@ -157,7 +177,7 @@ export default {
       // key：(type: city等， name: 具体条目): value: 在handledNodes中的下标
       nodeDict: {},
       // link的起点
-      source: {startAngle: 0, endAngle: 0.13277789797532066},
+      source: {startAngle: 0, endAngle: 0.13277789797532066, type: 'city'},
       // 股票的位置数组
       stockPos: [],
       highlightStock: null
@@ -169,6 +189,7 @@ export default {
   computed: {
     stockScale() {
       return d3.scaleLinear().domain([0,5])
+        .clamp(true)
         .range([this.chartWidth/2 - 4.1*RADIUS_PADDING, this.triangleRadius])
     },
 
@@ -186,7 +207,7 @@ export default {
         .outerRadius(this.chartWidth /2- 3*RADIUS_PADDING)
         // .innerRadius(this.chartWidth/2 - 2.5*RADIUS_PADDING)
         // .outerRadius(this.chartWidth /2- 0.5*RADIUS_PADDING)
-        .padAngle(.02)
+        .padAngle(.01)
     },
 
     arcOuter() {
@@ -204,11 +225,25 @@ export default {
         .value(d => d.value)(TYPE_DATA);
     },
 
+    ribbonRadius() {
+      return this.chartWidth/2 - 3*RADIUS_PADDING;
+    },
+
     ribbon() {
       return d3.ribbon()
-        .radius(this.chartWidth/2 - 3*RADIUS_PADDING)
+        .radius(this.ribbonRadius)
         .source(() => this.source)
-        .target((d) => d);
+        .target((d) => d)
+        .padAngle(.01);
+    },
+
+    graidentStart() {
+      const angle = this.getAngle(this.source);
+
+      return {
+        x1: this.ribbonRadius * Math.cos(angle),
+        y1: this.ribbonRadius * Math.sin(angle)
+      }
     },
 
   },
@@ -220,6 +255,14 @@ export default {
   },
 
   methods: {
+    getAngle(d) {
+      const {startAngle, endAngle} = d;
+      if(startAngle && endAngle) {
+        return (endAngle-startAngle)/2 + startAngle - Math.PI/2; 
+      }
+      return 0;
+    },
+
     clickStock(name) {
       if(this.highlightStock === name) {
         this.highlightStock = null;
@@ -269,11 +312,12 @@ export default {
           const radiusScale = d3.scaleLinear().domain([0, resKeys.length-1]).range([0, RADIUS_RANGE])
 
           this.linkData = Object.keys(endNodes).map(d => {
-            const {startAngle, endAngle} = this.handledNodes[this.nodeDict[d]]
+            const {startAngle, endAngle, type} = this.handledNodes[this.nodeDict[d]];
             return {
               startAngle,
               endAngle,
-              stocks: endNodes[d]
+              stocks: endNodes[d],
+              color: this.colorScale[type]
             };
           })
 
@@ -283,16 +327,15 @@ export default {
               if(countValue) {
                 stockPos.push({
                   name: resKeys[i],
-                  pos: radiusScale(i) + typeIndex*RADIUS_RANGE,
-                  radius: this.stockScale(countValue)
+                  // 点放的角度
+                  pos: radiusScale(i) + typeIndex*RADIUS_RANGE - 3.14/2,
+                  // 点的半径
+                  radius: this.stockScale(countValue),
+                  type: TYPE_DATA[typeIndex].name
                 })
               }
             })
           })
-
-          // console.log(this.handledNodes);
-          console.log(counts)
-          console.log(stockPos);
 
           this.stockPos = stockPos;
           this.source = this.handledNodes[this.nodeDict[type+'-'+name]]
@@ -306,7 +349,6 @@ export default {
       let dict = {};
 
       this.arcs.forEach(({data, endAngle, startAngle}) => {
-        // console.log(arcData)
         const name = data.name;
         
         let res = 0;
@@ -324,7 +366,6 @@ export default {
           const node = datum[name];
           node && Object.keys(node).forEach(key => {
               const duration = radiusScale(1/(Math.log(node[key]+1)));
-              // console.log(duration)
               dict[name+'-'+key] = arr.length
 
               arr.push({
