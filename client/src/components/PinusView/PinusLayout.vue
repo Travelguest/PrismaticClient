@@ -1,101 +1,103 @@
 <template>
-  <div id="pinus_layout_container">
-    <a-row>
-      <a-col :span="2">
-        <a-row class="pinus_view_container">
-          <PinusView
-            :id="'MarketLeft'"
-            :period-range="periodRange"
-            :correlation-triangle="correlationTriangleMarketLeft"
-            :loading-triangle="loadingTriangleMarketLeft"
-            @clickedPinus="handleClick"
-          ></PinusView>
-        </a-row>
-        <a-row class="pinus_view_container">
-          <PinusView
-            :id="'SectorLeft'"
-            :period-range="periodRange"
-            :correlation-triangle="correlationTriangleSectorLeft"
-            :loading-triangle="loadingTriangleSectorLeft"
-            @clickedPinus="handleClick"
-          ></PinusView>
-        </a-row>
-        <a-row class="pinus_view_container">
-          <PinusView
-            :id="'Stock'"
-            :period-range="periodRange"
-            :correlation-triangle="correlationTriangleStock"
-            :loading-triangle="loadingTriangleStock"
-            @clickedPinus="handleClick"
-          ></PinusView>
-        </a-row>
-        <a-row class="pinus_view_container">
-          <PinusView
-            :id="'SectorRight'"
-            :period-range="periodRange"
-            :correlation-triangle="correlationTriangleSectorRight"
-            :loading-triangle="loadingTriangleSectorRight"
-            @clickedPinus="handleClick"
-          ></PinusView>
-        </a-row>
-        <a-row class="pinus_view_container">
-          <PinusView
-            :id="'MarketRight'"
-            :period-range="periodRange"
-            :correlation-triangle="correlationTriangleMarketRight"
-            :loading-triangle="loadingTriangleMarketRight"
-            @clickedPinus="handleClick"
-          ></PinusView>
-        </a-row>
-      </a-col>
-      <a-col :span="5">
-        <div>
-          <a-row class="pinus_view_switch_two">
-            <PrismView
-              :id="'topDetail'"
-              :title="showTopPinusTitle"
+    <div id="pinus_layout_container">
+      <div id="Prism_Time_Series_title"><div id="Prism_Time_Series_text">Prism Time Series</div></div>
+    <div id="triangle"></div>
+      <a-row>
+        <a-col :span="2">
+          <a-row class="pinus_view_container">
+            <PinusView
+              :id="'MarketLeft'"
               :period-range="periodRange"
-              :correlation-triangle="showTopPinusData"
-              v-on:updateBrush="handleUpdateBrush"
-            ></PrismView>
+              :correlation-triangle="correlationTriangleMarketLeft"
+              :loading-triangle="loadingTriangleMarketLeft"
+              @clickedPinus="handleClick"
+            ></PinusView>
           </a-row>
-          <a-row class="pinus_view_switch_two">
-            <PrismView
-              :id="'bottomDetail'"
-              :title="showBottomPinusTitle"
+          <a-row class="pinus_view_container">
+            <PinusView
+              :id="'SectorLeft'"
               :period-range="periodRange"
-              :correlation-triangle="showBottomPinusData"
-              v-on:updateBrush="handleUpdateBrush"
-            ></PrismView>
+              :correlation-triangle="correlationTriangleSectorLeft"
+              :loading-triangle="loadingTriangleSectorLeft"
+              @clickedPinus="handleClick"
+            ></PinusView>
           </a-row>
-        </div>
-      </a-col>
-      <a-col :span="17">
-        <a-row style="height: 260px; width: 100%">
-          <LineChart
-            v-if="isShowTopLineChart"
-            :id="'top'"
-            :title="topLineChartTitle"
-            :stock-a="stockA"
-            :stock-b="stockB"
-            :preprocessed-data="topLineChartData"
-          >
-          </LineChart>
-        </a-row>
-        <a-row style="height: 260px; width: 100%">
-          <LineChart
-            v-if="isShowBottomLineChart"
-            :id="'bottom'"
-            :title="bottomLineChartTitle"
-            :stock-a="stockA"
-            :stock-b="stockB"
-            :preprocessed-data="bottomLineChartData"
-          >
-          </LineChart>
-        </a-row>
-      </a-col>
-    </a-row>
-  </div>
+          <a-row class="pinus_view_container">
+            <PinusView
+              :id="'Stock'"
+              :period-range="periodRange"
+              :correlation-triangle="correlationTriangleStock"
+              :loading-triangle="loadingTriangleStock"
+              @clickedPinus="handleClick"
+            ></PinusView>
+          </a-row>
+          <a-row class="pinus_view_container">
+            <PinusView
+              :id="'SectorRight'"
+              :period-range="periodRange"
+              :correlation-triangle="correlationTriangleSectorRight"
+              :loading-triangle="loadingTriangleSectorRight"
+              @clickedPinus="handleClick"
+            ></PinusView>
+          </a-row>
+          <a-row class="pinus_view_container">
+            <PinusView
+              :id="'MarketRight'"
+              :period-range="periodRange"
+              :correlation-triangle="correlationTriangleMarketRight"
+              :loading-triangle="loadingTriangleMarketRight"
+              @clickedPinus="handleClick"
+            ></PinusView>
+          </a-row>
+        </a-col>
+        <a-col :span="5">
+          <div>
+            <a-row class="pinus_view_switch_two">
+              <PrismView
+                :id="'topDetail'"
+                :title="showTopPinusTitle"
+                :period-range="periodRange"
+                :correlation-triangle="showTopPinusData"
+                v-on:updateBrush="handleUpdateBrush"
+              ></PrismView>
+            </a-row>
+            <a-row class="pinus_view_switch_two">
+              <PrismView
+                :id="'bottomDetail'"
+                :title="showBottomPinusTitle"
+                :period-range="periodRange"
+                :correlation-triangle="showBottomPinusData"
+                v-on:updateBrush="handleUpdateBrush"
+              ></PrismView>
+            </a-row>
+          </div>
+        </a-col>
+        <a-col :span="17">
+          <a-row style="height: 260px; width: 100%">
+            <LineChart
+              v-if="isShowTopLineChart"
+              :id="'top'"
+              :title="topLineChartTitle"
+              :stock-a="stockA"
+              :stock-b="stockB"
+              :preprocessed-data="topLineChartData"
+            >
+            </LineChart>
+          </a-row>
+          <a-row style="height: 260px; width: 100%">
+            <LineChart
+              v-if="isShowBottomLineChart"
+              :id="'bottom'"
+              :title="bottomLineChartTitle"
+              :stock-a="stockA"
+              :stock-b="stockB"
+              :preprocessed-data="bottomLineChartData"
+            >
+            </LineChart>
+          </a-row>
+        </a-col>
+      </a-row>
+    </div>
 </template>
 
 <script>
@@ -298,5 +300,36 @@ export default {
 .pinus_view_switch_two {
   width: 100%;
   height: 260px;
+}
+#Prism_Time_Series_title {
+  position: absolute;
+  right: 0;
+  top: 50;
+  padding: 0 20px;
+  width: 20%;
+  height: 40px;
+  line-height: 40px;
+  font-size: 24px;
+  background: #777;
+  color: #fcfcfc;
+  display: flex;
+  font-weight: bold;
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(26 26 26 0.2);
+}
+#Prism_Time_Series_text {
+  position: absolute;
+  right: 0;
+  padding-right: 20px;
+  text-align: right;
+}
+
+#triangle {
+  position: absolute;
+  top: 50;
+  right: 20%;
+  border-top: 40px solid #777;
+  border-left: 45px solid #ffffff;
+  border-bottom: 3px solid #ffff;
 }
 </style>

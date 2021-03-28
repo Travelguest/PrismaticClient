@@ -1,6 +1,6 @@
 <template>
   <div class="knowledge-container">
-    <div id="knowledge_graph_title">Knowledge Graph</div>
+    <div id="knowledge_graph_title"><div id="knowledge_graph_text">Knowledge Graph</div></div>
     <div id="triangle"></div>
     <div class="svg-wrapper">
       <KnowledgeGraph :rawData="nodes" :stock-code="stockCode" />
@@ -33,9 +33,8 @@ export default {
   },
   mounted: function () {
   },
-  methods: {
-  },
-}
+  methods: {},
+};
 </script>
 
 <style scoped>
@@ -48,13 +47,13 @@ export default {
 
 #knowledge_graph_title {
   position: absolute;
-  right:0;
+  right: 0;
   top: 0;
   padding: 0 20px;
   width: 50%;
   height: 40px;
   line-height: 40px;
-  font-size: 26px;
+  font-size: 24px;
   background: #777;
   color: #fcfcfc;
   display: flex;
@@ -63,11 +62,11 @@ export default {
   box-shadow: 0 1px 2px rgba(26 26 26 0.2);
 }
 
-#knowledge_graph_text{
+#knowledge_graph_text {
   position: absolute;
-  right:0;
-  padding-right:20px;
-  text-align:right;
+  right: 0;
+  padding-right: 20px;
+  text-align: right;
 }
 
 #triangle {

@@ -2,7 +2,7 @@
   <div>
     <div id="knowledge_graph_title">Correlation Matrix</div>
     <div id="triangle"></div>
-    <div id="matrix" style="height: 100%; width: 100%"></div>
+    <div id="matrix" style="height: 90%; width: 90%"></div>
     <a-range-picker
       id="date-picker"
       v-model:value="periodRange"
@@ -592,7 +592,7 @@ export default {
   width: 50%;
   height: 40px;
   line-height: 40px;
-  font-size: 26px;
+  font-size: 24px;
   background: #777;
   color: #fcfcfc;
   display: flex;
