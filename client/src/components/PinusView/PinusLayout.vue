@@ -280,31 +280,6 @@ export default {
         );
       }
     },
-    handleBrush() {
-      // can only get AB
-      DataService.post(
-        "get_stock_daily",
-        [
-          [this.stock_code_left, this.stock_code_right],
-          this.start_date,
-          this.end_date,
-        ],
-        (data) => {
-          // this.businessTag = data;
-          console.log(data);
-        }
-      );
-
-      // can get AM, AI, BI, BM
-      DataService.post(
-        "get_stock_index_daily",
-        [this.stock_code, this.index_type, this.start_date, this.end_date],
-        (data) => {
-          // this.businessTag = data;
-          console.log(data);
-        }
-      );
-    },
   },
 };
 </script>

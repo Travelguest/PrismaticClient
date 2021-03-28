@@ -241,7 +241,9 @@ export default {
         // draw node to the axis
         container
           .selectAll(".node")
-          .data(topNodes[d].filter((id) => this.selectedStock.includes(id)))
+          .data(topNodes[d]
+          // .filter((id) => this.selectedStock.includes(id))
+          )
           .enter()
           .append("circle")
           .attr("class", "node")

@@ -39,6 +39,7 @@
             box-shadow: 0 10px 10px -6px rgba(21, 85, 194, 0.13);
             border-radius: 5px;
           "
+          :maxTagCount="5"
           v-model:value="stockSelected"
           mode="multiple"
           allowClear
@@ -70,10 +71,11 @@
           <a-select-option
             v-for="stock in stockList"
             :key="stock.ts_code"
-            :label="stock.ts_code"
+            :value="stock.ts_code"
             style="font-size: 12px"
           >
             <p
+             
               style="
                 text-align: center;
                 width: 20%;
@@ -82,7 +84,7 @@
                 height: 15px;
               "
             >
-              {{ stock.ts_code }}
+            {{ stock.ts_code }}
             </p>
             <p
               style="
@@ -269,6 +271,7 @@ export default {
     };
   },
   computed: {
+ 
     stockButtonDisabled() {
       return !this.stockSelected.length;
     },
