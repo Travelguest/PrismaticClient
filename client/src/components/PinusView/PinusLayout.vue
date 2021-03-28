@@ -227,16 +227,16 @@ export default {
           [[this.stockA, this.stockB], this.start_date, this.end_date],
           (data) => {
             // this.businessTag = data;
-            console.log("Stock得到的数据：", data);
+            // console.log("Stock得到的数据：", data);
             if (title === this.showTopPinusTitle) {
               //如果是top触发的Brush
-              console.log("Stock在Top");
+              // console.log("Stock在Top");
               this.topLineChartData = data;
               this.topLineChartTitle = title;
               this.isShowTopLineChart = true;
             } else if (title === this.showBottomPinusTitle) {
               //bottom触发的Brush
-              console.log("Stock在Bottom");
+              // console.log("Stock在Bottom");
               this.bottomLineChartData = data;
               this.bottomLineChartTitle = title;
               this.isShowBottomLineChart = true;
@@ -266,14 +266,14 @@ export default {
           "get_stock_index_daily",
           [this.stock_code, this.index_type, this.start_date, this.end_date],
           (data) => {
-            console.log(`其余的${title}得到的数据：`, data);
+            // console.log(`其余的${title}得到的数据：`, data);
             if (title === this.showTopPinusTitle) {
-              console.log(`${title}在Top`);
+              // console.log(`${title}在Top`);
               this.topLineChartData = data;
               this.topLineChartTitle = title;
               this.isShowTopLineChart = true;
             } else if (title === this.showBottomPinusTitle) {
-              console.log(`${title}在Bottom`);
+              // console.log(`${title}在Bottom`);
               this.bottomLineChartData = data;
               this.bottomLineChartTitle = title;
               this.isShowBottomLineChart = true;

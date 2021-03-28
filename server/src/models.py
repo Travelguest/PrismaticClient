@@ -378,3 +378,6 @@ class Model:
                 stocks[neighbor] = graph[stock_code][neighbor]
 
         return stocks
+
+    def query_stock_knowledge_graph_members(self, key='city', value='昆明市'):
+        return list({u for (u, _, d) in self.knowledge_graph.edges.data(key) if d is not None and value in d})

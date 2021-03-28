@@ -19,6 +19,8 @@ Initialization
 
 @app.route('/get_stock_list', methods=['GET'])
 def get_stock_list():
+    # with open(f'../client/src/components/stock_list.json', 'w+') as file:
+    #     json_dumps(CORR.get_stock_list())
     return json_dumps(CORR.get_stock_list())
 
 
@@ -49,6 +51,16 @@ def get_corr_clusters_all_years():
     return json_dumps(response)
 
 
+@app.route('/get_corr_clusters_one_year', methods=['POST'])
+def get_corr_clusters_one_year():
+    post_data = request.data.decode()
+    response = []
+    if post_data != "":
+        post_data = simplejson.loads(post_data)
+        response = CORR.get_corr_clusters_one_year(year=post_data[0], left_threshold=post_data[1], right_threshold=post_data[2])
+    return json_dumps(response)
+
+
 @app.route('/get_business_tag_table', methods=['POST'])
 def get_business_tag_table():
     post_data = request.data.decode()
@@ -56,7 +68,7 @@ def get_business_tag_table():
     if post_data != "":
         post_data = simplejson.loads(post_data)
         response = CORR.get_business_tag_table(left_threshold=post_data[0], right_threshold=post_data[1])
-        # with open('../client/src/components/business_tag_table.json', 'w+') as file:
+        # with open('../client/src/components/busineƒss_tag_table.json', 'w+') as file:
         #     simplejson.dump(response, file)
     return json_dumps(response)
 
@@ -230,5 +242,15 @@ def get_knowledge_graph_links():
     if post_data != "":
         post_data = simplejson.loads(post_data)
         response = CORR.query_stock_knowledge_graph_links(*post_data)
+    return json_dumps(response)
+
+
+@app.route('/get_knowledge_graph_members', methods=['POST'])
+def get_knowledge_graph_links():
+    post_data = request.data.decode()
+    response = {}
+    if post_data != "":
+        post_data = simplejson.loads(post_data)
+        response = CORR.query_stock_knowledge_graph_members(*post_data)
     return json_dumps(response)
 
