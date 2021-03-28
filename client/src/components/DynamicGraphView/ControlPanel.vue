@@ -146,45 +146,61 @@
     >
     <a-row justify="space-around" class="tag-cards">
       <a-tabs tabPosition="top" size="small">
-        <a-tab-pane key="L1" tab="Industry" force-render>
-          <a-tag
-            color="purple"
+        <a-tab-pane key="L1" tab="Industry" force-render class="tagOfIndustry">
+          <a-checkable-tag
             v-for="tag in businessTag.L1"
             :key="tag"
             style="margin: 5px"
+            :checked="selectedTagsIndustry.indexOf(tag) !== -1"
+            @change="(checked) => handleChangeIndustry(tag, checked)"
           >
+            <!--color: #884ed8;
+              background-color: #faf2ff;
+              border: #dbbcf8 1px solid;-->
             {{ tag.name }}({{ tag.count }})
-          </a-tag>
+          </a-checkable-tag>
         </a-tab-pane>
-        <a-tab-pane key="L2" tab="Sector">
-          <a-tag
-            color="blue"
+        <a-tab-pane key="L2" tab="Sector" class="tagOfSector">
+          <a-checkable-tag
             v-for="tag in businessTag.L2"
             :key="tag"
             style="margin: 5px"
+            :checked="selectedTagsSector.indexOf(tag) !== -1"
+            @change="(checked) => handleChangeSector(tag, checked)"
           >
+            <!--color: #50abff;
+              background-color: #eaf8ff;
+              border: #a2dbff 1px solid;-->
             {{ tag.name }}({{ tag.count }})
-          </a-tag>
+          </a-checkable-tag>
         </a-tab-pane>
-        <a-tab-pane key="L3" tab="Subsector">
-          <a-tag
-            color="cyan"
+        <a-tab-pane key="L3" tab="Subsector" class="tagOfSubsector">
+          <a-checkable-tag
             v-for="tag in businessTag.L3"
             :key="tag"
             style="margin: 5px"
+            :checked="selectedTagsSubsector.indexOf(tag) !== -1"
+            @change="(checked) => handleChangeSubsector(tag, checked)"
           >
+            <!--color: #51d3d2;
+              background-color: #eafffc;
+              border: #99ece3 1px solid;  -->
             {{ tag.name }}({{ tag.count }})
-          </a-tag>
+          </a-checkable-tag>
         </a-tab-pane>
-        <a-tab-pane key="Concept" tab="Concept">
-          <a-tag
-            color="orange"
+        <a-tab-pane key="Concept" tab="Concept" class="tagOfConcept">
+          <a-checkable-tag
             v-for="tag in businessTag.concept"
             :key="tag"
             style="margin: 5px"
+            :checked="selectedTagsConcept.indexOf(tag) !== -1"
+            @change="(checked) => handleChangeConcept(tag, checked)"
           >
+            <!--color: #fba343;
+              background-color: #fff8ea;
+              border: #ffdba2 1px solid;-->
             {{ tag.name }}({{ tag.count }})
-          </a-tag>
+          </a-checkable-tag>
         </a-tab-pane>
         <!--        <template #tabBarExtraContent>-->
         <!--          <a-button>Filter</a-button>-->
@@ -234,6 +250,19 @@ export default {
 
       corrCluster: corr_clusters_all_years,
       businessTag: business_tag_table,
+
+      //tagsIndustry: business_tag_table.L1,
+      selectedTagsIndustry: business_tag_table.L1,
+      unselectedTagsIndustry: [],
+
+      selectedTagsSector: business_tag_table.L2,
+      unselectedTagsSector: [],
+
+      selectedTagsSubsector: business_tag_table.L3,
+      unselectedTagsSubsector: [],
+
+      selectedTagsConcept: business_tag_table.concept,
+      unselectedTagsConcept: [],
     };
   },
   computed: {
@@ -297,6 +326,75 @@ export default {
       let nodes = true ? topNodes : this.corrCluster[year].nodes;
       this.$emit("get-correlation-matrix", nodes, year);
     },
+
+    handleChangeIndustry(tag, checked) {
+      //console.log("this.color"+this.);
+      const { selectedTagsIndustry } = this;
+      const { unselectedTagsIndustry } = this;
+      const nextSelectedTagsIndustry = checked
+        ? [...selectedTagsIndustry, tag] //如果用户“选中”，就在selectedTag中添加这个新标签；
+        : selectedTagsIndustry.filter((t) => t !== tag); //如果用户取消选择，就在selectedTag中把除了这个标签之外的标签筛选出来
+
+      const nextUnselectedTagsIndustry = checked
+        ? unselectedTagsIndustry.filter((t) => t !== tag) //如果用户选中，就在selectedTag中把除了这个标签之外的标签筛选出来
+        : [...unselectedTagsIndustry, tag]; //如果用户取消选择，就在selectedTag中添加这个新标签；
+      console.log("You are interested in: ", nextSelectedTagsIndustry);
+      console.log("You are not interested in: ", nextUnselectedTagsIndustry);
+
+      this.selectedTagsIndustry = nextSelectedTagsIndustry;
+      this.unselectedTagsIndustry = nextUnselectedTagsIndustry;
+    },
+
+    handleChangeSector(tag, checked) {
+      const { selectedTagsSector } = this;
+      const { unselectedTagsSector } = this;
+      const nextSelectedTagsSector = checked
+        ? [...selectedTagsSector, tag] //如果用户“选中”，就在selectedTag中添加这个新标签；
+        : selectedTagsSector.filter((t) => t !== tag); //如果用户取消选择，就在selectedTag中把除了这个标签之外的标签筛选出来
+
+      const nextUnselectedTagsSector = checked
+        ? unselectedTagsSector.filter((t) => t !== tag) //如果用户选中，就在selectedTag中把除了这个标签之外的标签筛选出来
+        : [...unselectedTagsSector, tag]; //如果用户取消选择，就在selectedTag中添加这个新标签；
+      console.log("You are interested in: ", nextSelectedTagsSector);
+      console.log("You are not interested in: ", nextUnselectedTagsSector);
+
+      this.selectedTagsSector = nextSelectedTagsSector;
+      this.unselectedTagsSector = nextUnselectedTagsSector;
+    },
+
+    handleChangeSubsector(tag, checked) {
+      const { selectedTagsSubsector } = this;
+      const { unselectedTagsSubsector } = this;
+      const nextSelectedTagsSubsector = checked
+        ? [...selectedTagsSubsector, tag] //如果用户“选中”，就在selectedTag中添加这个新标签；
+        : selectedTagsSubsector.filter((t) => t !== tag); //如果用户取消选择，就在selectedTag中把除了这个标签之外的标签筛选出来
+
+      const nextUnselectedTagsSubsector = checked
+        ? unselectedTagsSubsector.filter((t) => t !== tag) //如果用户选中，就在selectedTag中把除了这个标签之外的标签筛选出来
+        : [...unselectedTagsSubsector, tag]; //如果用户取消选择，就在selectedTag中添加这个新标签；
+      console.log("You are interested in: ", nextSelectedTagsSubsector);
+      console.log("You are not interested in: ", nextUnselectedTagsSubsector);
+
+      this.selectedTagsSubsector = nextSelectedTagsSubsector;
+      this.unselectedTagsSubsector = nextUnselectedTagsSubsector;
+    },
+
+    handleChangeConcept(tag, checked) {
+      const { selectedTagsConcept } = this;
+      const { unselectedTagsConcept } = this;
+      const nextSelectedTagsConcept = checked
+        ? [...selectedTagsConcept, tag] //如果用户“选中”，就在selectedTag中添加这个新标签；
+        : selectedTagsConcept.filter((t) => t !== tag); //如果用户取消选择，就在selectedTag中把除了这个标签之外的标签筛选出来
+
+      const nextUnselectedTagsConcept = checked
+        ? unselectedTagsConcept.filter((t) => t !== tag) //如果用户选中，就在selectedTag中把除了这个标签之外的标签筛选出来
+        : [...unselectedTagsConcept, tag]; //如果用户取消选择，就在selectedTag中添加这个新标签；
+      console.log("You are interested in: ", nextSelectedTagsConcept);
+      console.log("You are not interested in: ", nextUnselectedTagsConcept);
+
+      this.selectedTagsConcept = nextSelectedTagsConcept;
+      this.unselectedTagsConcept = nextUnselectedTagsConcept;
+    },
   },
 };
 </script>
@@ -353,6 +451,37 @@ export default {
 ::-webkit-scrollbar-thumb {
   border-radius: 3px;
   background: rgba(0, 0, 0, 0.12);
-  -webkit-box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+  -webkit-box-shadow: inset 0 0 10px rgba(53, 31, 31, 0.2);
+}
+::v-deep .ant-tag-checkable {
+  background-color: #f2f4f5;
+  border-color: #f0f0f1 1px solid;
+  cursor: pointer;
+  margin: 5px;
+  color: #565657;
+}
+
+::v-deep  .tagOfIndustry .ant-tag-checkable-checked {
+  color: #884ed8;
+  background-color: #faf2ff;
+  border: #dbbcf8 1px solid;
+}
+
+::v-deep  .tagOfSector .ant-tag-checkable-checked {
+  color: #50abff;
+  background-color: #eaf8ff;
+  border: #a2dbff 1px solid;
+}
+
+::v-deep  .tagOfSubsector .ant-tag-checkable-checked {
+  color: #51d3d2;
+  background-color: #eafffc;
+  border: #99ece3 1px solid;
+}
+
+::v-deep  .tagOfConcept .ant-tag-checkable-checked {
+  color: #fba343;
+  background-color: #fff8ea;
+  border: #ffdba2 1px solid;
 }
 </style>
