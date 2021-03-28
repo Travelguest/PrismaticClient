@@ -122,10 +122,16 @@ export default {
 
       // upset attrs
       upsetSvg: null,
-      upsetWidth: 200,
+      upsetWidth: 250,
       upsetHeight: 600,
-      upsetMargin: { top: 45, right: 10, left: 10, bottom: 60 },
-      concepts: ["融资融券", "标普道琼斯A股", "深股通"],
+      upsetMargin: { top: 45, right: 10, left: 15, bottom: 60 },
+      concepts: [
+        "融资融券",
+        "标普道琼斯A股",
+        "深股通",
+        "中证500成份股",
+        "央企国资改革",
+      ],
       fakeConceptToMember: {
         融资融券: ["000955", "000538", "600269"],
         标普道琼斯A股: ["600200", "603301", "000538"],
@@ -209,13 +215,13 @@ export default {
         .attr("transform", `translate(${this.margin.left},${this.margin.top})`);
 
       // legend scale
-      let legendWidth = 80;
+      let legendWidth = 100;
       let legendHeight = 10;
       let legend = this.svg
         .append("g")
         .attr(
           "transform",
-          `translate(${this.width - legendWidth * 5.35},${this.margin.top -
+          `translate(${this.width - legendWidth * 4.5},${this.margin.top -
             legendHeight * 2.5})`
         );
       let colorScale = d3
@@ -544,29 +550,54 @@ export default {
         .style("fill", (d) => (d.val < 0 ? "#C65A21" : "#407FB4"));
 
       // upset
-      this.upsetSvg
+      // this.upsetSvg
+      //   .append("g")
+      //   .attr(
+      //     "transform",
+      //     `translate(${this.upsetMargin.left}, ${this.upsetMargin.top})`
+      //   )
+      //   .call(d3.axisTop(this.upsetXScale).tickSizeOuter(0))
+      //   .selectAll(".tick text")
+      //   .attr("transform", "rotate(-15)");
+      let tickGroup = this.upsetSvg
         .append("g")
         .attr(
           "transform",
           `translate(${this.upsetMargin.left}, ${this.upsetMargin.top})`
-        )
-        .call(d3.axisTop(this.upsetXScale).tickSizeOuter(0))
-        .selectAll(".tick text")
-        .attr("transform", "rotate(-15)");
-      this.upsetSvg
-        .append("rect")
-        .attr("width", 200)
-        .attr("height", 495)
-        .attr("x", this.upsetMargin.left)
-        .attr("y", this.upsetMargin.top)
-        .attr("fill", "rgba(214, 219, 223, 0.5)");
+        );
+      for (let i = 0; i < 5; i++) {
+        tickGroup
+          .append("path")
+          .attr("stroke", "black")
+          .attr("fill", "none")
+          .attr("d", `M ${30 * i + 10 * i} 0 h 30`);
+        tickGroup
+          .append("path")
+          .attr("stroke", "black")
+          .attr("fill", "none")
+          .attr("id", this.concepts[i])
+          .attr("d", `M ${30 * i + 10 * i} 0 l 35 -35`);
+        tickGroup
+          .append("text")
+          .attr("dx", 12)
+          .attr("dy", 10)
+          .append("textPath")
+          .attr("xlink:href", `#${this.concepts[i]}`)
+          .style("font-size", 10)
+          .text(
+            this.concepts[i].length <= 3
+              ? this.concepts[i]
+              : this.concepts[i].substring(0, 3)
+          );
+      }
+
       let dotsGroup = this.upsetSvg
         .append("g")
         .attr(
           "transform",
           `translate(${this.upsetMargin.left}, ${this.upsetMargin.top})`
         );
-      for (let i = 0; i < this.concepts.length; i++) {
+      for (let i = 0; i < 3; i++) {
         for (
           let j = 0;
           j < this.fakeConceptToMember[this.concepts[i]].length;
@@ -574,17 +605,13 @@ export default {
         ) {
           dotsGroup
             .append("circle")
-            .attr(
-              "cx",
-              this.upsetXScale(this.concepts[i]) +
-                this.upsetXScale.bandwidth() / 2
-            )
+            .attr("cx", 30 * i + 10 * i + 15)
             .attr(
               "cy",
               this.rectYScale(this.fakeConceptToMember[this.concepts[i]][j]) +
                 this.rectWidth / 2
             )
-            .attr("r", "4px")
+            .attr("r", this.rectWidth / 4)
             .style("fill", "cornflowerblue");
         }
         for (
@@ -597,15 +624,15 @@ export default {
             .attr("stroke", "black")
             .attr(
               "d",
-              `M ${this.upsetXScale(this.concepts[i]) +
-                this.upsetXScale.bandwidth() / 2} ${this.rectYScale(
+              `M ${30 * i + 10 * i + 15} ${this.rectYScale(
                 this.fakeConceptToMember[this.concepts[i]][j]
               ) +
-                this.rectWidth / 2 + 4} v ${this.rectYScale(
+                this.rectWidth / 2 +
+                this.rectWidth / 4} v ${this.rectYScale(
                 this.fakeConceptToMember[this.concepts[i]][j + 1]
               ) -
                 this.rectYScale(this.fakeConceptToMember[this.concepts[i]][j]) -
-                8}`
+                (this.rectWidth / 4) * 2}`
             );
         }
       }
@@ -627,7 +654,7 @@ export default {
   position: absolute;
   top: 0;
   padding: 0 20px;
-  width: 50%;
+  width: 309.531px;
   height: 40px;
   line-height: 40px;
   font-size: 24px;
@@ -641,7 +668,7 @@ export default {
 #triangle {
   position: absolute;
   top: 0;
-  right: 49%;
+  left: 309.531px;
   border-top: 40px solid #777;
   border-right: 45px solid #ffffff;
   border-bottom: 3px solid #ffff;
@@ -689,7 +716,7 @@ export default {
 #upset {
   position: absolute;
   left: 650px;
-  width: 200px;
+  width: 250px;
   height: 100%;
   /* background: rgba(214, 219, 223, 0.5); */
 }

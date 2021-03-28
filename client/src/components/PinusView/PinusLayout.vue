@@ -306,7 +306,7 @@ export default {
   right: 0;
   top: 50;
   padding: 0 20px;
-  width: 20%;
+  width: 309.531px;
   height: 40px;
   line-height: 40px;
   font-size: 24px;
@@ -327,7 +327,7 @@ export default {
 #triangle {
   position: absolute;
   top: 50;
-  right: 20%;
+  right: 309.531px;
   border-top: 40px solid #777;
   border-left: 45px solid #ffffff;
   border-bottom: 3px solid #ffff;

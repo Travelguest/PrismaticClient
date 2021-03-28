@@ -425,7 +425,7 @@ export default {
 .panel-header {
   position: relative;
   padding: 0 20px;
-  width: 60%;
+  width: 309.531px;
   height: 40px;
   line-height: 40px;
   font-size: 24px;
@@ -440,7 +440,7 @@ export default {
 .panel-header-end {
   position: absolute;
   top: 2px;
-  left: 60%;
+  left: 309.531px;
   border-top: 40px solid #777;
   border-right: 45px solid #ffffff;
   border-bottom: 3px solid #ffff;
