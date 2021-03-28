@@ -21,7 +21,14 @@
       @end="dragEnd"
     >
       <template #item="{ element}">
-        <div class="drag-item" :key="element">
+        <div
+          class="drag-item"
+          :key="element"
+          :style="{
+            position: 'absolute',
+            left: rectXScale(element) - 15 + rectWidth / 2 + 'px',
+          }"
+        >
           <text :id="element">{{ element }}</text>
         </div>
       </template>
@@ -33,10 +40,10 @@
         :style="{
           cursor: 'pointer',
           position: 'absolute',
-          left: (rectWidth / 2) * (2 * index + 1) + 4 * index + 'px',
+          left: rectXScale(item) - 14 + rectWidth / 2 + 'px',
         }"
         :key="item"
-        v-for="(item, index) in curMatrixColumn"
+        v-for="item in curMatrixColumn"
         @click="removeColumn(item)"
       >
         <use xlink:href="#iconbaseline-close-px"></use>
@@ -94,14 +101,28 @@ export default {
         ? this.correlationMatrix.columns
         : [];
     },
+    rectXScale() {
+      return d3
+        .scaleBand()
+        .domain(this.curMatrixColumn)
+        .padding(this.padding)
+        .range([0, this.width - this.margin.right - this.margin.left]);
+    },
+    rectYScale() {
+      return d3
+        .scaleBand()
+        .domain(this.curMatrixColumn)
+        .padding(this.padding)
+        .range([0, this.height - this.margin.bottom - this.margin.top]);
+    },
   },
   data() {
     return {
       svg: null,
       heatmapContainer: null,
-      width: 759,
-      height: 599,
-      margin: { top: 45, right: 145, bottom: 60, left: 120 },
+      width: 874,
+      height: 600,
+      margin: { top: 45, right: 280, bottom: 60, left: 115 },
       padding: 0.1,
 
       colorScheme: d3.interpolateBrBG,
@@ -181,13 +202,13 @@ export default {
         .attr("transform", `translate(${this.margin.left},${this.margin.top})`);
 
       // legend scale
-      let legendWidth = 100;
+      let legendWidth = 80;
       let legendHeight = 10;
       let legend = this.svg
         .append("g")
         .attr(
           "transform",
-          `translate(${this.width - legendWidth * 2.5},${this.margin.top -
+          `translate(${this.width - legendWidth * 5.35},${this.margin.top -
             legendHeight * 2.5})`
         );
       let colorScale = d3
@@ -228,7 +249,7 @@ export default {
       // legend triangle
       let legendTriangle = this.svg
         .append("g")
-        .attr("transform", `translate(450, 15)`);
+        .attr("transform", `translate(580, 15)`);
       legendTriangle
         .append("path")
         .attr("d", `M 0 0 h 20 l -4 4 h -12 Z`)
@@ -283,6 +304,10 @@ export default {
         .text("Volume");
     },
     renderMatrix() {
+      for (let i = 0; i < this.curMatrixColumn.length; i++) {
+        console.log(this.curMatrixColumn[i], this.rectXScale(this.curMatrixColumn[i]));
+      }
+
       // Remove all groups in svg
       this.heatmapContainer.selectAll("g").remove();
       this.heatmapContainer.selectAll("rect").remove();
@@ -292,22 +317,11 @@ export default {
         .domain([-1, 1])
         .interpolator(this.colorScheme);
 
-      let x = d3
-        .scaleBand()
-        .domain(this.curMatrixColumn)
-        .padding(this.padding)
-        .range([0, this.width - this.margin.right - this.margin.left]);
-      let y = d3
-        .scaleBand()
-        .domain(this.curMatrixColumn)
-        .padding(this.padding)
-        .range([0, this.height - this.margin.bottom - this.margin.top]);
-
       // Heatmap
       this.heatmapContainer
         .append("g")
         .attr("class", "xAxis")
-        .call(d3.axisBottom(x).tickSizeOuter(0))
+        .call(d3.axisBottom(this.rectXScale).tickSizeOuter(0))
         .attr(
           "transform",
           `translate(0,${this.height - this.margin.bottom - this.margin.top})`
@@ -325,7 +339,7 @@ export default {
       this.heatmapContainer
         .append("g")
         .attr("class", "yAxis")
-        .call(d3.axisRight(y).tickSizeOuter(0))
+        .call(d3.axisRight(this.rectYScale).tickSizeOuter(0))
         .attr(
           "transform",
           `translate(${this.width - this.margin.right - this.margin.left},0)`
@@ -340,16 +354,17 @@ export default {
         .attr(
           "transform",
           (d) =>
-            `translate(${x(d.col) + x.bandwidth() / 2},${y(d.row) +
-              y.bandwidth() / 2})`
+            `translate(${this.rectXScale(d.col) +
+              this.rectXScale.bandwidth() / 2},${this.rectYScale(d.row) +
+              this.rectYScale.bandwidth() / 2})`
         );
 
-      let dx = x.bandwidth() / 2;
-      let dy = y.bandwidth() / 2;
-      let w = x.bandwidth();
-      let h = y.bandwidth();
+      let dx = this.rectXScale.bandwidth() / 2;
+      let dy = this.rectYScale.bandwidth() / 2;
+      let w = this.rectXScale.bandwidth();
+      let h = this.rectYScale.bandwidth();
 
-      this.rectWidth = x.bandwidth();
+      this.rectWidth = this.rectXScale.bandwidth();
 
       // update angle of draggable divs
       this.$nextTick(function() {
@@ -434,8 +449,8 @@ export default {
         .arc()
         .startAngle((d) => d[0])
         .endAngle((d) => d[1])
-        .innerRadius(x.bandwidth() / 4)
-        .outerRadius(x.bandwidth() / 2.4)
+        .innerRadius(this.rectXScale.bandwidth() / 4)
+        .outerRadius(this.rectXScale.bandwidth() / 2.4)
         .cornerRadius(5);
       cells
         .filter((d) => d.col === d.row)
@@ -484,24 +499,39 @@ export default {
         });
 
       //barChart
-      let xScale = d3
-        .scaleLinear()
-        .domain([0, d3.max(this.correlationReturn, (d) => Math.abs(d.val))])
-        .range([this.margin.left, 5])
-        .nice();
+      let barchartGroup = this.heatmapContainer
+        .append("g")
+        .attr("transform", `translate(${-this.margin.left}, 0)`);
+      let returnDomain = d3.extent(this.correlationReturn, (d) => d.val);
+      let xScale;
+      if (returnDomain[0] >= 0) {
+        xScale = d3
+          .scaleLinear()
+          .domain([0, returnDomain[1]])
+          .range([this.margin.left, 5]);
+      } else if (returnDomain[1] <= 0) {
+        xScale = d3
+          .scaleLinear()
+          .domain([returnDomain[0], 0])
+          .range([this.margin.left, 5]);
+      } else {
+        xScale = d3
+          .scaleLinear()
+          .domain(returnDomain)
+          .range([5, this.margin.left]);
+      }
 
-      this.heatmapContainer
+      barchartGroup
         .selectAll(".bar")
         .data(this.correlationReturn)
         .enter()
         .append("rect")
         .attr("class", "bar")
-        .attr("x", (d) => xScale(Math.abs(d.val)))
-        .attr("y", (d) => y(d.row))
+        .attr("x", (d) => (d.val >= 0 ? xScale(d.val) : xScale(0)))
+        .attr("y", (d) => this.rectYScale(d.row))
         .attr("width", (d) => Math.abs(xScale(d.val) - xScale(0)))
-        .attr("height", y.bandwidth())
-        .style("fill", (d) => (d.val < 0 ? "#C65A21" : "#407FB4"))
-        .attr("transform", `translate(${-this.margin.left},0)`);
+        .attr("height", this.rectYScale.bandwidth())
+        .style("fill", (d) => (d.val < 0 ? "#C65A21" : "#407FB4"));
     },
     dragEnd() {
       // console.log(this.curMatrixColumn);
@@ -585,9 +615,9 @@ export default {
 }
 #date-picker {
   position: absolute;
-  bottom: 40px;
+  bottom: 20px;
   left: 5px;
-  width: 115px;
+  width: 105px;
 }
 
 #drag-area {
@@ -595,15 +625,15 @@ export default {
   display: flex;
   width: 500px;
   height: 13px;
-  top: 550px;
-  left: 121px;
+  top: 545px;
+  left: 120px;
 }
 
 .drag-item {
   background: white;
-  height: 13px;
-  width: 60px;
-  transform: rotate(15deg);
+  height: 40px;
+  width: 20px;
+  writing-mode: vertical-lr;
   cursor: move;
 }
 
@@ -618,8 +648,7 @@ export default {
   position: absolute;
   display: flex;
   width: 500px;
-  height: 20px;
-  bottom: 0px;
-  left: 121px;
+  top: 585px;
+  left: 123px;
 }
 </style>
