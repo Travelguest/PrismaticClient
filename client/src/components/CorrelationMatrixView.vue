@@ -2,7 +2,7 @@
   <div>
     <div id="knowledge_graph_title">Correlation Matrix</div>
     <div id="triangle"></div>
-    <div id="matrix" style="height: 90%; width: 90%"></div>
+    <div id="matrix" style="height: 100%; width: 100%"></div>
     <a-range-picker
       id="date-picker"
       v-model:value="periodRange"
@@ -49,22 +49,7 @@
         <use xlink:href="#iconbaseline-close-px"></use>
       </svg>
     </div>
-    <!--    <draggable-->
-    <!--        :list="matrixColumn"-->
-    <!--        :disabled="!enabled"-->
-    <!--        class="testClass"-->
-    <!--        item-key="name"-->
-    <!--        ghost-class="ghost"-->
-    <!--        :move="checkMove"-->
-    <!--        @start="dragging = true"-->
-    <!--        @end="dragging = false"-->
-    <!--    >-->
-    <!--      <template #item="{ element }">-->
-    <!--        <div class="list-group-item" :class="{ 'not-draggable': !enabled }">-->
-    <!--          {{ element }}-->
-    <!--        </div>-->
-    <!--      </template>-->
-    <!--    </draggable>-->
+    <div id="upset"></div>
   </div>
 </template>
 
@@ -115,6 +100,16 @@ export default {
         .padding(this.padding)
         .range([0, this.height - this.margin.bottom - this.margin.top]);
     },
+    upsetXScale() {
+      return d3
+        .scaleBand()
+        .domain(this.concepts)
+        .padding(this.padding)
+        .range([
+          this.upsetMargin.left,
+          this.upsetWidth - this.upsetMargin.right,
+        ]);
+    },
   },
   data() {
     return {
@@ -124,6 +119,18 @@ export default {
       height: 600,
       margin: { top: 45, right: 280, bottom: 60, left: 115 },
       padding: 0.1,
+
+      // upset attrs
+      upsetSvg: null,
+      upsetWidth: 200,
+      upsetHeight: 600,
+      upsetMargin: { top: 45, right: 10, left: 10, bottom: 60 },
+      concepts: ["融资融券", "标普道琼斯A股", "深股通"],
+      fakeConceptToMember: {
+        融资融券: ["000955", "000538", "600269"],
+        标普道琼斯A股: ["600200", "603301", "000538"],
+        深股通: ["600763", "603288", "600269"],
+      },
 
       colorScheme: d3.interpolateBrBG,
       // colorScheme: d3.interpolateYlGnBu,
@@ -302,15 +309,18 @@ export default {
         .attr("y", 26)
         .style("font-size", "10")
         .text("Volume");
+
+      // upset
+      this.upsetSvg = d3
+        .select("#upset")
+        .append("svg")
+        .attr("viewBox", [0, 0, this.upsetWidth, this.upsetHeight]);
     },
     renderMatrix() {
-      for (let i = 0; i < this.curMatrixColumn.length; i++) {
-        console.log(this.curMatrixColumn[i], this.rectXScale(this.curMatrixColumn[i]));
-      }
-
       // Remove all groups in svg
       this.heatmapContainer.selectAll("g").remove();
       this.heatmapContainer.selectAll("rect").remove();
+      this.upsetSvg.selectAll("g").remove();
 
       let colorScale = d3
         .scaleSequential()
@@ -532,6 +542,73 @@ export default {
         .attr("width", (d) => Math.abs(xScale(d.val) - xScale(0)))
         .attr("height", this.rectYScale.bandwidth())
         .style("fill", (d) => (d.val < 0 ? "#C65A21" : "#407FB4"));
+
+      // upset
+      this.upsetSvg
+        .append("g")
+        .attr(
+          "transform",
+          `translate(${this.upsetMargin.left}, ${this.upsetMargin.top})`
+        )
+        .call(d3.axisTop(this.upsetXScale).tickSizeOuter(0))
+        .selectAll(".tick text")
+        .attr("transform", "rotate(-15)");
+      this.upsetSvg
+        .append("rect")
+        .attr("width", 200)
+        .attr("height", 495)
+        .attr("x", this.upsetMargin.left)
+        .attr("y", this.upsetMargin.top)
+        .attr("fill", "rgba(214, 219, 223, 0.5)");
+      let dotsGroup = this.upsetSvg
+        .append("g")
+        .attr(
+          "transform",
+          `translate(${this.upsetMargin.left}, ${this.upsetMargin.top})`
+        );
+      for (let i = 0; i < this.concepts.length; i++) {
+        for (
+          let j = 0;
+          j < this.fakeConceptToMember[this.concepts[i]].length;
+          j++
+        ) {
+          dotsGroup
+            .append("circle")
+            .attr(
+              "cx",
+              this.upsetXScale(this.concepts[i]) +
+                this.upsetXScale.bandwidth() / 2
+            )
+            .attr(
+              "cy",
+              this.rectYScale(this.fakeConceptToMember[this.concepts[i]][j]) +
+                this.rectWidth / 2
+            )
+            .attr("r", "4px")
+            .style("fill", "cornflowerblue");
+        }
+        for (
+          let j = 0;
+          j < this.fakeConceptToMember[this.concepts[i]].length - 1;
+          j++
+        ) {
+          dotsGroup
+            .append("path")
+            .attr("stroke", "black")
+            .attr(
+              "d",
+              `M ${this.upsetXScale(this.concepts[i]) +
+                this.upsetXScale.bandwidth() / 2} ${this.rectYScale(
+                this.fakeConceptToMember[this.concepts[i]][j]
+              ) +
+                this.rectWidth / 2 + 4} v ${this.rectYScale(
+                this.fakeConceptToMember[this.concepts[i]][j + 1]
+              ) -
+                this.rectYScale(this.fakeConceptToMember[this.concepts[i]][j]) -
+                8}`
+            );
+        }
+      }
     },
     dragEnd() {
       // console.log(this.curMatrixColumn);
@@ -546,45 +623,6 @@ export default {
 </script>
 
 <style scoped>
-.draggableList {
-  position: absolute;
-  top: 550px;
-  right: 80px;
-}
-.list-group-item {
-  display: inline;
-  /* position: relative; */
-  width: 50px;
-  height: 20px;
-  line-height: 3px;
-  font-size: 3px;
-  background: #777;
-  color: #fcfcfc;
-  margin: 4px;
-
-  /* display: flex; */
-  top: 0px;
-  font-weight: bold;
-}
-.flip-list-move {
-  transition: transform 0.5s;
-}
-.no-move {
-  transition: transform 0s;
-}
-.ghost {
-  opacity: 0.5;
-  background: #c8ebfb;
-}
-.list-group {
-  min-height: 20px;
-}
-.list-group-item {
-  cursor: move;
-}
-.list-group-item i {
-  cursor: pointer;
-}
 #knowledge_graph_title {
   position: absolute;
   top: 0;
@@ -619,7 +657,6 @@ export default {
   left: 5px;
   width: 105px;
 }
-
 #drag-area {
   position: absolute;
   display: flex;
@@ -628,7 +665,6 @@ export default {
   top: 545px;
   left: 120px;
 }
-
 .drag-item {
   background: white;
   height: 40px;
@@ -643,12 +679,18 @@ export default {
   -webkit-text-size-adjust: none;
   -webkit-transform: scale(0.83, 0.83);
 }
-
 #del-btns {
   position: absolute;
   display: flex;
   width: 500px;
   top: 585px;
   left: 123px;
+}
+#upset {
+  position: absolute;
+  left: 650px;
+  width: 200px;
+  height: 100%;
+  /* background: rgba(214, 219, 223, 0.5); */
 }
 </style>
