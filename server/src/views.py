@@ -246,7 +246,7 @@ def get_knowledge_graph_links():
 
 
 @app.route('/get_knowledge_graph_members', methods=['POST'])
-def get_knowledge_graph_links():
+def get_knowledge_graph_members():
     post_data = request.data.decode()
     response = {}
     if post_data != "":
