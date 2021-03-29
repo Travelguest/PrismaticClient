@@ -177,17 +177,17 @@ export default {
       },
       triangleRadius: 80,
       colorScale: {
-        bussiness: "#44930F",
-        industry: "#69BC71",
-        concept: "#69BC9A",
+        bussiness: "#A4D0D3",//"#44930F",
+        industry: "#6DBEB4",//"#69BC71",
+        concept: "#6DBEB4",//"#69BC9A",
 
-        people: "#1a589c",
-        investor: "#5C83B6",
-        management: "#5DA7B9",
+        people: "#C5D5A9",//"#B1ABD5",//"#1a589c",
+        investor: "#BABA4F",//"#6D77BE",//"#5C83B6",
+        management: "#82B35D",//"#8B6DBE",//"#5DA7B9",
 
-        location: "#81770f",
-        city: "#C8C390",
-        province: "#A3AE92",
+        location: "#F4EACF",//"#D5A9D1",//"#81770f",
+        city: "#CA994C",//"#B46DBE",//"#C8C390",
+        province: "#834D0C",//"#BE6D9F",//"#A3AE92",
       },
       // link的终点数组
       linkData: [
