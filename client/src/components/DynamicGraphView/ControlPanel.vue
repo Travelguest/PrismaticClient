@@ -384,10 +384,10 @@ export default {
 
     handleChangeIndustry(tag, checked) {
       //console.log("this.color"+this.);
-      console.log("tag:",tag,checked);
+      // console.log("tag:",tag,checked);
       const { selectedTagsIndustry } = this;
       const { unselectedTagsIndustry } = this;
-      console.log("selectedTagsIndustry:",selectedTagsIndustry,unselectedTagsIndustry);
+      // console.log("selectedTagsIndustry:",selectedTagsIndustry,unselectedTagsIndustry);
       const nextSelectedTagsIndustry = checked
         ? [...selectedTagsIndustry, tag] //如果用户“选中”，就在selectedTag中添加这个新标签；
         : selectedTagsIndustry.filter((t) => t !== tag); //如果用户取消选择，就在selectedTag中把除了这个标签之外的标签筛选出来
