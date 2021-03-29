@@ -35,9 +35,9 @@ export default {
       svg: null,
       date: null,
 
-      // colorScheme: d3.interpolateBrBG,
+      colorScheme: d3.interpolateBrBG,
       // colorScheme: d3.interpolateYlGnBu,
-      colorScheme: d3.interpolateRdYlGn,
+      // colorScheme: d3.interpolateRdYlGn,
       // colorScheme: d3.interpolateYlGn,
       // colorScheme: d3.interpolateYlOrRd,
     };

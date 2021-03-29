@@ -27,7 +27,7 @@ export default {
       distPaddingHeight: 12,
       distPaddingWidth: 20,
 
-      graphMaxNodes: 40,
+      graphMaxNodes: 30,
 
       color: d3.schemeTableau10,
 
@@ -89,6 +89,7 @@ export default {
       let _this = this;
       let graphWidth = this.width - this.distWidth - this.distPaddingWidth * 3;
       let graphHeight = this.distHeight + this.distPaddingHeight;
+      let resultNodes = {};
 
       //topNodes:根据betweenness重要性排序后又按components分组后得到的股票代码数组
       let topNodes = Object.fromEntries(
@@ -104,7 +105,7 @@ export default {
       );
 
       // console.log("数组：", Object.entries(this.corrCluster));
-      console.log("topNodes", topNodes);
+      // console.log("topNodes", topNodes);
 
       //graphY : yScale()
       let graphY = d3
@@ -130,7 +131,7 @@ export default {
             )})`
         );
 
-      container
+     container
         .append("rect")
         .attr("class", "background")
         .attr("y", this.distPaddingHeight - this.distHeight * 0.75)
@@ -139,7 +140,7 @@ export default {
         .style("fill", "#D6DBDF")
         .style("opacity", 0.5)
         .on("click", (_, d) => {
-          _this.$emit("clickedYear", topNodes[d], d); //该年的结点列表，年份
+          _this.$emit("clickedYear", resultNodes[d], d); //该年的结点列表，年份
         });
 
       //text
@@ -155,11 +156,11 @@ export default {
         .style("font-weight", "700")
         .style("opacity", 1);
 
-        container
+      container
         .append("text")
         .attr("x", 20)
         .attr("y", -37)
-        .text((d) => "total: "+topNodes[d].length)
+        .text((d) => "total: " + topNodes[d].length)
         .style("font-size", "18px")
         .style("fill", "#4364A0")
         // .style("stroke-width", "0.8px")
@@ -171,7 +172,6 @@ export default {
       container.each((d, i, c) => {
         let container = d3.select(c[i]);
         // console.log("each:", d, i, c);
-
         let last = 0;
         let cnt = [];
         let temp = 0;
@@ -267,15 +267,19 @@ export default {
           .call(d3.axisBottom(xScale[d]).ticks(10))
           .call((g) => g.selectAll(".tick").remove());
 
+        let resNodes = [];
         // draw node to the axis
         container
           .selectAll(".node")
           .data(
             topNodes[d].filter((id, index) => {
-              return this.selectedStock.includes(id) ||
+              if (
+                this.selectedStock.includes(id) ||
                 idRank[index] < this.graphMaxNodes
-                ? true
-                : false;
+              ) {
+                resNodes.push(id);
+                return true;
+              } else return false;
             })
             // .filter((id) => this.selectedStock.includes(id))
           )
@@ -286,6 +290,8 @@ export default {
           .attr("cx", (node) => xScale[d](node))
           .attr("r", "4px")
           .style("fill", "cornflowerblue");
+        resultNodes[d] = _.cloneDeep(resNodes);
+        // console.log("resultNodes: ", resultNodes);
 
         // draw a vertical line to link the same node in last year
         if (i !== 0) {
@@ -321,6 +327,7 @@ export default {
             .attr("fill", "none");
         }
       });
+      
       this.svg.selectAll(".node").raise();
     },
     renderDistChart() {
@@ -400,7 +407,7 @@ export default {
               let end = parseFloat(distY.invert(selection[1]).toFixed(2));
               // .toISOString().slice(0, 10);
               if (start !== end) {
-                console.log("start,end:", start, end, d[0]);
+                // console.log("start,end:", start, end, d[0]);
                 this.$emit("updateYearBrush", end, start, d[0]); //left,right,year
               }
             }

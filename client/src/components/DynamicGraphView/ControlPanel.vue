@@ -258,7 +258,7 @@ export default {
       correlationButtonLoading: false,
 
       corrCluster: corr_clusters_all_years,
-      corrClusterUpdate:1,  //告诉子组件corrCluster更新的
+      corrClusterUpdate: 1, //告诉子组件corrCluster更新的
       businessTag: business_tag_table,
 
       //tagsIndustry: business_tag_table.L1,
@@ -321,7 +321,6 @@ export default {
         "get_corr_clusters_one_year",
         [year, left, right],
         (data) => {
-         
           this.corrCluster[year] = data;
           this.corrClusterUpdate = this.corrClusterUpdate + 1;
           //  console.log(`corrCluster${year}更新了data:`,this.corrClusterUpdate,data);
@@ -358,10 +357,25 @@ export default {
         this.correlationRange,
         (data) => {
           this.businessTag = data;
+          this.selectedTagsIndustry = this.businessTag.L1;
+
+          this.selectedTagsSector = this.businessTag.L2;
+
+          this.selectedTagsSubsector = this.businessTag.L3;
+
+          this.selectedTagsConcept = this.businessTag.concept;
+          this.unselectedTagsIndustry = [];
+
+          this.unselectedTagsSector = [];
+
+          this.unselectedTagsSubsector = [];
+
+          this.unselectedTagsConcept = [];
         }
       );
     },
     onYearClick(topNodes, year) {
+      console.log("传过来了：", topNodes, year);
       // TODO: put a button to select filter
       // eslint-disable-next-line no-constant-condition
       // let nodes = true ? topNodes : this.corrCluster[year].nodes;
@@ -370,8 +384,10 @@ export default {
 
     handleChangeIndustry(tag, checked) {
       //console.log("this.color"+this.);
+      console.log("tag:",tag,checked);
       const { selectedTagsIndustry } = this;
       const { unselectedTagsIndustry } = this;
+      console.log("selectedTagsIndustry:",selectedTagsIndustry,unselectedTagsIndustry);
       const nextSelectedTagsIndustry = checked
         ? [...selectedTagsIndustry, tag] //如果用户“选中”，就在selectedTag中添加这个新标签；
         : selectedTagsIndustry.filter((t) => t !== tag); //如果用户取消选择，就在selectedTag中把除了这个标签之外的标签筛选出来
