@@ -193,7 +193,8 @@ export default {
         .attr("d", this.linePath(this.dataA))
         .attr("fill", "none")
         .attr("stroke-width", 1.5)
-        .attr("stroke", "rgba(80,161,255,0.30)");
+        //.attr("stroke", "rgba(80,161,255,0.30)");
+        .attr("stroke", "#29A897");
       // .attr("stroke", "red");
 
       //面积图
@@ -245,7 +246,8 @@ export default {
         .attr("d", this.linePath(this.dataB))
         .attr("fill", "none")
         .attr("stroke-width", 2)
-        .attr("stroke", "#FE6AAC");
+        //.attr("stroke", "#FE6AAC");
+        .attr("stroke", "#A8293A");
 
       // legend
       this.svg
@@ -256,7 +258,11 @@ export default {
         .attr("cx", (d, i) => 350 + i * 180)
         .attr("cy", -26)
         .attr("r", "6px")
-        .style("fill", (d) => this.colorScale(d));
+        //.style("fill", (d) => this.colorScale(d));29A897
+        .style("fill", function(d,i){
+          if(i==0) return "#29A897";
+          else return "#A8293A"
+        })
 
       this.svg
         .selectAll(".labels")

@@ -198,7 +198,7 @@ export default {
         .attr("height", this.height / 3)
         .style("fill", "none")
         // .style("stroke", "#2D5B81")
-        .style("stroke", "#2D5B81")
+        .style("stroke", "#03204A")
         .style("stroke-width", "1px")
         // .style("font-weight", "500")
         // .style("opacity", 0.6);
@@ -211,7 +211,7 @@ export default {
         .attr("x", 6)
         .attr("y", 12)
         .text(()=> this.idDataMap[this.id])
-        .style("fill", "#2D5B81")
+        .style("fill", "#03204A")
         .style("font-size", "15px")
         // .style("stroke-width", "0.8px")
         // .style("font-weight", "500")
@@ -227,7 +227,7 @@ export default {
         // .attr("x", 40)
         // .attr("y", 29)
         .text(() => this.matrixCorr[0])
-        .style("fill", "#2D5B81")
+        .style("fill", "#03204A")
         .style("font-size", "11px");
 
       if (!this.correlationTriangle) this.svg.selectAll(".backGround").remove();
