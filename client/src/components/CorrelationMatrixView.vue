@@ -78,6 +78,7 @@ export default {
     "selectedStockFromMatrix",
     "update-period-range",
     "remove-stock-from-matrix",
+    "delLabel",
   ],
   computed: {
     matrixCorr() {
@@ -271,11 +272,11 @@ export default {
       legendTriangle
         .append("path")
         .attr("d", `M 0 0 v 20 l 4 -4 v -12 Z`)
-        .attr("fill", colorScale(-0.75));
+        .attr("fill", colorScale(-0.5));
       legendTriangle
         .append("path")
         .attr("d", `M 0 20 h 20 l -4 -4 h -12 Z`)
-        .attr("fill", colorScale(-0.5));
+        .attr("fill", colorScale(-0.75));
       legendTriangle
         .append("text")
         .attr("x", 1)
@@ -512,27 +513,63 @@ export default {
         });
 
       //barChart
+      let defs = this.heatmapContainer.append("defs");
+      defs
+        .append("pattern")
+        .attr("id", `pattern_stripe`)
+        .attr("width", 4)
+        .attr("height", 4)
+        .attr("patternUnits", "userSpaceOnUse")
+        .attr("patternTransform", "rotate(45)")
+        .append("rect")
+        .attr("width", 2)
+        .attr("height", 4)
+        .attr("transform", "translate(0, 0)")
+        .attr("fill", "white");
+      defs
+        .append("mask")
+        .attr("id", `mask_stripe`)
+        .append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", "100%")
+        .attr("height", "100%")
+        .attr("fill", `url(#pattern_stripe)`)
+        .attr("stroke", "black");
+
       let barchartGroup = this.heatmapContainer
         .append("g")
         .attr("transform", `translate(${-this.margin.left}, 0)`);
       let returnDomain = d3.extent(this.correlationReturn, (d) => d.val);
       let xScale;
-      if (returnDomain[0] >= 0) {
+      if (returnDomain[0] >= 1) {
         xScale = d3
           .scaleLinear()
-          .domain([0, returnDomain[1]])
+          .domain([1, returnDomain[1]])
           .range([this.margin.left / 2, 5]);
-      } else if (returnDomain[1] <= 0) {
+      } else if (returnDomain[1] <= 1) {
         xScale = d3
           .scaleLinear()
-          .domain([returnDomain[0], 0])
-          .range([this.margin.left, this.margin.left / 2]);
+          .domain([returnDomain[0], 1])
+          .range([this.margin.left - 5, this.margin.left / 2]);
       } else {
         xScale = d3
           .scaleLinear()
-          .domain([returnDomain[0], 0, returnDomain[1]])
-          .range([5, this.margin.left / 2, this.margin.left]);
+          .domain([returnDomain[1], 1, returnDomain[0]])
+          .range([5, this.margin.left / 2, this.margin.left - 5]);
       }
+
+      barchartGroup
+        .append("g")
+        .call(
+          d3
+            .axisBottom(xScale)
+            .tickSizeOuter(0)
+            .tickValues([returnDomain[0], 1, returnDomain[1]])
+        )
+        .attr("transform", `translate(0, 495)`);
+      // .selectAll(".tick text")
+      // .attr("transform", "rotate(-15)");
 
       barchartGroup
         .selectAll(".bar")
@@ -540,43 +577,47 @@ export default {
         .enter()
         .append("rect")
         .attr("class", "bar")
-        .attr("x", (d) => (d.val >= 0 ? xScale(d.val) : xScale(0)))
+        .attr("x", (d) => (d.val >= 1 ? xScale(d.val) : xScale(1)))
         .attr("y", (d) => this.rectYScale(d.row))
-        .attr("width", (d) => Math.abs(xScale(d.val) - xScale(0)))
+        .attr("width", (d) => Math.abs(xScale(d.val) - xScale(1)))
         .attr("height", this.rectYScale.bandwidth())
-        .style("fill", (d) => (d.val < 0 ? "#C65A21" : "#407FB4"));
+        .style("fill", (d) => (d.val < 1 ? colorScale(-0.5) : colorScale(0.5)))
+        .style("mask", "url(#mask_stripe)");
 
       // upset
       let tickGroup = this.upsetSvg
         .append("g")
         .attr(
           "transform",
-          `translate(${this.upsetMargin.left}, ${this.upsetMargin.top})`
+          `translate(${this.upsetMargin.left}, ${this.upsetMargin.top + 500})`
         );
       for (let i = 0; i < 5; i++) {
-        tickGroup
-          .append("path")
-          .attr("stroke", "black")
-          .attr("fill", "none")
-          .attr("d", `M ${30 * i + 10 * i} 0 h 30`);
+        // tickGroup
+        //   .append("path")
+        //   .attr("stroke", "black")
+        //   .attr("fill", "none")
+        //   .attr("d", `M ${30 * i + 10 * i} 0 h 30`);
         tickGroup
           .append("path")
           .attr("stroke", "black")
           .attr("fill", "none")
           .attr("id", this.labels[i])
-          .attr("d", `M ${30 * i + 10 * i} 0 l 35 -35`);
+          .attr("d", `M ${30 * i + 10 * i} 0 l 35 35`);
         tickGroup
           .append("text")
-          .attr("dx", 12)
-          .attr("dy", 10)
+          .attr("dy", -5)
           .append("textPath")
           .attr("xlink:href", `#${this.labels[i]}`)
           .style("font-size", 10)
+          .style("-webkit-user-select", "none")
           .text(
             this.labels[i].length <= 3
               ? this.labels[i]
               : this.labels[i].substring(0, 3)
-          );
+          )
+          .on("dblclick", () => {
+            this.$emit("delLabel", i);
+          });
       }
 
       let dotsGroup = this.upsetSvg
@@ -595,7 +636,7 @@ export default {
                 // add dots
                 dotsGroup
                   .append("circle")
-                  .attr("cx", 30 * i + 10 * i + 15)
+                  .attr("cx", 30 * i + 10 * i)
                   .attr(
                     "cy",
                     this.rectYScale(this.curMatrixColumn[j]) +
@@ -616,7 +657,7 @@ export default {
                 .attr("stroke", "black")
                 .attr(
                   "d",
-                  `M ${30 * i + 10 * i + 15} ${dotsCenter[k] +
+                  `M ${30 * i + 10 * i} ${dotsCenter[k] +
                     this.rectWidth / 4} V ${dotsCenter[k + 1] -
                     this.rectWidth / 4}`
                 );
@@ -667,9 +708,9 @@ export default {
 }
 #date-picker {
   position: absolute;
-  bottom: 20px;
-  left: 5px;
-  width: 105px;
+  top: 10px;
+  right: 30px;
+  width: 110px;
 }
 #drag-area {
   position: absolute;
