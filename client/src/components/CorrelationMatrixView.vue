@@ -161,6 +161,10 @@ export default {
           moment.utc("2020-01-01", "YYYY-MM-DD"),
           moment.utc("2020-03-31", "YYYY-MM-DD"),
         ],
+        "Pork": [
+          moment.utc("2018-01-01", "YYYY-MM-DD"),
+          moment.utc("2019-03-31", "YYYY-MM-DD"),
+        ],
       },
       periodDisabledRange: (cur) => {
         return (

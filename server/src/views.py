@@ -20,7 +20,7 @@ Initialization
 @app.route('/get_stock_list', methods=['GET'])
 def get_stock_list():
     # with open(f'../client/src/components/stock_list.json', 'w+') as file:
-    #     json_dumps(CORR.get_stock_list())
+    #     simplejson.dump(CORR.get_stock_list(), file, ensure_ascii=False, ignore_nan=True)
     return json_dumps(CORR.get_stock_list())
 
 
