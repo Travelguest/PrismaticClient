@@ -21,6 +21,8 @@ export default {
     id: String,
     correlationTriangle: Object,
     title: String,
+    stockA: String,
+    stockB: String,
   },
   data() {
     return {
@@ -34,6 +36,13 @@ export default {
       padding: 0.0,
       svg: null,
       date: null,
+      idDataMap: {
+        MarketLeft: "Market",
+        SectorLeft: "Industry",
+        Stock: "Comparison",
+        SectorRight: "Industry",
+        MarketRight: "Market",
+      },
 
       colorScheme: d3.interpolateBrBG,
       // colorScheme: d3.interpolateYlGnBu,
@@ -44,8 +53,7 @@ export default {
   },
   watch: {
     correlationTriangle: function () {
-      // console.log("correlationTriangle改变了:",this.id, this.correlationTriangle);
-      console.log("ID:", this.id);
+      // console.log("data:", this.title, this.correlationTriangle);
       this.bindPinus();
       this.initTooltip();
       this.renderArea();
@@ -90,8 +98,8 @@ export default {
       return d3
         .scaleTime()
         .domain([this.date[0], this.date[this.date.length - 1]])
-        .range([this.margin.left, this.margin.left + this.width])
-        .nice();
+        .range([this.margin.left, this.margin.left + this.width]);
+      // .nice();
     },
     yScale() {
       return d3
@@ -140,7 +148,7 @@ export default {
         // .attr("transform", `translate(0,${-this.height})`)
         .style("position", "absolute")
         .style("top", 6)
-        .style("right",16)
+        .style("right", 16)
         // .style("left", 48)
         .append("g")
         .style("z-index", "1");
@@ -233,7 +241,7 @@ export default {
             // .ticks(d3.timeMonth.every(1))
             .tickFormat(d3.timeFormat("%b"))
         )
-        .attr("transform", `translate(0,${this.height - 6})`)
+        .attr("transform", `translate(-9,${this.height - 6})`)
         .select(".domain")
         .remove();
       this.svg
@@ -251,8 +259,8 @@ export default {
         .append("rect")
         .attr("class", "brushBackGround")
         .attr("x", 8)
-        .attr("y", 22)
-        .attr("width", this.width-8)
+        .attr("y", 20)
+        .attr("width", this.width - 8)
         .attr("height", "15")
         .style("fill", "#E9E9E9")
         // .style("fill", "red")
@@ -261,8 +269,6 @@ export default {
       if (!this.correlationTriangle)
         this.svg.selectAll(".brushBackGround").remove();
       if (!this.correlationTriangle) this.svg.selectAll(".backGround").remove();
-
-      //
 
       let brush = d3
         .brushX()
@@ -279,14 +285,27 @@ export default {
         .attr("transform", `translate(0,${this.height - 7})`);
 
       //Title
+
+      let title = "";
+      if (!_.isEmpty(this.correlationTriangle)) {
+        if (this.title === "Stock") {
+          title = `${this.stockA} VS ${this.stockB}`;
+        } else {
+          title = this.idDataMap[this.title] + " VS ";
+          if (this.title === "MarketLeft" || this.title === "SectorLeft")
+            title += `${this.stockA}`;
+          else title += `${this.stockB}`;
+        }
+      }
+
       this.svg
         .append("g")
         .append("text")
         .attr("x", 15)
         .attr("y", 25)
-        .text(this.title)
+        .text(title)
         .style("fill", "#2D5B81")
-        .style("font-size", "25px");
+        .style("font-size", "20px");
 
       //文本2
       this.svg
@@ -294,7 +313,7 @@ export default {
         .append("text")
         .attr("x", 15)
         .attr("y", 45)
-        .text(this.title)
+        .text(() => (this.matrixRow[0] ? this.matrixRow[0] + "days" : ""))
         .style("fill", "#2D5B81")
         .style("font-size", "15px");
 
@@ -303,8 +322,8 @@ export default {
         .append("g")
         .append("text")
         .attr("x", 15)
-        .attr("y", 60)
-        .text(this.title)
+        .attr("y", 67)
+        .text(() => this.matrixCorr[0])
         .style("fill", "#2D5B81")
         .style("font-size", "15px");
     },
@@ -334,7 +353,7 @@ export default {
         // console.log(mouse.x, mouse.y);
         // get mousePositions from the main canvas
         let mouseX = mouse.layerX + 9;
-        let mouseY = mouse.layerY;
+        let mouseY = mouse.layerY + 4;
         // console.log(mouseX, mouseY);
         let x,
           y,

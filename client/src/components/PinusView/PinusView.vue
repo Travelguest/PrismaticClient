@@ -64,6 +64,13 @@ export default {
         SectorRight: "Industry",
         MarketRight: "Market",
       },
+      idSelectMap: {
+        MarketLeft: false,
+        SectorLeft: false,
+        Stock: false,
+        SectorRight: false,
+        MarketRight: false,
+      },
 
       colorScheme: d3.interpolateBrBG,
       // colorScheme: d3.interpolateYlGnBu,
@@ -92,6 +99,13 @@ export default {
   },
   methods: {
     clickedPinus() {
+      
+      this.idSelectMap[this.id] = !this.idSelectMap[this.id];
+      if (this.idSelectMap[this.id]) {
+        this.svg.select(".backGround").style("fill", "#2D5B81");
+      } else this.svg.select(".backGround").style("fill", "none");
+      // console.log("点击了：", this.id,this.idSelectMap);
+
       this.$emit("clickedPinus", this.id);
     },
     initPinus() {
@@ -110,7 +124,7 @@ export default {
       this.svg = d3 //新增
         .select(`#pinus_${this.id}_svg`)
         .append("svg")
-        .attr("width", this.width )
+        .attr("width", this.width)
         .attr("height", this.height)
         // .attr("fill", "red")
         // .attr("transform", `translate(0,${-this.height})`)
@@ -199,33 +213,31 @@ export default {
         .style("fill", "none")
         // .style("stroke", "#2D5B81")
         .style("stroke", "#2D5B81")
-        .style("stroke-width", "1px")
-        // .style("font-weight", "500")
-        // .style("opacity", 0.6);
+        .style("stroke-width", "1px");
+      // .style("font-weight", "500")
+      // .style("opacity", 0.6);
 
       //Title
       this.svg
         .append("g")
         .append("text")
         .attr("class", "textContent")
-        .attr("x", 6)
+        .attr("x", 8)
         .attr("y", 12)
-        .text(()=> this.idDataMap[this.id])
+        .text(() => this.idDataMap[this.id])
         .style("fill", "#2D5B81")
-        .style("font-size", "15px")
-        // .style("stroke-width", "0.8px")
-        // .style("font-weight", "500")
-        // .style("opacity", 0.3);
+        .style("font-size", "15px");
+      // .style("stroke-width", "0.8px")
+      // .style("font-weight", "500")
+      // .style("opacity", 0.3);
 
-      //文本4
+      //文本2
       this.svg
         .append("g")
         .append("text")
         .attr("class", "textContent")
-        .attr("x", 6)
+        .attr("x", 8)
         .attr("y", 29)
-        // .attr("x", 40)
-        // .attr("y", 29)
         .text(() => this.matrixCorr[0])
         .style("fill", "#2D5B81")
         .style("font-size", "11px");

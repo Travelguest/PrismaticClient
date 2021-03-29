@@ -58,7 +58,9 @@
                 :title="showTopPinusTitle"
                 :period-range="periodRange"
                 :correlation-triangle="showTopPinusData"
-                v-on:updateBrush="handleUpdateBrush"
+                @updateBrush="handleUpdateBrush"
+                :stock-a="stockA"
+              :stock-b="stockB"
               ></PrismView>
             </a-row>
             <a-row class="pinus_view_switch_two">
@@ -67,7 +69,9 @@
                 :title="showBottomPinusTitle"
                 :period-range="periodRange"
                 :correlation-triangle="showBottomPinusData"
-                v-on:updateBrush="handleUpdateBrush"
+                @updateBrush="handleUpdateBrush"
+                :stock-a="stockA"
+              :stock-b="stockB"
               ></PrismView>
             </a-row>
           </div>
@@ -189,7 +193,7 @@ export default {
       else return null;
     },
     handleClick(id) {
-      if (!this.showMap.top) {
+      if (!this.showMap.top && id !== this.showMap.bottom) {
         this.showMap.top = id;
         this.showTopPinusData = this.pinusDataMap(id);
         this.showTopPinusTitle = id;
@@ -198,7 +202,7 @@ export default {
         this.showMap.top = "";
         this.showTopPinusTitle = "";
         this.isShowTopLineChart = false;
-      } else if (!this.showMap.bottom) {
+      } else if (!this.showMap.bottom && id !== this.showMap.top) {
         this.showMap.bottom = id;
         this.showBottomPinusData = this.pinusDataMap(id);
         this.showBottomPinusTitle = id;

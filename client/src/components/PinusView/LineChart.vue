@@ -1,7 +1,12 @@
 <template>
   <div class="container">
     <div>
-      <a-menu mode="horizontal" @click="handleSwitchClick" style="width: 300px; position: absolute;" v-model:selectedKeys="nowTag">
+      <a-menu
+        mode="horizontal"
+        @click="handleSwitchClick"
+        style="width: 300px; position: absolute"
+        v-model:selectedKeys="nowTag"
+      >
         <a-menu-item key="close">close</a-menu-item>
         <a-menu-item key="pct">pct</a-menu-item>
         <a-menu-item key="log">log</a-menu-item>
@@ -65,7 +70,10 @@ export default {
         .nice();
     },
     yScale() {
-      return d3.scaleLinear().range([this.innerHeight, 0]).nice();
+      return d3
+        .scaleLinear()
+        .range([this.innerHeight - 28, 28])
+        .nice();
     },
     linePath() {
       let path = d3
@@ -102,8 +110,6 @@ export default {
       this.renderUpdate();
     },
     renderInit() {
-      
-
       this.svg = d3
         .select(`#line_chart_${this.id}`)
         .append("svg")
@@ -114,7 +120,6 @@ export default {
         .attr("transform", `translate(${this.margin.left},${this.margin.top})`);
     },
 
-    
     renderUpdate() {
       //date数据处理
       this.date = this.preprocessedData.date.map((d) => new Date(d));
@@ -137,7 +142,7 @@ export default {
         .attr("class", "xAxis")
         .call(
           d3.axisBottom(this.xScale)
-          // .ticks(d3.timeYear.every(1), "%Y")
+          // .ticks(10)
         )
         .attr("transform", `translate(0,${this.innerHeight})`);
       // .select(".domain")
@@ -151,21 +156,14 @@ export default {
         .style("color", "#6C7B8A");
 
       //画y轴——左边dataA的
-      
-      if (this.nowTag[0] === "close") {
-        var originalDataA_close=d3.extent(this.dataA, (d) => d.close);
-        var newDataA_close=[originalDataA_close[0]-(originalDataA_close[1]-originalDataA_close[0])/3,originalDataA_close[1]+(originalDataA_close[1]-originalDataA_close[0])/3];
-        this.yScale.domain(newDataA_close);
-      } else if (this.nowTag[0] === "pct") {
-        var originalDataA_pct=d3.extent(this.dataA, (d) => d.pct);
-        var newDataA_pct=[originalDataA_pct[0]-(originalDataA_pct[1]-originalDataA_pct[0])/3,originalDataA_pct[1]+(originalDataA_pct[1]-originalDataA_pct[0])/3];
-        this.yScale.domain(newDataA_pct);
-      } else {
-        var originalDataA_log=d3.extent(this.dataA, (d) => d.log);
-        var newDataA_log=[originalDataA_log[0]-(originalDataA_log[1]-originalDataA_log[0])/3,originalDataA_log[1]+(originalDataA_log[1]-originalDataA_log[0])/3];
-        this.yScale.domain(newDataA_log);
-      }
 
+      if (this.nowTag[0] === "close") {
+        this.yScale.domain(d3.extent(this.dataA, (d) => d.close));
+      } else if (this.nowTag[0] === "pct") {
+        this.yScale.domain(d3.extent(this.dataA, (d) => d.pct));
+      } else {
+        this.yScale.domain(d3.extent(this.dataA, (d) => d.log));
+      }
 
       this.svg.append("g").attr("id", "yAxis_A").call(
         d3.axisLeft(this.yScale)
@@ -208,19 +206,12 @@ export default {
 
       //右侧的Y轴
       if (this.nowTag[0] === "close") {
-        var originalDataB_close=d3.extent(this.dataB, (d) => d.close);
-        var newDataB_close=[originalDataB_close[0]-(originalDataB_close[1]-originalDataB_close[0])/3,originalDataB_close[1]+(originalDataB_close[1]-originalDataB_close[0])/3];
-        this.yScale.domain(newDataB_close);
+        this.yScale.domain(d3.extent(this.dataB, (d) => d.close));
       } else if (this.nowTag[0] === "pct") {
-        var originalDataB_pct=d3.extent(this.dataB, (d) => d.pct);
-        var newDataB_pct=[originalDataB_pct[0]-(originalDataB_pct[1]-originalDataB_pct[0])/3,originalDataB_pct[1]+(originalDataB_pct[1]-originalDataB_pct[0])/3];
-        this.yScale.domain(newDataB_pct);
+        this.yScale.domain(d3.extent(this.dataB, (d) => d.pct));
       } else {
-        var originalDataB_log=d3.extent(this.dataB, (d) => d.log);
-        var newDataB_log=[originalDataB_log[0]-(originalDataB_log[1]-originalDataB_log[0])/3,originalDataB_log[1]+(originalDataB_log[1]-originalDataB_log[0])/3];
-        this.yScale.domain(newDataB_log);
+        this.yScale.domain(d3.extent(this.dataB, (d) => d.log));
       }
-      // this.yScale.domain(d3.extent(this.dataB, (d) => d.close));
       this.svg
         .append("g")
         .attr("id", "yAxis_B")

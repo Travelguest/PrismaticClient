@@ -206,8 +206,8 @@ export default {
         let xScale = Object.fromEntries(
           Object.entries(topNodes).map(([k, v]) => [
             k,
-            d3
-              .scalePoint()
+            d3.scaleBand()
+              // .scalePoint()
               .domain(
                 v
                 // v.filter((id) =>
@@ -217,7 +217,7 @@ export default {
               .range([10, graphWidth - 10]),
           ])
         );
-
+        let padding = 10;
         container
           .selectAll(".nodeContainer")
           .data(cnt)
@@ -229,7 +229,7 @@ export default {
             for (let j in cnt) {
               if (j < i) start += cnt[j]; //不包含自己的长度
             }
-            return xScale[d](topNodes[d][start]) - 10;
+            return xScale[d](topNodes[d][start]) - xScale[d].bandwidth()/3;
           })
           .attr("y", -15)
           .attr("rx", 5)
@@ -246,13 +246,13 @@ export default {
                 return (
                   xScale[d](topNodes[d][end]) -
                   xScale[d](topNodes[d][start]) +
-                  10
+                  xScale[d].bandwidth()/3
                 );
               else
                 return (
                   xScale[d](topNodes[d][end]) -
                   xScale[d](topNodes[d][start]) +
-                  20
+                  xScale[d].bandwidth()
                 );
             } else return 0;
           })
