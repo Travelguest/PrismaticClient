@@ -324,12 +324,12 @@ export default {
   width: 2000px;
   height: 1125px;
   margin: 2px;
-  border: 1px solid lightblue;
+  /*border: 1px solid lightblue;*/
 }
 
 #control_panel_container {
   height: 1123px;
-  border: 1px solid steelblue;
+  border: 1px solid #455A64;
   width: 100%;
   box-sizing: border-box;
 }
@@ -343,21 +343,16 @@ export default {
   box-sizing: border-box;
   height: 600px;
   width: 100%;
-  border: 1px solid steelblue;
+  border: 1px solid #455A64;
 }
 #knowledge_graph_container {
   height: 600px;
   width: 100%;
-  border: 1px solid steelblue;
+  border: 1px solid #455A64;
 }
 #detail_time_series_container {
   height: 520px;
   width: 100%;
-  border: 1px solid steelblue;
-}
-#temp_container {
-  height: 300px;
-  width: 100%;
-  border: 1px solid red;
+  border: 1px solid #455A64;
 }
 </style>

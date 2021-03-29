@@ -289,9 +289,9 @@ export default {
       let title = "";
       if (!_.isEmpty(this.correlationTriangle)) {
         if (this.title === "Stock") {
-          title = `${this.stockA} VS ${this.stockB}`;
+          title = `${this.stockA} vs ${this.stockB}`;
         } else {
-          title = this.idDataMap[this.title] + " VS ";
+          title = this.idDataMap[this.title] + " vs ";
           if (this.title === "MarketLeft" || this.title === "SectorLeft")
             title += `${this.stockA}`;
           else title += `${this.stockB}`;

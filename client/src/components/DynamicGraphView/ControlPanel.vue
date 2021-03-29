@@ -1,6 +1,6 @@
 <template>
-  <div style="height: 100%">
-    <div class="panel-header">Prismatic</div>
+  <div class="text-color" style="height: 100%">
+    <div class="panel-header">PRISMATIC</div>
     <div class="panel-header-end"></div>
     <div>
       <a-row>
@@ -8,7 +8,7 @@
           :span="12"
           style="line-height: 40px; font-size: 16px; font-weight: bold"
         >
-          Select stocks and correlation
+          <text style="color:#263238">Select stocks and correlation</text>
         </a-col>
         <a-col :span="9">
           <a-slider
@@ -25,7 +25,7 @@
         <a-col :span="3" align="middle" style="padding: 2px">
           <a-button
             shape="circle"
-            type="primary"
+            style="background: #ECEFF1; color: #546E7A"
             :loading="correlationButtonLoading"
             :disabled="stockButtonDisabled"
             @click="onCorrelationButtonClick"
@@ -127,7 +127,7 @@
     </div>
 
     <a-divider
-      style="font-size: 16px; font-weight: bold; padding-top: 10px; margin: 0px"
+      style="font-size: 16px; font-weight: bold; padding-top: 10px; margin: 0; color: #263238"
       >Correlated clusters</a-divider
     >
     <dynamic-graph-view
@@ -148,7 +148,8 @@
         font-weight: bold;
         padding-top: 10px;
         padding-bottom: 2px;
-        margin: 0px;
+        margin: 0;
+        color: #263238;
       "
       >Business tag filters</a-divider
     >
@@ -457,6 +458,7 @@ export default {
 </script>
 
 <style scoped>
+
 .panel-header {
   position: relative;
   padding: 0 20px;
@@ -464,7 +466,7 @@ export default {
   height: 40px;
   line-height: 40px;
   font-size: 24px;
-  background: #777;
+  background: #455A64;
   color: #fcfcfc;
   display: flex;
   font-weight: bold;
@@ -476,9 +478,9 @@ export default {
   position: absolute;
   top: 2px;
   left: 309.531px;
-  border-top: 40px solid #777;
+  border-top: 40px solid #455A64;
   border-right: 45px solid #ffffff;
-  border-bottom: 3px solid #ffff;
+  border-bottom: 3px solid #ffffff;
 }
 
 .panel {
@@ -512,7 +514,7 @@ export default {
 }
 ::v-deep .ant-tag-checkable {
   background-color: #f2f4f5;
-  border-color: #f0f0f1 1px solid;
+  border-color: #f0f0f1;
   cursor: pointer;
   margin: 5px;
   color: #565657;

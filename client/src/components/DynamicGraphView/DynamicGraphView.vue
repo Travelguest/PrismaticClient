@@ -134,11 +134,11 @@ export default {
      container
         .append("rect")
         .attr("class", "background")
+        .attr("x", -5)
         .attr("y", this.distPaddingHeight - this.distHeight * 0.75)
-        .attr("width", graphWidth)
+        .attr("width", graphWidth+10)
         .attr("height", graphHeight - this.distPaddingHeight)
-        .style("fill", "#D6DBDF")
-        .style("opacity", 0.5)
+        .style("fill", "#ECEFF1")
         .on("click", (_, d) => {
           _this.$emit("clickedYear", resultNodes[d], d); //该年的结点列表，年份
         });
@@ -150,9 +150,9 @@ export default {
         .attr("y", -20)
         .text((d) => d)
         .style("font-size", "48px")
-        // .style("stroke","black")
         .style("fill", "white")
-        .style("stroke-width", "0.8px")
+        // .style("stroke","#455A64")
+        // .style("stroke-width", "0.5px")
         .style("font-weight", "700")
         .style("opacity", 1);
 
@@ -162,10 +162,9 @@ export default {
         .attr("y", -37)
         .text((d) => "total: " + topNodes[d].length)
         .style("font-size", "18px")
-        .style("fill", "#4364A0")
-        // .style("stroke-width", "0.8px")
+        .style("fill", "#546E7A")
         .style("font-weight", "700")
-        .style("opacity", 0.3);
+        // .style("opacity", 0.3);
 
       // draw the node link diagram
       //year,index,group...
@@ -214,10 +213,11 @@ export default {
                 //   showComponents.includes(this.corrCluster[d].components[id])
                 // )
               ) //筛选出和选中的标签属于同一个组的
-              .range([10, graphWidth - 10]),
+              .range([10, graphWidth - 10])
+            ,
           ])
         );
-        let padding = 10;
+        // let padding = 10;
         container
           .selectAll(".nodeContainer")
           .data(cnt)
@@ -264,7 +264,7 @@ export default {
         container
           .append("g")
           .attr("class", "xAxis")
-          .call(d3.axisBottom(xScale[d]).ticks(10))
+          .call(d3.axisBottom(xScale[d]).ticks(10).tickSizeOuter(0))
           .call((g) => g.selectAll(".tick").remove());
 
         let resNodes = [];
@@ -327,7 +327,7 @@ export default {
             .attr("fill", "none");
         }
       });
-      
+
       this.svg.selectAll(".node").raise();
     },
     renderDistChart() {

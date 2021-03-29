@@ -308,17 +308,16 @@ export default {
 #Prism_Time_Series_title {
   position: absolute;
   right: 0;
-  top: 50;
+  top: 1;
   padding: 0 20px;
   width: 309.531px;
   height: 40px;
   line-height: 40px;
   font-size: 24px;
-  background: #777;
+  background: #455A64;
   color: #fcfcfc;
   display: flex;
   font-weight: bold;
-  border-radius: 2px;
   box-shadow: 0 1px 2px rgba(26 26 26 0.2);
   -webkit-user-select: none;
 }
@@ -331,10 +330,10 @@ export default {
 
 #triangle {
   position: absolute;
-  top: 50;
+  top: 1;
   right: 309.531px;
-  border-top: 40px solid #777;
+  border-top: 40px solid #455A64;
   border-left: 45px solid #ffffff;
-  border-bottom: 3px solid #ffff;
+  border-bottom: 3px solid #ffffff;
 }
 </style>
