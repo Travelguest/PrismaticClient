@@ -1,7 +1,13 @@
 <template>
   <div id="knowledge-graph-container">
     <div id="knowledge-graph-tooltip"></div>
-    <svg :viewbox="`0 0 ${width} ${height}`" :width="width" :height="height">
+    <a-spin size="large" style="margin-top: 50%;" v-if="isLoading" />
+    <svg
+      :viewbox="`0 0 ${width} ${height}`"
+      :width="width"
+      :height="height"
+      v-if="!isLoading"
+    >
       <defs>
         <linearGradient
           v-for="(d, i) in linkData"
@@ -154,6 +160,7 @@ const childrenHash = {
 export default {
   name: "KnowledgeGraph",
   props: {
+    isLoading: Boolean,
     rawData: Object,
     stockCode: String,
   },
@@ -198,7 +205,7 @@ export default {
     };
   },
   mounted() {
-    this.handledData(this.rawData);
+    if (this.rawData) this.handledData(this.rawData);
   },
   computed: {
     stockScale() {
@@ -298,7 +305,7 @@ export default {
       DataService.post(
         // TODO 还没有对接传过来的stockCode
         "get_knowledge_graph_links",
-        [code || "000538", type, name],
+        [code, type, name],
         (res) => {
           // {source, target}
           let endNodes = {};

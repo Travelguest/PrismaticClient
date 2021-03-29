@@ -316,6 +316,7 @@ export default {
   font-weight: bold;
   border-radius: 2px;
   box-shadow: 0 1px 2px rgba(26 26 26 0.2);
+  -webkit-user-select: none;
 }
 #Prism_Time_Series_text {
   position: absolute;

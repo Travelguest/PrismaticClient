@@ -17,23 +17,25 @@
       :list="curMatrixColumn"
       item-key="name"
       forceFallback="true"
-      animation="500"
+      :options="{ animation: 1000, ghostClass: 'ghost' }"
       @end="dragEnd"
     >
       <template #item="{ element}">
-        <div
+        <a-tag
+          color="red"
           class="drag-item"
           :key="element"
           :style="{
             position: 'absolute',
             left: rectXScale(element) - 15 + rectWidth / 2 + 'px',
           }"
+          @dblclick="removeColumn(element)"
         >
           <text :id="element">{{ element }}</text>
-        </div>
+        </a-tag>
       </template>
     </draggable>
-    <div id="del-btns">
+    <!-- <div id="del-btns">
       <svg
         class="icon"
         aria-hidden="true"
@@ -48,7 +50,7 @@
       >
         <use xlink:href="#iconbaseline-close-px"></use>
       </svg>
-    </div>
+    </div> -->
     <div id="upset"></div>
   </div>
 </template>
@@ -191,10 +193,8 @@ export default {
     // correlationReturn: function() {
     //   this.curMatrixColumn = this.matrixColumn;
     // },
-    labelToStockCode(newVal, oldVal) {
-      console.log(newVal, oldVal);
+    labelToStockCode() {
       this.labels = this.selectLabels;
-      console.log(this.labels);
       this.renderMatrix();
     },
   },
@@ -592,9 +592,7 @@ export default {
       if (Object.keys(this.labelToStockCode).length !== 0) {
         for (let i = 0; i < 5; i++) {
           if (this.labels[i] in this.labelToStockCode) {
-            let curLabelToStockCode = this.labelToStockCode[
-              this.labels[i]
-            ];
+            let curLabelToStockCode = this.labelToStockCode[this.labels[i]];
             let dotsCenter = [];
             for (let j = 0; j < this.curMatrixColumn.length; j++) {
               if (curLabelToStockCode.indexOf(this.curMatrixColumn[j]) !== -1) {
@@ -615,16 +613,15 @@ export default {
               }
             }
             // add lines
-            for (let j = 0; j < this.dotsCenter.length - 1; j++) {
+            for (let k = 0; k < dotsCenter.length - 1; k++) {
               dotsGroup
                 .append("path")
+                .attr("fill", "none")
                 .attr("stroke", "black")
                 .attr(
                   "d",
-                  `M ${30 * i + 10 * i + 15} ${dotsCenter[j] +
-                    this.rectWidth / 4} H ${30 * i + 10 * i + 15} ${dotsCenter[
-                    j + 1
-                  ] -
+                  `M ${30 * i + 10 * i + 15} ${dotsCenter[k] +
+                    this.rectWidth / 4} V ${dotsCenter[k + 1] -
                     this.rectWidth / 4}`
                 );
             }
@@ -687,13 +684,19 @@ export default {
   left: 120px;
 }
 .drag-item {
-  background: white;
-  height: 40px;
-  width: 20px;
-  writing-mode: vertical-lr;
-  cursor: move;
+  /* background: white; */
+  margin-top: 3px !important;
+  height: 40px !important;
+  width: 20px !important;
+  writing-mode: vertical-lr !important;
+  cursor: move !important;
+  padding: 0 !important;
+  transition: none !important;
+  -webkit-user-select: none;
 }
-
+.drag-item-ghose {
+  opacity: 0.5;
+}
 .drag-item text {
   display: inline-block;
   font-size: 12px;
