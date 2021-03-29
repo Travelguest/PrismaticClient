@@ -1,44 +1,59 @@
 <template>
   <div class="knowledge-container">
-    <div id="knowledge_graph_title"><div id="knowledge_graph_text">Knowledge Graph</div></div>
+    <div id="knowledge_graph_title">
+      <div id="knowledge_graph_text">Knowledge Graph</div>
+    </div>
     <div id="triangle"></div>
     <div class="svg-wrapper">
-      <KnowledgeGraph :rawData="nodes" :stock-code="stockCode" />
+      <KnowledgeGraph
+        :isLoading="isLoading"
+        :rawData="nodes"
+        :stock-code="stockCode"
+        @addLabel="handleAddLabel"
+        @addStock="handleAddStock"
+      />
     </div>
   </div>
 </template>
 
 <script>
-import data from './data/knowledge_count.json';
-import KnowledgeGraph from './KnowledgeGraph/KnowlegeGraph';
+// import data from "./data/knowledge_count.json";
+import KnowledgeGraph from "./KnowledgeGraph/KnowlegeGraph";
 
 export default {
   name: "KnowledgeGraphView",
-  components:{
-    KnowledgeGraph
+  components: {
+    KnowledgeGraph,
   },
   props: {
+    isLoading: Boolean,
     stockCode: String,
     knowledgeGraphCount: Object,
   },
+  emits: ["addLabel", "addStock"],
   watch: {
-    knowledgeGraphCount: function () {
-      // console.log(this.knowledgeGraphCount)
+    knowledgeGraphCount: function() {
+      this.nodes = this.knowledgeGraphCount;
     },
   },
   data() {
     return {
-      nodes: data,
-    }
+      nodes: null,
+    };
   },
-  mounted: function () {
+  mounted: function() {},
+  methods: {
+    handleAddLabel(key, value) {
+      this.$emit("addLabel", key, value);
+    },
+    handleAddStock(code) {
+      this.$emit("addStock", code);
+    },
   },
-  methods: {},
 };
 </script>
 
 <style scoped>
-
 .knowledge-container {
   height: 100%;
   display: flex;

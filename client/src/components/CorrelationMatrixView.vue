@@ -17,23 +17,25 @@
       :list="curMatrixColumn"
       item-key="name"
       forceFallback="true"
-      animation="500"
+      :options="{ animation: 1000, ghostClass: 'ghost' }"
       @end="dragEnd"
     >
       <template #item="{ element}">
-        <div
+        <a-tag
+          color="red"
           class="drag-item"
           :key="element"
           :style="{
             position: 'absolute',
             left: rectXScale(element) - 15 + rectWidth / 2 + 'px',
           }"
+          @dblclick="removeColumn(element)"
         >
           <text :id="element">{{ element }}</text>
-        </div>
+        </a-tag>
       </template>
     </draggable>
-    <div id="del-btns">
+    <!-- <div id="del-btns">
       <svg
         class="icon"
         aria-hidden="true"
@@ -48,7 +50,7 @@
       >
         <use xlink:href="#iconbaseline-close-px"></use>
       </svg>
-    </div>
+    </div> -->
     <div id="upset"></div>
   </div>
 </template>
@@ -69,6 +71,8 @@ export default {
     selectedYear: String,
     correlationMatrix: Object,
     correlationReturn: Object,
+    labelToStockCode: Object,
+    selectLabels: Object,
   },
   emits: [
     "selectedStockFromMatrix",
@@ -103,7 +107,7 @@ export default {
     upsetXScale() {
       return d3
         .scaleBand()
-        .domain(this.concepts)
+        .domain(this.labels)
         .padding(this.padding)
         .range([
           this.upsetMargin.left,
@@ -125,18 +129,7 @@ export default {
       upsetWidth: 250,
       upsetHeight: 600,
       upsetMargin: { top: 45, right: 10, left: 15, bottom: 60 },
-      concepts: [
-        "融资融券",
-        "标普道琼斯A股",
-        "深股通",
-        "中证500成份股",
-        "央企国资改革",
-      ],
-      fakeConceptToMember: {
-        融资融券: ["000955", "000538", "600269"],
-        标普道琼斯A股: ["600200", "603301", "000538"],
-        深股通: ["600763", "603288", "600269"],
-      },
+      labels: ["", "", "", "", ""],
 
       colorScheme: d3.interpolateBrBG,
       // colorScheme: d3.interpolateYlGnBu,
@@ -196,6 +189,10 @@ export default {
     // correlationReturn: function() {
     //   this.curMatrixColumn = this.matrixColumn;
     // },
+    labelToStockCode() {
+      this.labels = this.selectLabels;
+      this.renderMatrix();
+    },
   },
   mounted() {
     this.initMatrix();
@@ -534,7 +531,7 @@ export default {
         xScale = d3
           .scaleLinear()
           .domain([returnDomain[0], 0, returnDomain[1]])
-          .range([5, this.margin.left / 2 ,this.margin.left]);
+          .range([5, this.margin.left / 2, this.margin.left]);
       }
 
       barchartGroup
@@ -550,15 +547,6 @@ export default {
         .style("fill", (d) => (d.val < 0 ? "#C65A21" : "#407FB4"));
 
       // upset
-      // this.upsetSvg
-      //   .append("g")
-      //   .attr(
-      //     "transform",
-      //     `translate(${this.upsetMargin.left}, ${this.upsetMargin.top})`
-      //   )
-      //   .call(d3.axisTop(this.upsetXScale).tickSizeOuter(0))
-      //   .selectAll(".tick text")
-      //   .attr("transform", "rotate(-15)");
       let tickGroup = this.upsetSvg
         .append("g")
         .attr(
@@ -575,19 +563,19 @@ export default {
           .append("path")
           .attr("stroke", "black")
           .attr("fill", "none")
-          .attr("id", this.concepts[i])
+          .attr("id", this.labels[i])
           .attr("d", `M ${30 * i + 10 * i} 0 l 35 -35`);
         tickGroup
           .append("text")
           .attr("dx", 12)
           .attr("dy", 10)
           .append("textPath")
-          .attr("xlink:href", `#${this.concepts[i]}`)
+          .attr("xlink:href", `#${this.labels[i]}`)
           .style("font-size", 10)
           .text(
-            this.concepts[i].length <= 3
-              ? this.concepts[i]
-              : this.concepts[i].substring(0, 3)
+            this.labels[i].length <= 3
+              ? this.labels[i]
+              : this.labels[i].substring(0, 3)
           );
       }
 
@@ -597,43 +585,43 @@ export default {
           "transform",
           `translate(${this.upsetMargin.left}, ${this.upsetMargin.top})`
         );
-      for (let i = 0; i < 3; i++) {
-        for (
-          let j = 0;
-          j < this.fakeConceptToMember[this.concepts[i]].length;
-          j++
-        ) {
-          dotsGroup
-            .append("circle")
-            .attr("cx", 30 * i + 10 * i + 15)
-            .attr(
-              "cy",
-              this.rectYScale(this.fakeConceptToMember[this.concepts[i]][j]) +
-                this.rectWidth / 2
-            )
-            .attr("r", this.rectWidth / 4)
-            .style("fill", "cornflowerblue");
-        }
-        for (
-          let j = 0;
-          j < this.fakeConceptToMember[this.concepts[i]].length - 1;
-          j++
-        ) {
-          dotsGroup
-            .append("path")
-            .attr("stroke", "black")
-            .attr(
-              "d",
-              `M ${30 * i + 10 * i + 15} ${this.rectYScale(
-                this.fakeConceptToMember[this.concepts[i]][j]
-              ) +
-                this.rectWidth / 2 +
-                this.rectWidth / 4} v ${this.rectYScale(
-                this.fakeConceptToMember[this.concepts[i]][j + 1]
-              ) -
-                this.rectYScale(this.fakeConceptToMember[this.concepts[i]][j]) -
-                (this.rectWidth / 4) * 2}`
-            );
+      if (Object.keys(this.labelToStockCode).length !== 0) {
+        for (let i = 0; i < 5; i++) {
+          if (this.labels[i] in this.labelToStockCode) {
+            let curLabelToStockCode = this.labelToStockCode[this.labels[i]];
+            let dotsCenter = [];
+            for (let j = 0; j < this.curMatrixColumn.length; j++) {
+              if (curLabelToStockCode.indexOf(this.curMatrixColumn[j]) !== -1) {
+                // add dots
+                dotsGroup
+                  .append("circle")
+                  .attr("cx", 30 * i + 10 * i + 15)
+                  .attr(
+                    "cy",
+                    this.rectYScale(this.curMatrixColumn[j]) +
+                      this.rectWidth / 2
+                  )
+                  .attr("r", this.rectWidth / 4)
+                  .style("fill", "cornflowerblue");
+                dotsCenter.push(
+                  this.rectYScale(this.curMatrixColumn[j]) + this.rectWidth / 2
+                );
+              }
+            }
+            // add lines
+            for (let k = 0; k < dotsCenter.length - 1; k++) {
+              dotsGroup
+                .append("path")
+                .attr("fill", "none")
+                .attr("stroke", "black")
+                .attr(
+                  "d",
+                  `M ${30 * i + 10 * i + 15} ${dotsCenter[k] +
+                    this.rectWidth / 4} V ${dotsCenter[k + 1] -
+                    this.rectWidth / 4}`
+                );
+            }
+          }
         }
       }
     },
@@ -692,13 +680,19 @@ export default {
   left: 120px;
 }
 .drag-item {
-  background: white;
-  height: 40px;
-  width: 20px;
-  writing-mode: vertical-lr;
-  cursor: move;
+  /* background: white; */
+  margin-top: 3px !important;
+  height: 40px !important;
+  width: 20px !important;
+  writing-mode: vertical-lr !important;
+  cursor: move !important;
+  padding: 0 !important;
+  transition: none !important;
+  -webkit-user-select: none;
 }
-
+.drag-item-ghose {
+  opacity: 0.5;
+}
 .drag-item text {
   display: inline-block;
   font-size: 12px;

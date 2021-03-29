@@ -6,17 +6,20 @@
           <div id="control_panel_container">
             <ControlPanel
               @get-correlation-matrix="getCorrelationMatrixByYear"
-          ></ControlPanel>
-        </div>
-      </a-col>
-      <a-col :span="18">
-        <a-row id="matrix_knowledge_graph_container" :gutter="2">
-          <a-col :span="14">
-            <div id="correlation_matrix_view_container">
-              <CorrelationMatrixView
+            ></ControlPanel>
+          </div>
+        </a-col>
+        <a-col :span="18">
+          <a-row id="matrix_knowledge_graph_container" :gutter="2">
+            <a-col :span="14">
+              <div id="correlation_matrix_view_container">
+                <CorrelationMatrixView
+                  ref="correlation-matrix-view"
                   :selected-year="selectedYear"
                   :correlation-matrix="correlationMatrix"
                   :correlation-return="correlationReturn"
+                  :labelToStockCode="labelToStockCode"
+                  :selectLabels="selectLabels"
                   @selected-stock-from-matrix="updateSelectedStock"
                   @update-period-range="updatePeriodRange"
                   @remove-stock-from-matrix="removeMatrixStock"
@@ -26,9 +29,13 @@
             </a-col>
             <a-col :span="10">
               <div id="knowledge_graph_container">
-                <KnowledgeGraphView>
+                <KnowledgeGraphView
+                  :isLoading="knowledgeGraphLoading"
                   :stock-code="selectedStockLeft"
                   :knowledge-graph-count="knowledgeGraphCount"
+                  @addLabel="handleAddLabel"
+                  @addStock="handleAddStock"
+                >
                 </KnowledgeGraphView>
               </div>
             </a-col>
@@ -124,6 +131,11 @@ export default {
       numberOfSelectedPinus: 0,
 
       knowledgeGraphCount: knowledge_count,
+
+      labelToStockCode: {},
+      selectLabels: ["", "", "", "", ""],
+
+      knowledgeGraphLoading: false,
     };
   },
   watch: {},
@@ -132,9 +144,10 @@ export default {
     updatePeriodRange(range) {
       this.periodRange = range;
       this.getCorrelationMatrix();
-      this.getMatrixStockReturn();
     },
     updateSelectedStock(stock_left, stock_right) {
+      this.selectLabels = ["", "", "", "", ""];
+      this.labelToStockCode = {};
       this.selectedStockLeft = stock_left;
       this.selectedStockRight = stock_right;
       this.getCorrelationTriangle();
@@ -143,7 +156,6 @@ export default {
     removeMatrixStock(cur_stock) {
       this.correlationMatrix.columns = cur_stock;
       this.getCorrelationMatrix();
-      this.getMatrixStockReturn();
     },
     getCorrelationMatrixByYear(stock_list, year) {
       this.selectedYear = year;
@@ -173,7 +185,6 @@ export default {
         }
       );
     },
-    getMatrixStockReturn() {},
     getCorrelationTriangle() {
       this.loadingTriangleStock = true;
       DataService.post(
@@ -247,13 +258,50 @@ export default {
       );
     },
     getKnowledgeCount() {
+      this.knowledgeGraphLoading = true;
       DataService.post(
         "get_knowledge_graph_count",
         [this.selectedStockLeft],
         (data) => {
           this.knowledgeGraphCount = data;
+          this.knowledgeGraphLoading = false;
         }
       );
+    },
+    handleAddLabel(key, value) {
+      while (this.selectLabels[this.selectLabels.length - 1] === "")
+        this.selectLabels.pop();
+      if (this.selectLabels.length >= 5) {
+        this.$message.warn("Allow 5 labels at most!");
+        return;
+      }
+      if (this.selectLabels.indexOf(value) !== -1) {
+        this.$message.warn("Label already exists!");
+        return;
+      }
+      DataService.post("get_knowledge_graph_members", [key, value], (data) => {
+        this.selectLabels.push(value);
+        if (this.selectLabels.length < 5) {
+          let curLength = this.selectLabels.length;
+          for (let i = 0; i < 5 - curLength; i++) {
+            this.selectLabels.push("");
+          }
+        }
+        this.labelToStockCode[value] = data;
+        this.labelToStockCode = Object.assign({}, this.labelToStockCode);
+        // console.log(this.selectLabels, this.labelToStockCode);
+      });
+    },
+    handleAddStock(code) {
+      let curMatrixColumn = this.$refs["correlation-matrix-view"]
+        .curMatrixColumn;
+      if (curMatrixColumn.indexOf(code) !== -1) {
+        this.$message.warn("Stock already exists!");
+        return;
+      }
+      curMatrixColumn.push(code);
+      this.correlationMatrix.columns = curMatrixColumn;
+      this.getCorrelationMatrix();
     },
   },
 };

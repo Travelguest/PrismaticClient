@@ -1,7 +1,13 @@
 <template>
   <div id="knowledge-graph-container">
     <div id="knowledge-graph-tooltip"></div>
-    <svg :viewbox="`0 0 ${width} ${height}`" :width="width" :height="height">
+    <a-spin size="large" style="margin-top: 50%;" v-if="isLoading" />
+    <svg
+      :viewbox="`0 0 ${width} ${height}`"
+      :width="width"
+      :height="height"
+      v-if="!isLoading"
+    >
       <defs>
         <linearGradient
           v-for="(d, i) in linkData"
@@ -94,6 +100,7 @@
             :stroke="colorScale[d.type]"
             :id="d.name"
             @click="clickOuterNode(stockCode, d.type, d.name)"
+            @dblclick="dblClickOuterNode(stockCode, d.type, d.name)"
             @mousemove="mouseMoveEvent($event, d.name)"
             @mouseout="mouseOutEvent"
           />
@@ -111,6 +118,7 @@
             :stroke="highlightStock == d.name ? '#333' : '#ccc'"
             opacity="0.7"
             @click="clickStock(d.name)"
+            @dblclick="dblClickStock(d.name)"
             @mousemove="mouseMoveEvent($event, d.name)"
             @mouseout="mouseOutEvent"
           />
@@ -152,9 +160,11 @@ const childrenHash = {
 export default {
   name: "KnowledgeGraph",
   props: {
+    isLoading: Boolean,
     rawData: Object,
     stockCode: String,
   },
+  emits: ["addLabel", "addStock"],
   data() {
     return {
       width: 550,
@@ -195,7 +205,7 @@ export default {
     };
   },
   mounted() {
-    this.handledData(this.rawData);
+    if (this.rawData) this.handledData(this.rawData);
   },
   computed: {
     stockScale() {
@@ -292,11 +302,10 @@ export default {
       }
     },
     clickOuterNode(code, type, name) {
-      console.log(code, type, name);
       DataService.post(
         // TODO 还没有对接传过来的stockCode
         "get_knowledge_graph_links",
-        [code || "000538", type, name],
+        [code, type, name],
         (res) => {
           // {source, target}
           let endNodes = {};
@@ -371,17 +380,26 @@ export default {
     },
 
     mouseMoveEvent(event, attrs) {
-      console.log(event, attrs);
+      // console.log(event, attrs);
       d3.select("#knowledge-graph-tooltip")
-        .style("left", event.offsetX + 5 + "px")
-        .style("top", event.offsetY + 5 + "px")
+        .style("left", event.offsetX + 10 + "px")
+        .style("top", event.offsetY + 10 + "px")
         .style("display", "block")
         .html(attrs);
     },
 
     mouseOutEvent() {
-      d3.select("#knowledge-graph-tooltip")
-        .style("display", "none");
+      d3.select("#knowledge-graph-tooltip").style("display", "none");
+    },
+
+    dblClickOuterNode(code, type, name) {
+      // console.log(code, type, name);
+      this.$emit("addLabel", type, name);
+    },
+
+    dblClickStock(code) {
+      // console.log(code);
+      this.$emit("addStock", code);
     },
 
     handledData(datum) {
@@ -452,6 +470,7 @@ export default {
   pointer-events: none;
   padding: 10px;
   z-index: 99;
+  -webkit-user-select: none;
 }
 
 circle {
