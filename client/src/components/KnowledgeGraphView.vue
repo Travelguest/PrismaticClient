@@ -6,6 +6,7 @@
     <div id="triangle"></div>
     <div class="svg-wrapper">
       <KnowledgeGraph
+        :isLoading="isLoading"
         :rawData="nodes"
         :stock-code="stockCode"
         @addLabel="handleAddLabel"
@@ -16,7 +17,7 @@
 </template>
 
 <script>
-import data from "./data/knowledge_count.json";
+// import data from "./data/knowledge_count.json";
 import KnowledgeGraph from "./KnowledgeGraph/KnowlegeGraph";
 
 export default {
@@ -25,18 +26,19 @@ export default {
     KnowledgeGraph,
   },
   props: {
+    isLoading: Boolean,
     stockCode: String,
     knowledgeGraphCount: Object,
   },
-  emits: ["addLabel"],
+  emits: ["addLabel", "addStock"],
   watch: {
     knowledgeGraphCount: function() {
-      // console.log(this.knowledgeGraphCount)
+      this.nodes = this.knowledgeGraphCount;
     },
   },
   data() {
     return {
-      nodes: data,
+      nodes: null,
     };
   },
   mounted: function() {},

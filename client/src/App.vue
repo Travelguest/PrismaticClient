@@ -30,6 +30,7 @@
             <a-col :span="10">
               <div id="knowledge_graph_container">
                 <KnowledgeGraphView
+                  :isLoading="knowledgeGraphLoading"
                   :stock-code="selectedStockLeft"
                   :knowledge-graph-count="knowledgeGraphCount"
                   @addLabel="handleAddLabel"
@@ -133,6 +134,8 @@ export default {
 
       labelToStockCode: {},
       selectLabels: ["", "", "", "", ""],
+
+      knowledgeGraphLoading: false,
     };
   },
   watch: {},
@@ -143,6 +146,8 @@ export default {
       this.getCorrelationMatrix();
     },
     updateSelectedStock(stock_left, stock_right) {
+      this.selectLabels = ["", "", "", "", ""];
+      this.labelToStockCode = {};
       this.selectedStockLeft = stock_left;
       this.selectedStockRight = stock_right;
       this.getCorrelationTriangle();
@@ -253,11 +258,13 @@ export default {
       );
     },
     getKnowledgeCount() {
+      this.knowledgeGraphLoading = true;
       DataService.post(
         "get_knowledge_graph_count",
         [this.selectedStockLeft],
         (data) => {
           this.knowledgeGraphCount = data;
+          this.knowledgeGraphLoading = false;
         }
       );
     },
@@ -280,15 +287,14 @@ export default {
             this.selectLabels.push("");
           }
         }
-        this.labelToStockCode = Object.assign({}, this.labelToStockCode, {
-          value,
-          data,
-        });
+        this.labelToStockCode[value] = data;
+        this.labelToStockCode = Object.assign({}, this.labelToStockCode);
         // console.log(this.selectLabels, this.labelToStockCode);
       });
     },
     handleAddStock(code) {
-      let curMatrixColumn = this.$refs["correlation-matrix-view"].curMatrixColumn;
+      let curMatrixColumn = this.$refs["correlation-matrix-view"]
+        .curMatrixColumn;
       if (curMatrixColumn.indexOf(code) !== -1) {
         this.$message.warn("Stock already exists!");
         return;
@@ -296,7 +302,7 @@ export default {
       curMatrixColumn.push(code);
       this.correlationMatrix.columns = curMatrixColumn;
       this.getCorrelationMatrix();
-    }
+    },
   },
 };
 </script>
