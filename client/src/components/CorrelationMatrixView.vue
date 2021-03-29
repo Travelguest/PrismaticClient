@@ -13,7 +13,7 @@
       :allowClear="false"
     />
     <draggable
-      id="drag-area"
+      id="drag-area-bottom"
       :list="curMatrixColumn"
       item-key="name"
       forceFallback="true"
@@ -23,11 +23,34 @@
       <template #item="{ element}">
         <a-tag
           color="red"
-          class="drag-item"
+          class="drag-item-bottom"
           :key="element"
           :style="{
             position: 'absolute',
             left: rectXScale(element) - 15 + rectWidth / 2 + 'px',
+          }"
+          @dblclick="removeColumn(element)"
+        >
+          <text :id="element">{{ element }}</text>
+        </a-tag>
+      </template>
+    </draggable>
+    <draggable
+      id="drag-area-right"
+      :list="curMatrixColumn"
+      item-key="name"
+      forceFallback="true"
+      :options="{ animation: 1000, ghostClass: 'ghost' }"
+      @end="dragEnd"
+    >
+      <template #item="{ element}">
+        <a-tag
+          color="red"
+          class="drag-item-right"
+          :key="element"
+          :style="{
+            position: 'absolute',
+            top: rectYScale(element) - 10 + rectWidth / 2 + 'px',
           }"
           @dblclick="removeColumn(element)"
         >
@@ -78,6 +101,7 @@ export default {
     "selectedStockFromMatrix",
     "update-period-range",
     "remove-stock-from-matrix",
+    "delLabel",
   ],
   computed: {
     matrixCorr() {
@@ -225,6 +249,30 @@ export default {
         .append("g")
         .attr("transform", `translate(${this.margin.left},${this.margin.top})`);
 
+      let defs = this.svg.append("defs");
+      defs
+        .append("pattern")
+        .attr("id", `pattern_stripe`)
+        .attr("width", 4)
+        .attr("height", 4)
+        .attr("patternUnits", "userSpaceOnUse")
+        .attr("patternTransform", "rotate(45)")
+        .append("rect")
+        .attr("width", 2)
+        .attr("height", 4)
+        .attr("transform", "translate(0, 0)")
+        .attr("fill", "white");
+      defs
+        .append("mask")
+        .attr("id", `mask_stripe`)
+        .append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", "100%")
+        .attr("height", "100%")
+        .attr("fill", `url(#pattern_stripe)`)
+        .attr("stroke", "black");
+
       // legend scale
       let legendWidth = 100;
       let legendHeight = 10;
@@ -285,11 +333,11 @@ export default {
       legendTriangle
         .append("path")
         .attr("d", `M 0 0 v 20 l 4 -4 v -12 Z`)
-        .attr("fill", colorScale(-0.75));
+        .attr("fill", colorScale(-0.5));
       legendTriangle
         .append("path")
         .attr("d", `M 0 20 h 20 l -4 -4 h -12 Z`)
-        .attr("fill", colorScale(-0.5));
+        .attr("fill", colorScale(-0.75));
       legendTriangle
         .append("text")
         .attr("x", 1)
@@ -356,13 +404,6 @@ export default {
         .selectAll(".tick text")
         .attr("transform", "rotate(45)");
 
-      // use divs to implement dragging
-      // so remove texts here
-      this.heatmapContainer
-        .select(".xAxis")
-        .selectAll("text")
-        .remove();
-
       this.heatmapContainer
         .append("g")
         .attr("class", "yAxis")
@@ -371,6 +412,17 @@ export default {
           "transform",
           `translate(${this.width - this.margin.right - this.margin.left},0)`
         );
+
+      // use divs to implement dragging
+      // so remove texts here
+      this.heatmapContainer
+        .select(".xAxis")
+        .selectAll("text")
+        .remove();
+      this.heatmapContainer
+        .select(".yAxis")
+        .selectAll("text")
+        .remove();
 
       let cells = this.heatmapContainer
         .selectAll(".cell")
@@ -393,11 +445,9 @@ export default {
 
       this.rectWidth = this.rectXScale.bandwidth();
 
-      // update angle of draggable divs
+      // update width of draggable divs
       this.$nextTick(function() {
-        d3.selectAll(".drag-item")
-          // .style("transform", `rotate(${w < 36 ? Math.acos(w / 60) : 0}rad)`)
-          .style("width", w);
+        d3.selectAll(".drag-item-bottom").style("width", w / 3);
       });
 
       // draw rectangles
@@ -529,24 +579,39 @@ export default {
       let barchartGroup = this.heatmapContainer
         .append("g")
         .attr("transform", `translate(${-this.margin.left}, 0)`);
-      let returnDomain = d3.extent(this.correlationReturn, (d) => d.val);
-      let xScale;
-      if (returnDomain[0] >= 0) {
-        xScale = d3
-          .scaleLinear()
-          .domain([0, returnDomain[1]])
-          .range([this.margin.left / 2, 5]);
-      } else if (returnDomain[1] <= 0) {
-        xScale = d3
-          .scaleLinear()
-          .domain([returnDomain[0], 0])
-          .range([this.margin.left, this.margin.left / 2]);
-      } else {
-        xScale = d3
-          .scaleLinear()
-          .domain([returnDomain[0], 0, returnDomain[1]])
-          .range([5, this.margin.left / 2, this.margin.left]);
-      }
+      // let returnDomain = d3.extent(this.correlationReturn, (d) => d.val);
+      let xScale = d3
+        .scaleLinear()
+        .domain([0, d3.max(this.correlationReturn, (d) => d.val)])
+        .range([this.margin.left - 8, 10]);
+      // if (returnDomain[0] >= 1) {
+      //   xScale = d3
+      //     .scaleLinear()
+      //     .domain([1, returnDomain[1]])
+      //     .range([this.margin.left / 2, 5]);
+      // } else if (returnDomain[1] <= 1) {
+      //   xScale = d3
+      //     .scaleLinear()
+      //     .domain([returnDomain[0], 1])
+      //     .range([this.margin.left - 5, this.margin.left / 2]);
+      // } else {
+      //   xScale = d3
+      //     .scaleLinear()
+      //     .domain([returnDomain[1], 1, returnDomain[0]])
+      //     .range([5, this.margin.left / 2, this.margin.left - 5]);
+      // }
+
+      barchartGroup
+        .append("g")
+        .call(
+          d3
+            .axisBottom(xScale)
+            .tickSizeOuter(0)
+            .tickValues([3, 2, 1, 0])
+        )
+        .attr("transform", `translate(0, 495)`);
+      // .selectAll(".tick text")
+      // .attr("transform", "rotate(-15)");
 
       barchartGroup
         .selectAll(".bar")
@@ -554,43 +619,47 @@ export default {
         .enter()
         .append("rect")
         .attr("class", "bar")
-        .attr("x", (d) => (d.val >= 0 ? xScale(d.val) : xScale(0)))
+        .attr("x", (d) => xScale(d.val))
         .attr("y", (d) => this.rectYScale(d.row))
         .attr("width", (d) => Math.abs(xScale(d.val) - xScale(0)))
         .attr("height", this.rectYScale.bandwidth())
-        .style("fill", (d) => (d.val < 0 ? "#C65A21" : "#407FB4"));
+        .style("mask", "url(#mask_stripe)")
+        .style("fill", (d) => (d.val < 1 ? colorScale(-0.5) : colorScale(0.5)));
 
       // upset
       let tickGroup = this.upsetSvg
         .append("g")
         .attr(
           "transform",
-          `translate(${this.upsetMargin.left}, ${this.upsetMargin.top})`
+          `translate(${this.upsetMargin.left}, ${this.upsetMargin.top + 500})`
         );
       for (let i = 0; i < 5; i++) {
-        tickGroup
-          .append("path")
-          .attr("stroke", "black")
-          .attr("fill", "none")
-          .attr("d", `M ${30 * i + 10 * i} 0 h 30`);
+        // tickGroup
+        //   .append("path")
+        //   .attr("stroke", "black")
+        //   .attr("fill", "none")
+        //   .attr("d", `M ${30 * i + 10 * i} 0 h 30`);
         tickGroup
           .append("path")
           .attr("stroke", "black")
           .attr("fill", "none")
           .attr("id", this.labels[i])
-          .attr("d", `M ${30 * i + 10 * i} 0 l 35 -35`);
+          .attr("d", `M ${30 * i + 10 * i} 0 l 35 35`);
         tickGroup
           .append("text")
-          .attr("dx", 12)
-          .attr("dy", 10)
+          .attr("dy", -5)
           .append("textPath")
           .attr("xlink:href", `#${this.labels[i]}`)
           .style("font-size", 10)
+          .style("-webkit-user-select", "none")
           .text(
             this.labels[i].length <= 3
               ? this.labels[i]
               : this.labels[i].substring(0, 3)
-          );
+          )
+          .on("dblclick", () => {
+            this.$emit("delLabel", i);
+          });
       }
 
       let dotsGroup = this.upsetSvg
@@ -609,7 +678,7 @@ export default {
                 // add dots
                 dotsGroup
                   .append("circle")
-                  .attr("cx", 30 * i + 10 * i + 15)
+                  .attr("cx", 30 * i + 10 * i + 10)
                   .attr(
                     "cy",
                     this.rectYScale(this.curMatrixColumn[j]) +
@@ -630,7 +699,7 @@ export default {
                 .attr("stroke", "black")
                 .attr(
                   "d",
-                  `M ${30 * i + 10 * i + 15} ${dotsCenter[k] +
+                  `M ${30 * i + 10 * i + 10} ${dotsCenter[k] +
                     this.rectWidth / 4} V ${dotsCenter[k + 1] -
                     this.rectWidth / 4}`
                 );
@@ -681,11 +750,11 @@ export default {
 }
 #date-picker {
   position: absolute;
-  bottom: 20px;
-  left: 5px;
-  width: 105px;
+  top: 10px;
+  right: 30px;
+  width: 110px;
 }
-#drag-area {
+#drag-area-bottom {
   position: absolute;
   display: flex;
   width: 500px;
@@ -693,7 +762,7 @@ export default {
   top: 545px;
   left: 120px;
 }
-.drag-item {
+.drag-item-bottom {
   /* background: white; */
   margin-top: 3px !important;
   height: 40px !important;
@@ -704,15 +773,31 @@ export default {
   transition: none !important;
   -webkit-user-select: none;
 }
-.drag-item-ghose {
+.drag-item-bottom-ghost {
   opacity: 0.5;
 }
-.drag-item text {
+.drag-item-bottom text {
   display: inline-block;
   font-size: 12px;
   -webkit-text-size-adjust: none;
   -webkit-transform: scale(0.83, 0.83);
   transform: scale(0.83, 0.83);
+}
+#drag-area-right {
+  position: absolute;
+  width: 40px;
+  height: 500px;
+  top: 45px;
+  left: 582px;
+}
+.drag-item-right {
+  margin-left: 3px !important;
+  height: 20px !important;
+  width: 45px !important;
+  cursor: move !important;
+  padding: 0 !important;
+  transition: none !important;
+  -webkit-user-select: none;
 }
 #del-btns {
   position: absolute;

@@ -23,6 +23,7 @@
                   @selected-stock-from-matrix="updateSelectedStock"
                   @update-period-range="updatePeriodRange"
                   @remove-stock-from-matrix="removeMatrixStock"
+                  @delLabel="handleDelLabel"
                 >
                 </CorrelationMatrixView>
               </div>
@@ -281,11 +282,9 @@ export default {
       }
       DataService.post("get_knowledge_graph_members", [key, value], (data) => {
         this.selectLabels.push(value);
-        if (this.selectLabels.length < 5) {
-          let curLength = this.selectLabels.length;
-          for (let i = 0; i < 5 - curLength; i++) {
-            this.selectLabels.push("");
-          }
+        let curLength = this.selectLabels.length;
+        for (let i = 0; i < 5 - curLength; i++) {
+          this.selectLabels.push("");
         }
         this.labelToStockCode[value] = data;
         this.labelToStockCode = Object.assign({}, this.labelToStockCode);
@@ -302,6 +301,15 @@ export default {
       curMatrixColumn.push(code);
       this.correlationMatrix.columns = curMatrixColumn;
       this.getCorrelationMatrix();
+    },
+    handleDelLabel(labelIndex) {
+      delete this.labelToStockCode[this.selectLabels[labelIndex]];
+      this.selectLabels.splice(labelIndex, 1);
+      let curLength = this.selectLabels.length;
+      for (let i = 0; i < 5 - curLength; i++) {
+        this.selectLabels.push("");
+      }
+      this.labelToStockCode = Object.assign({}, this.labelToStockCode);
     },
   },
 };

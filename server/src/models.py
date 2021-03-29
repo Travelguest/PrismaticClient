@@ -380,4 +380,10 @@ class Model:
         return stocks
 
     def query_stock_knowledge_graph_members(self, key='city', value='昆明市'):
-        return list({u for (u, _, d) in self.knowledge_graph.edges.data(key) if d is not None and value in d})
+        stocks = set()
+        for (u, v, d) in self.knowledge_graph.edges.data(key):
+            if d is not None and value in d:
+                stocks.add(u)
+                stocks.add(v)
+
+        return list(stocks)
