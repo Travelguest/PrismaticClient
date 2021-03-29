@@ -524,17 +524,17 @@ export default {
         xScale = d3
           .scaleLinear()
           .domain([0, returnDomain[1]])
-          .range([this.margin.left, 5]);
+          .range([this.margin.left / 2, 5]);
       } else if (returnDomain[1] <= 0) {
         xScale = d3
           .scaleLinear()
           .domain([returnDomain[0], 0])
-          .range([this.margin.left, 5]);
+          .range([this.margin.left, this.margin.left / 2]);
       } else {
         xScale = d3
           .scaleLinear()
-          .domain(returnDomain)
-          .range([5, this.margin.left]);
+          .domain([returnDomain[0], 0, returnDomain[1]])
+          .range([5, this.margin.left / 2 ,this.margin.left]);
       }
 
       barchartGroup
@@ -638,7 +638,6 @@ export default {
       }
     },
     dragEnd() {
-      // console.log(this.curMatrixColumn);
       this.renderMatrix();
     },
     removeColumn(val) {
@@ -705,6 +704,7 @@ export default {
   font-size: 12px;
   -webkit-text-size-adjust: none;
   -webkit-transform: scale(0.83, 0.83);
+  transform: scale(0.83, 0.83);
 }
 #del-btns {
   position: absolute;
