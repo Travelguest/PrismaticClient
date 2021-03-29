@@ -11,10 +11,9 @@ export default {
   props: {
     corrDistribution: Object,
     corrCluster: Object,
-    corrClusterUpdate:Number,
+    corrClusterUpdate: Number,
     selectedStock: Array,
     thresholdRange: Array,
-
   },
   emits: ["clickedYear", "updateYearBrush"],
   data() {
@@ -28,7 +27,7 @@ export default {
       distPaddingHeight: 12,
       distPaddingWidth: 20,
 
-      graphMaxNodes: 30,
+      graphMaxNodes: 40,
 
       color: d3.schemeTableau10,
 
@@ -46,13 +45,14 @@ export default {
       this.renderDistChart();
       // this.renderGraph();
     },
-    corrCluster: function () {  //直接修改无法监测到
+    corrCluster: function () {
+      //直接修改无法监测到
       // console.log("corrCluster改变了", this.corrCluster);
       this.svg.selectAll(".graph").remove();
       this.renderNodeLink();
       // this.renderGraph();
     },
-    corrClusterUpdate:function () {
+    corrClusterUpdate: function () {
       // console.log("corrClusterUpdate告诉我数据：", this.corrCluster);
       this.svg.selectAll(".graph").remove();
       this.renderNodeLink();
@@ -90,13 +90,13 @@ export default {
       let graphWidth = this.width - this.distWidth - this.distPaddingWidth * 3;
       let graphHeight = this.distHeight + this.distPaddingHeight;
 
-      //topNodes:根据betweenness重要性排序后得到的股票代码数组
+      //topNodes:根据betweenness重要性排序后又按components分组后得到的股票代码数组
       let topNodes = Object.fromEntries(
         Object.entries(this.corrCluster).map(([k, v]) => [
           k,
           Object.entries(v.betweenness)
             .sort((a, b) => b[1] - a[1]) // descending order
-            .slice([0, this.graphMaxNodes]) // select top n
+            // .slice(0, this.graphMaxNodes) // select top n
             .map((x) => x[0]) // keep only keys
             .sort((x, y) => v.components[x] - v.components[y]), //再按compoents升序排序
           // .filter(id => this.selectedStock.includes(id))
@@ -104,7 +104,7 @@ export default {
       );
 
       // console.log("数组：", Object.entries(this.corrCluster));
-      // console.log("topNodes", topNodes);
+      console.log("topNodes", topNodes);
 
       //graphY : yScale()
       let graphY = d3
@@ -155,6 +155,17 @@ export default {
         .style("font-weight", "700")
         .style("opacity", 1);
 
+        container
+        .append("text")
+        .attr("x", 20)
+        .attr("y", -37)
+        .text((d) => "total: "+topNodes[d].length)
+        .style("font-size", "18px")
+        .style("fill", "#4364A0")
+        // .style("stroke-width", "0.8px")
+        .style("font-weight", "700")
+        .style("opacity", 0.3);
+
       // draw the node link diagram
       //year,index,group...
       container.each((d, i, c) => {
@@ -164,21 +175,31 @@ export default {
         let last = 0;
         let cnt = [];
         let temp = 0;
-        let showComponents = [];
+        let showComponents = []; //选择的股票的族号
+        let idRank = [];
+        let index = 0;
         //计算每个族有几个结点
         topNodes[d].forEach((id) => {
           if (this.selectedStock.includes(id)) {
             showComponents.push(this.corrCluster[d].components[id]);
           }
           if (this.corrCluster[d].components[id] != last) {
+            //新组
+            index = 0;
+            idRank.push(index++);
             last = this.corrCluster[d].components[id];
             cnt.push(temp);
             temp = 1; //发现第一个不同的
           } else {
             temp++;
+            idRank.push(index++);
+            // index++;
           }
         });
         cnt.push(temp); //最后一组
+        // console.log("cnt:", d, cnt);
+        // console.log("idRank:", d, idRank);
+
         showComponents = Array.from(new Set(showComponents));
         // console.log("showComponents:",showComponents);
 
@@ -250,7 +271,12 @@ export default {
         container
           .selectAll(".node")
           .data(
-            topNodes[d]
+            topNodes[d].filter((id, index) => {
+              return this.selectedStock.includes(id) ||
+                idRank[index] < this.graphMaxNodes
+                ? true
+                : false;
+            })
             // .filter((id) => this.selectedStock.includes(id))
           )
           .enter()
@@ -382,7 +408,7 @@ export default {
           // console.log("thresholdRange:", this.thresholdRange);
           let topThreshold = distY(this.thresholdRange[1]);
           let bottomThreshold = distY(this.thresholdRange[0]);
-       
+
           let brush = d3
             .brushY()
             .extent([
