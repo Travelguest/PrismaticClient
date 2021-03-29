@@ -140,7 +140,8 @@ export default {
         // .attr("transform", `translate(0,${-this.height})`)
         .style("position", "absolute")
         .style("top", 6)
-        .style("left", 45)
+        .style("right",16)
+        // .style("left", 48)
         .append("g")
         .style("z-index", "1");
 
@@ -249,9 +250,9 @@ export default {
       this.svg
         .append("rect")
         .attr("class", "brushBackGround")
-        .attr("x", 0)
+        .attr("x", 8)
         .attr("y", 22)
-        .attr("width", this.width)
+        .attr("width", this.width-8)
         .attr("height", "15")
         .style("fill", "#E9E9E9")
         // .style("fill", "red")
@@ -266,7 +267,7 @@ export default {
       let brush = d3
         .brushX()
         .extent([
-          [0, 0],
+          [8, 0],
           [this.innerWidth, 38],
         ])
         .on("end", this.updateDate);
@@ -332,7 +333,7 @@ export default {
       d3.select(`#pinus_${id}_svg`).on("mousemove", function (mouse) {
         // console.log(mouse.x, mouse.y);
         // get mousePositions from the main canvas
-        let mouseX = mouse.layerX;
+        let mouseX = mouse.layerX + 9;
         let mouseY = mouse.layerY;
         // console.log(mouseX, mouseY);
         let x,
