@@ -78,7 +78,6 @@
             style="font-size: 12px"
           >
             <p
-             
               style="
                 text-align: center;
                 width: 20%;
@@ -87,7 +86,7 @@
                 height: 15px;
               "
             >
-            {{ stock.ts_code }}
+              {{ stock.ts_code }}
             </p>
             <p
               style="
@@ -135,8 +134,11 @@
       class="dynamic-graph"
       :corr-distribution="corrDistribution"
       :corr-cluster="corrCluster"
+      :corr-cluster-update="corrClusterUpdate"
       :selected-stock="selectedStock"
+      :threshold-range="correlationRange"
       @clicked-year="onYearClick"
+      @update-year-brush="handleUpdateYearBrush"
     >
     </dynamic-graph-view>
 
@@ -256,6 +258,7 @@ export default {
       correlationButtonLoading: false,
 
       corrCluster: corr_clusters_all_years,
+      corrClusterUpdate:1,  //告诉子组件corrCluster更新的
       businessTag: business_tag_table,
 
       //tagsIndustry: business_tag_table.L1,
@@ -274,7 +277,6 @@ export default {
     };
   },
   computed: {
- 
     stockButtonDisabled() {
       return !this.stockSelected.length;
     },
@@ -311,6 +313,23 @@ export default {
     });
   },
   methods: {
+    handleUpdateYearBrush: function (left, right, year) {
+      // this.correlationRange[0] = left;
+      // this.correlationRange[1] = right;
+      console.log([year, left, right]);
+      DataService.post(
+        "get_corr_clusters_one_year",
+        [year, left, right],
+        (data) => {
+         
+          this.corrCluster[year] = data;
+          this.corrClusterUpdate = this.corrClusterUpdate + 1;
+          //  console.log(`corrCluster${year}更新了data:`,this.corrClusterUpdate,data);
+          // this.corrCluster = data;
+          // this.correlationButtonLoading = !this.correlationButtonLoading;
+        }
+      );
+    },
     onCorrelationSliderChange(val) {
       this.correlationMarks = {
         0: { style: { top: "-32px", "font-size": "12px" }, label: "0" },

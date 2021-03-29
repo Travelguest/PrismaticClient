@@ -11,9 +11,12 @@ export default {
   props: {
     corrDistribution: Object,
     corrCluster: Object,
+    corrClusterUpdate:Number,
     selectedStock: Array,
+    thresholdRange: Array,
+
   },
-  emits: ["clickedYear"],
+  emits: ["clickedYear", "updateYearBrush"],
   data() {
     return {
       svg: null,
@@ -30,7 +33,7 @@ export default {
       color: d3.schemeTableau10,
 
       yearSelected: "2020",
-      correlationRange: [0.6, 1],
+      // correlationRange: [0.6, 1],
       correlationMarks: { 0.6: "0.6", 0: "0", 1: "1" },
       correlatedStocks: [],
     };
@@ -43,11 +46,16 @@ export default {
       this.renderDistChart();
       // this.renderGraph();
     },
-    corrCluster: function () {
+    corrCluster: function () {  //直接修改无法监测到
       // console.log("corrCluster改变了", this.corrCluster);
       this.svg.selectAll(".graph").remove();
       this.renderNodeLink();
       // this.renderGraph();
+    },
+    corrClusterUpdate:function () {
+      // console.log("corrClusterUpdate告诉我数据：", this.corrCluster);
+      this.svg.selectAll(".graph").remove();
+      this.renderNodeLink();
     },
     periodRange: function () {
       this.$emit("update-period-range", this.periodRange);
@@ -241,8 +249,9 @@ export default {
         // draw node to the axis
         container
           .selectAll(".node")
-          .data(topNodes[d]
-          // .filter((id) => this.selectedStock.includes(id))
+          .data(
+            topNodes[d]
+            // .filter((id) => this.selectedStock.includes(id))
           )
           .enter()
           .append("circle")
@@ -357,13 +366,30 @@ export default {
             .attr("class", "yAxis")
             .attr("transform", `translate(${_this.distWidth},0)`)
             .call(d3.axisRight(distY).ticks(3));
+
+          let updateDate = ({ selection }) => {
+            // console.log("selection:", selection);
+            if (selection) {
+              let start = parseFloat(distY.invert(selection[0]).toFixed(2));
+              let end = parseFloat(distY.invert(selection[1]).toFixed(2));
+              // .toISOString().slice(0, 10);
+              if (start !== end) {
+                console.log("start,end:", start, end, d[0]);
+                this.$emit("updateYearBrush", end, start, d[0]); //left,right,year
+              }
+            }
+          };
+          // console.log("thresholdRange:", this.thresholdRange);
+          let topThreshold = distY(this.thresholdRange[1]);
+          let bottomThreshold = distY(this.thresholdRange[0]);
+       
           let brush = d3
             .brushY()
             .extent([
-              [_this.distWidth, 0],
-              [_this.distWidth + 32, _this.distHeight],
+              [_this.distWidth, topThreshold],
+              [_this.distWidth + 32, bottomThreshold], //每次刷的范围限制在内部
             ])
-            .on("end", this.updateDate);
+            .on("end", updateDate);
           container.select(".brush").remove();
           container.append("g").attr("class", "brush").call(brush);
           // .attr("transform", `translate(0,${this.height - 7})`);
@@ -390,21 +416,6 @@ export default {
             .attr("stroke-width", "2px")
             .attr("stroke", "cornflowerblue");
         });
-    },
-    updateDate({ selection }) {
-      if (selection) {
-        let distY = d3
-          .scaleLinear()
-          .domain([1, -0.5])
-          .range([0, this.distHeight]);
-        let start = distY.invert(selection[0]);
-        let end = distY.invert(selection[1]);
-        // .toISOString().slice(0, 10);
-        if (start !== end) {
-          console.log("start,end:", start, end);
-          // this.$emit("updateBrush", start, end, this.title);
-        }
-      }
     },
   },
 };

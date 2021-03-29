@@ -113,6 +113,8 @@ export default {
         .append("g")
         .attr("transform", `translate(${this.margin.left},${this.margin.top})`);
     },
+
+    
     renderUpdate() {
       //date数据处理
       this.date = this.preprocessedData.date.map((d) => new Date(d));
