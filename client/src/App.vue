@@ -147,7 +147,7 @@ export default {
       this.getCorrelationMatrix();
     },
     updateSelectedStock(stock_left, stock_right) {
-      this.selectLabels = ["", "", "", "", ""];
+      // this.selectLabels = ["", "", "", "", ""];
       this.labelToStockCode = {};
       this.selectedStockLeft = stock_left;
       this.selectedStockRight = stock_right;

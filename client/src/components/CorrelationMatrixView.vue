@@ -20,6 +20,7 @@
     >
       <template #item="{ element}">
         <a-tag
+          :id="element + '_bottom'"
           color="#B0BEC5"
           class="drag-item-bottom"
           :key="element"
@@ -43,6 +44,7 @@
     >
       <template #item="{element}">
         <a-tag
+          :id="element + '_right'"
           color="#B0BEC5"
           class="drag-item-right"
           :key="element"
@@ -166,6 +168,11 @@ export default {
 
       curMatrixColumn: [],
       rectWidth: 0,
+
+      lastSelect: {
+        col: "",
+        row: "",
+      },
 
       periodRange: [
         moment.utc("2020-01-01", "YYYY-MM-DD"),
@@ -657,7 +664,19 @@ export default {
         .on("mouseover", mouseover)
         .on("mouseout", mouseout)
         .on("click", (_, d) => {
+          if (this.lastSelect.col.length !== 0) {
+            document.getElementById(
+              `${this.lastSelect.col}_bottom`
+            ).style.backgroundColor = "#B0BEC5";
+            document.getElementById(
+              `${this.lastSelect.row}_right`
+            ).style.backgroundColor = "#B0BEC5";
+          }
+          document.getElementById(`${d.col}_bottom`).style.backgroundColor = "#455A64";
+          document.getElementById(`${d.row}_right`).style.backgroundColor = "#455A64";
           this.$emit("selectedStockFromMatrix", d.row, d.col);
+          this.lastSelect.col = d.col;
+          this.lastSelect.row = d.row;
         });
 
       //barChart
@@ -719,11 +738,11 @@ export default {
           `translate(${this.upsetMargin.left}, ${this.upsetMargin.top + 500})`
         );
       for (let i = 0; i < 5; i++) {
-        // tickGroup
-        //   .append("path")
-        //   .attr("stroke", "black")
-        //   .attr("fill", "none")
-        //   .attr("d", `M ${30 * i + 10 * i} 0 h 30`);
+        tickGroup
+          .append("path")
+          .attr("stroke", "black")
+          .attr("fill", "none")
+          .attr("d", `M ${30 * i + 10 * i} 0 v -495`);
         tickGroup
           .append("path")
           .attr("stroke", "black")
@@ -737,11 +756,7 @@ export default {
           .attr("xlink:href", `#${this.labels[i]}`)
           .style("font-size", 10)
           .style("-webkit-user-select", "none")
-          .text(
-            this.labels[i].length <= 3
-              ? this.labels[i]
-              : this.labels[i].substring(0, 3)
-          )
+          .text(this.labels[i])
           .on("dblclick", () => {
             this.$emit("delLabel", i);
           });
@@ -763,7 +778,7 @@ export default {
                 // add dots
                 dotsGroup
                   .append("circle")
-                  .attr("cx", 30 * i + 10 * i + 10)
+                  .attr("cx", 30 * i + 10 * i + 20)
                   .attr(
                     "cy",
                     this.rectYScale(this.curMatrixColumn[j]) +
@@ -785,7 +800,7 @@ export default {
                 .attr("stroke-width", "2px")
                 .attr(
                   "d",
-                  `M ${30 * i + 10 * i + 10} ${dotsCenter[k] +
+                  `M ${30 * i + 10 * i + 20} ${dotsCenter[k] +
                     this.rectWidth / 4} V ${dotsCenter[k + 1] -
                     this.rectWidth / 4}`
                 );
@@ -839,6 +854,7 @@ export default {
   top: 10px;
   right: 10px;
   width: 200px;
+  z-index: 99;
 }
 #drag-area-bottom {
   position: absolute;
