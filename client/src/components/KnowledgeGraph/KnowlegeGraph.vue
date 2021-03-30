@@ -128,9 +128,9 @@
       <g id="knowlege_graph_circle_legend">
         <text x="30" y="90" font-size="18px" font-weight="bold">Human</text>
         <text x="460" y="90" font-size="18px" font-weight="bold">Business</text>
-        <!-- <text x="248" y="580" font-size="18px" font-weight="bold">
+        <text x="248" y="580" font-size="18px" font-weight="bold">
           Location
-        </text> -->
+        </text>
       </g>
     </svg>
   </div>
