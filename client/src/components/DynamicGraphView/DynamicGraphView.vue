@@ -217,7 +217,7 @@ export default {
               .range([10, graphWidth - 10]),
           ])
         );
-        let padding = 10;
+        // let padding = 10;
         container
           .selectAll(".nodeContainer")
           .data(cnt)
