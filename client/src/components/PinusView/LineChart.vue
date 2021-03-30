@@ -152,7 +152,7 @@ export default {
         .style("font-size", "13px")
         .style("font-family", "PingFangSC-Regular")
         .style("letter-spacing", "-0.08px")
-        .style("color", "#6C7B8A");
+        .style("color", "#546E7A");
 
       //画y轴——左边dataA的
 
@@ -210,7 +210,7 @@ export default {
         .selectAll(".tick text")
         .style("font-family", "Helvetica")
         .style("font-size", "10px")
-        .style("color", "#BCC8CE");
+        .style("color", "#546E7A");
 
       let curveChart = this.svg.append("g");
       curveChart
@@ -268,7 +268,7 @@ export default {
           .selectAll(".tick text")
           .style("font-family", "Helvetica")
           .style("font-size", "10px")
-          .style("color", "#BCC8CE");
+          .style("color", "#546E7A");
       }
 
       curveChart
