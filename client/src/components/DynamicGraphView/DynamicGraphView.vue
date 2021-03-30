@@ -268,7 +268,7 @@ export default {
           .call(d3.axisBottom(xScale[d]).tickSizeOuter(0))
         // .ticks(10)
         .call((g) => g.selectAll(".tick").remove());
-        console.log(`${d}year,bandwidth:`, xScale[d].bandwidth())
+        // console.log(`${d}year,bandwidth:`, xScale[d].bandwidth())
 
         let resNodes = [];
         // draw node to the axis

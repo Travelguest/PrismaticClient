@@ -148,7 +148,7 @@ export default {
     },
     updateSelectedStock(stock_left, stock_right) {
       // this.selectLabels = ["", "", "", "", ""];
-      this.labelToStockCode = {};
+      // this.labelToStockCode = {};
       this.selectedStockLeft = stock_left;
       this.selectedStockRight = stock_right;
       this.getCorrelationTriangle();
