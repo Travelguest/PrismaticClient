@@ -210,7 +210,7 @@ export default {
         .attr("fill", "none")
         .attr("stroke-width", 1.5)
         //.attr("stroke", "rgba(80,161,255,0.30)");
-        .attr("stroke", "#29A897");
+        .attr("stroke", "#B25B65");
       // .attr("stroke", "red");
 
       //面积图
@@ -276,7 +276,7 @@ export default {
         .attr("fill", "none")
         .attr("stroke-width", 2)
         //.attr("stroke", "#FE6AAC");
-        .attr("stroke", "#A8293A");
+        .attr("stroke", "#7D5BB2");
 
       // legend
       this.svg
@@ -288,10 +288,10 @@ export default {
         .attr("cy", -26)
         .attr("r", "6px")
         //.style("fill", (d) => this.colorScale(d));29A897
-        .style("fill", function (d, i) {
-          if (i == 0) return "#29A897";
-          else return "#A8293A";
-        });
+        .style("fill", function(d,i){
+          if(i==0) return "#7D5BB2";
+          else return "#B25B65"
+        })
 
       this.svg
         .selectAll(".labels")

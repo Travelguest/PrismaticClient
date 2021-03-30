@@ -521,26 +521,26 @@ export default {
 }
 
 ::v-deep .tagOfIndustry .ant-tag-checkable-checked {
-  color: #884ed8;
-  background-color: #faf2ff;
-  border: #dbbcf8 1px solid;
+  color: #7D5BB2;
+  background-color: #EFEAF5;
+  border: #AE98CF 1px solid;
 }
 
 ::v-deep .tagOfSector .ant-tag-checkable-checked {
-  color: #50abff;
-  background-color: #eaf8ff;
-  border: #a2dbff 1px solid;
+  color: #7D5BB2;
+  background-color: #EFEAF5;
+  border: #AE98CF 1px solid;
 }
 
 ::v-deep .tagOfSubsector .ant-tag-checkable-checked {
-  color: #51d3d2;
-  background-color: #eafffc;
-  border: #99ece3 1px solid;
+  color: #7D5BB2;
+  background-color: #EFEAF5;
+  border: #AE98CF 1px solid;
 }
 
 ::v-deep .tagOfConcept .ant-tag-checkable-checked {
-  color: #fba343;
-  background-color: #fff8ea;
-  border: #ffdba2 1px solid;
+  color: #7D5BB2;
+  background-color: #EFEAF5;
+  border: #AE98CF 1px solid;
 }
 </style>
