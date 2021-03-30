@@ -172,14 +172,54 @@ export default {
 
   watch: {
     correlationTriangleMarketLeft: function () {
+      this.isShowTopLineChart = false;
+      this.isShowBottomLineChart = false;
       this.showTopPinusData = null;
       this.showBottomPinusData = null;
       this.showTopPinusTitle = "";
       this.showBottomPinusTitle = "";
       this.showMap.top = "";
       this.showMap.bottom = "";
+    },
+    correlationTriangleMarketRight: function () {
       this.isShowTopLineChart = false;
       this.isShowBottomLineChart = false;
+      this.showTopPinusData = null;
+      this.showBottomPinusData = null;
+      this.showTopPinusTitle = "";
+      this.showBottomPinusTitle = "";
+      this.showMap.top = "";
+      this.showMap.bottom = "";
+    },
+    correlationTriangleStock: function () {
+      this.isShowTopLineChart = false;
+      this.isShowBottomLineChart = false;
+      this.showTopPinusData = null;
+      this.showBottomPinusData = null;
+      this.showTopPinusTitle = "";
+      this.showBottomPinusTitle = "";
+      this.showMap.top = "";
+      this.showMap.bottom = "";
+    },
+    correlationTriangleSectorLeft: function () {
+      this.isShowTopLineChart = false;
+      this.isShowBottomLineChart = false;
+      this.showTopPinusData = null;
+      this.showBottomPinusData = null;
+      this.showTopPinusTitle = "";
+      this.showBottomPinusTitle = "";
+      this.showMap.top = "";
+      this.showMap.bottom = "";
+    },
+    correlationTriangleSectorRight: function () {
+      this.isShowTopLineChart = false;
+      this.isShowBottomLineChart = false;
+      this.showTopPinusData = null;
+      this.showBottomPinusData = null;
+      this.showTopPinusTitle = "";
+      this.showBottomPinusTitle = "";
+      this.showMap.top = "";
+      this.showMap.bottom = "";
     },
   },
   mounted() {},

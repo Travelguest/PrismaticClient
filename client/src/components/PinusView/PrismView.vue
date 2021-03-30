@@ -54,6 +54,7 @@ export default {
   watch: {
     correlationTriangle: function () {
       // console.log("data:", this.title, this.correlationTriangle);
+      // d3.select(`#tooltip_${id}`).style("opacity", 0);
       this.bindPinus();
       this.initTooltip();
       this.renderArea();
@@ -246,15 +247,17 @@ export default {
         .append("g")
         .attr("class", "xAxis")
         .call(
-          d3
-            .axisBottom(this.xScale)
-             .tickFormat(d => {
-               console.log("domain:",this.xScale.domain)
-               console.log("date:",d,d3.timeFormat("%y %b")(d),d3.timeFormat("%y")(d));
-               return d3.timeFormat("%y %b")(d);
-             })
-            // .ticks(d3.timeMonth.every(1))
-           
+          d3.axisBottom(this.xScale).tickFormat((d) => {
+            let start = d3.timeFormat("%y")(this.date[0]);
+            let end = d3.timeFormat("%y")(this.date[this.date.length - 1]);
+            // console.log("date:", d, start, end);
+            if (end - start >= 1) {
+              return d3.timeFormat("%y")(d);
+            } else {
+              return d3.timeFormat("%b")(d);
+            }
+          })
+          // .ticks(d3.timeMonth.every(1))
         )
         .attr("transform", `translate(-9,${this.height - 6})`)
         .select(".domain")

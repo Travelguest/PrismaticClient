@@ -131,12 +131,12 @@ export default {
             )})`
         );
 
-     container
+      container
         .append("rect")
         .attr("class", "background")
         .attr("x", -5)
         .attr("y", this.distPaddingHeight - this.distHeight * 0.75)
-        .attr("width", graphWidth+10)
+        .attr("width", graphWidth + 10)
         .attr("height", graphHeight - this.distPaddingHeight)
         .style("fill", "#ECEFF1")
         .on("click", (_, d) => {
@@ -163,8 +163,8 @@ export default {
         .text((d) => "total: " + topNodes[d].length)
         .style("font-size", "18px")
         .style("fill", "#546E7A")
-        .style("font-weight", "700")
-        // .style("opacity", 0.3);
+        .style("font-weight", "700");
+      // .style("opacity", 0.3);
 
       // draw the node link diagram
       //year,index,group...
@@ -205,7 +205,8 @@ export default {
         let xScale = Object.fromEntries(
           Object.entries(topNodes).map(([k, v]) => [
             k,
-            d3.scaleBand()
+            d3
+              .scaleBand()
               // .scalePoint()
               .domain(
                 v
@@ -214,10 +215,9 @@ export default {
                 // )
               ) //筛选出和选中的标签属于同一个组的
               .range([10, graphWidth - 10])
-            ,
+              .padding([1]),
           ])
         );
-        // let padding = 10;
         container
           .selectAll(".nodeContainer")
           .data(cnt)
@@ -229,7 +229,8 @@ export default {
             for (let j in cnt) {
               if (j < i) start += cnt[j]; //不包含自己的长度
             }
-            return xScale[d](topNodes[d][start]) - xScale[d].bandwidth()/3;
+            return xScale[d](topNodes[d][start])
+            //  - xScale[d].bandwidth() / 3;
           })
           .attr("y", -15)
           .attr("rx", 5)
@@ -245,14 +246,14 @@ export default {
               if (i === _.sum(cnt) - 1)
                 return (
                   xScale[d](topNodes[d][end]) -
-                  xScale[d](topNodes[d][start]) +
-                  xScale[d].bandwidth()/3
+                  xScale[d](topNodes[d][start]) 
+                  // xScale[d].bandwidth() / 3
                 );
               else
                 return (
                   xScale[d](topNodes[d][end]) -
-                  xScale[d](topNodes[d][start]) +
-                  xScale[d].bandwidth()
+                  xScale[d](topNodes[d][start]) 
+                  // xScale[d].bandwidth()
                 );
             } else return 0;
           })
@@ -264,8 +265,10 @@ export default {
         container
           .append("g")
           .attr("class", "xAxis")
-          .call(d3.axisBottom(xScale[d]).ticks(10).tickSizeOuter(0))
-          // .call((g) => g.selectAll(".tick").remove());
+          .call(d3.axisBottom(xScale[d]).tickSizeOuter(0))
+        // .ticks(10)
+        .call((g) => g.selectAll(".tick").remove());
+        console.log(`${d}year,bandwidth:`, xScale[d].bandwidth())
 
         let resNodes = [];
         // draw node to the axis

@@ -9,7 +9,7 @@
       >
         <a-menu-item key="close">close</a-menu-item>
         <a-menu-item key="pct">pct</a-menu-item>
-        <a-menu-item key="log">log</a-menu-item>
+        <a-menu-item key="log">pct*</a-menu-item>
       </a-menu>
     </div>
     <div :id="`line_chart_${id}`"></div>
@@ -50,7 +50,7 @@ export default {
     },
   },
   mounted: function () {
-    console.log(this.title, this.preprocessedData);
+    // console.log(this.title, this.preprocessedData);
     this.renderInit();
     this.renderUpdate();
   },
@@ -82,7 +82,7 @@ export default {
       } else if (this.nowTag[0] === "pct") {
         return path.y((d) => this.yScale(d.pct));
       } else {
-        return path.y((d) => this.yScale(d.log));
+        return path.y((d) => this.yScale(d.pct));
       }
     },
     colorScale() {
@@ -90,13 +90,6 @@ export default {
         .scaleOrdinal()
         .domain(this.keys)
         .range(["rgba(80,161,255,0.30)", "#FE6AAC"]);
-    },
-    area() {
-      return d3
-        .area()
-        .x((d, i) => this.xScale(this.date[i]))
-        .y0(() => this.yScale(0))
-        .y1((d) => this.yScale(d));
     },
   },
   methods: {
@@ -120,6 +113,7 @@ export default {
     renderUpdate() {
       //date数据处理
       this.date = this.preprocessedData.date.map((d) => new Date(d));
+      console.log("preprocessedData:", this.preprocessedData);
       if (this.title === "Stock") {
         this.keys = [this.stockA, this.stockB];
         this.dataA = this.preprocessedData[this.stockA];
@@ -131,6 +125,14 @@ export default {
         ];
         this.dataA = this.preprocessedData.index; //其余的dataA存储index
         this.dataB = this.preprocessedData.stock; //其余的dataB存储stock
+
+        this.dataA = this.dataA.map((d) => {
+          return {
+            close: d["close"],
+            pct: d["pct"] * 100,
+          };
+        });
+        // console.log("index:", this.dataA);
       }
       this.svg.selectAll("g").remove();
       // Add X axis
@@ -176,15 +178,24 @@ export default {
           ]);
         }
       } else {
-        // this.yScale.domain(d3.extent(this.dataA, (d) => d.log));
-        this.yScale.domain([
-          d3.min(this.dataA, (d) => d.log) * 0.9,
-          d3.max(this.dataA, (d) => d.log) * 1.1,
-        ]);
+        //只要左边的轴——指数和股票评选得到的
+        let min = Math.min(
+          d3.min(this.dataA, (d) => d.pct),
+          d3.min(this.dataB, (d) => d.pct)
+        );
+        let max = Math.max(
+          d3.max(this.dataA, (d) => d.pct),
+          d3.max(this.dataB, (d) => d.pct)
+        );
+        if (min < 0) {
+          this.yScale.domain([min * 1.2, max * 1.2]);
+        } else {
+          this.yScale.domain([min * 0.8, max * 1.2]);
+        }
       }
 
       this.svg.append("g").attr("id", "yAxis_A").call(
-        d3.axisLeft(this.yScale)
+        d3.axisLeft(this.yScale).tickSizeOuter(0)
         // .tickFormat(d3.format("~s"))
         //.ticks(6)
         // .tickFormat(d3.format(".0%")).ticks(5)
@@ -199,7 +210,7 @@ export default {
         .selectAll(".tick text")
         .style("font-family", "Helvetica")
         .style("font-size", "10px")
-        .style("color", "#6C7B8A");
+        .style("color", "#BCC8CE");
 
       let curveChart = this.svg.append("g");
       curveChart
@@ -209,19 +220,7 @@ export default {
         .attr("d", this.linePath(this.dataA))
         .attr("fill", "none")
         .attr("stroke-width", 1.5)
-        //.attr("stroke", "rgba(80,161,255,0.30)");
-        .attr("stroke", "#B25B65");
-      // .attr("stroke", "red");
-
-      //面积图
-      // curveChart
-      //   .append("g")
-      //   .append("path")
-      //   .datum(this.marketShares)
-      //   .attr("class", "streamGraphLayers")
-      //   .style("stroke", "rgba(80,161,255,0.30)")
-      //   .style("fill", "rgba(80,161,255,0.30)")
-      //   .attr("d", this.area);
+        .attr("stroke", "#7D5BB2");
 
       //右侧的Y轴
       if (this.nowTag[0] === "close") {
@@ -244,29 +243,33 @@ export default {
             d3.max(this.dataB, (d) => d.pct) * 1.2,
           ]);
         }
-      } else {
-        // this.yScale.domain(d3.extent(this.dataB, (d) => d.log));
-        this.yScale.domain([
-          d3.min(this.dataB, (d) => d.log) * 0.8,
-          d3.max(this.dataB, (d) => d.log) * 1.2,
-        ]);
       }
-      this.svg
-        .append("g")
-        .attr("id", "yAxis_B")
-        .call(
-          d3.axisRight(this.yScale)
-          //  .ticks(6)
-        )
-        .attr("transform", `translate(${this.innerWidth},0)`);
-      // .select(".domain")
-      // .remove();
-      this.svg
-        .select("#yAxis_B")
-        .selectAll(".tick text")
-        .style("font-family", "Helvetica")
-        .style("font-size", "10px")
-        .style("color", "#6C7B8A");
+      //  else {
+      //   // this.yScale.domain(d3.extent(this.dataB, (d) => d.log));
+      //   // this.yScale.domain([
+      //   //   d3.min(this.dataB, (d) => d.log) * 0.8,
+      //   //   d3.max(this.dataB, (d) => d.log) * 1.2,
+      //   // ]);
+      // }
+      if (this.nowTag[0] === "close" || this.nowTag[0] === "pct") {
+        this.svg
+          .append("g")
+          .attr("id", "yAxis_B")
+          .call(
+            d3.axisRight(this.yScale).tickSizeOuter(0)
+            //  .ticks(6)
+          )
+          .attr("transform", `translate(${this.innerWidth},0)`);
+        // .select(".domain")
+        // .remove();
+
+        this.svg
+          .select("#yAxis_B")
+          .selectAll(".tick text")
+          .style("font-family", "Helvetica")
+          .style("font-size", "10px")
+          .style("color", "#BCC8CE");
+      }
 
       curveChart
         .append("g")
@@ -275,30 +278,35 @@ export default {
         .attr("d", this.linePath(this.dataB))
         .attr("fill", "none")
         .attr("stroke-width", 2)
-        //.attr("stroke", "#FE6AAC");
-        .attr("stroke", "#7D5BB2");
+        .attr("stroke", "#B25B65");
 
       // legend
       this.svg
+        .append("g")
         .selectAll(".legend")
         .data(this.keys)
         .enter()
-        .append("circle")
-        .attr("cx", (d, i) => 350 + i * 180)
-        .attr("cy", -26)
-        .attr("r", "6px")
-        //.style("fill", (d) => this.colorScale(d));29A897
-        .style("fill", function(d,i){
-          if(i==0) return "#7D5BB2";
-          else return "#B25B65"
-        })
+        .append("rect")
+        .attr("class", "legend")
+        .attr("x", (d, i) => 335 + i * 200)
+        .attr("y", -27)
+        .attr("height", "3px")
+        .attr("width", "30px")
+        .style("fill", function (d, i) {
+          if (i == 0) return "#7D5BB2";
+          //左配色
+          else return "#B25B65"; //右配色
+          // if (i == 0) return "red";
+          // else return "blue";
+        });
 
       this.svg
         .selectAll(".labels")
         .data(this.keys)
         .enter()
         .append("text")
-        .attr("x", (d, i) => 365 + i * 180)
+        .attr("class", "labels")
+        .attr("x", (d, i) => 375 + i * 200)
         .attr("y", -24)
         .style("fill", "#9F9F9F")
         .style("font-family", "PingFangSC-Medium")
