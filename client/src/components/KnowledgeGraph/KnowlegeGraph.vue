@@ -124,6 +124,14 @@
           />
         </g>
       </g>
+
+      <g id="knowlege_graph_circle_legend">
+        <text x="30" y="90" font-size="18px" font-weight="bold">Human</text>
+        <text x="460" y="90" font-size="18px" font-weight="bold">Business</text>
+        <!-- <text x="248" y="580" font-size="18px" font-weight="bold">
+          Location
+        </text> -->
+      </g>
     </svg>
   </div>
 </template>
@@ -147,6 +155,8 @@ const childrenHash = {
   people: ["investor", "management"],
 };
 
+// const legendNames = ["Investor", "Management"]
+
 /**
  * 已完成: 点击外圈的点, 请求获得的链接, 绘制出相应的股票的点;
  *  点击表示股票的点, 高亮/取消高亮相应的股票和弦;
@@ -168,7 +178,7 @@ export default {
   data() {
     return {
       width: 550,
-      height: 550,
+      height: 600,
       margin: {
         left: 10,
         top: 10,
@@ -177,17 +187,17 @@ export default {
       },
       triangleRadius: 80,
       colorScale: {
-        bussiness: "#3E2D59",//"#44930F",
-        industry: "#7D5BB2",//"#69BC71",
-        concept: "#BEADD8",//"#69BC9A",
+        bussiness: "#3E2D59", //"#44930F",
+        industry: "#7D5BB2", //"#69BC71",
+        concept: "#BEADD8", //"#69BC9A",
 
-        people: "#592D33",//"#B1ABD5",//"#1a589c",
-        investor: "#D8ADB2",//"#6D77BE",//"#5C83B6",
-        management: "#B25B65",//"#8B6DBE",//"#5DA7B9",
+        people: "#592D33", //"#B1ABD5",//"#1a589c",
+        investor: "#D8ADB2", //"#6D77BE",//"#5C83B6",
+        management: "#B25B65", //"#8B6DBE",//"#5DA7B9",
 
-        location: "#49592D",//"#D5A9D1",//"#81770f",
-        city: "#C8D8AD",//"#B46DBE",//"#C8C390",
-        province: "#91B25B",//"#BE6D9F",//"#A3AE92",
+        location: "#49592D", //"#D5A9D1",//"#81770f",
+        city: "#C8D8AD", //"#B46DBE",//"#C8C390",
+        province: "#91B25B", //"#BE6D9F",//"#A3AE92",
       },
       // link的终点数组
       linkData: [
@@ -455,7 +465,7 @@ export default {
 #knowledge-graph-container {
   position: relative;
   width: 550px;
-  height: 550px;
+  height: 600px;
 }
 
 #knowledge-graph-tooltip {
