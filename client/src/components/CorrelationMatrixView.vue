@@ -428,28 +428,14 @@ export default {
         .attr("transform", `translate(0, 565)`);
       legendBarchart
         .append("text")
-        .attr("x", 30)
+        .attr("x", 22)
         .attr("y", 5)
         .style("font-size", 10)
         .style("font-weight", "bold")
-        .text("Rate of Return");
+        .text("Rate of Change");
       legendBarchart
         .append("rect")
         .attr("x", 17)
-        .attr("y", 10)
-        .attr("width", 35)
-        .attr("height", 10)
-        .attr("mask", "url(#mask_stripe)")
-        .attr("fill", colorScale(-0.5));
-      legendBarchart
-        .append("text")
-        .attr("x", 17)
-        .attr("y", 27)
-        .attr("font-size", 10)
-        .text("neg");
-      legendBarchart
-        .append("rect")
-        .attr("x", 67)
         .attr("y", 10)
         .attr("width", 35)
         .attr("height", 10)
@@ -457,10 +443,24 @@ export default {
         .attr("fill", colorScale(0.5));
       legendBarchart
         .append("text")
-        .attr("x", 67)
+        .attr("x", 17)
         .attr("y", 27)
         .attr("font-size", 10)
         .text("pos");
+      legendBarchart
+        .append("rect")
+        .attr("x", 67)
+        .attr("y", 10)
+        .attr("width", 35)
+        .attr("height", 10)
+        .attr("mask", "url(#mask_stripe)")
+        .attr("fill", colorScale(-0.5));
+      legendBarchart
+        .append("text")
+        .attr("x", 67)
+        .attr("y", 27)
+        .attr("font-size", 10)
+        .text("neg");
 
       // upset
       this.upsetSvg = d3
