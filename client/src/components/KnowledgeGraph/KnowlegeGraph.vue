@@ -89,7 +89,16 @@
           filter="url(#blur)"
         />
 
-        <circle cx="0" cy="0" r="10" fill="#efefef" stroke="#aaa" />
+        <circle
+          cx="0"
+          cy="0"
+          r="10"
+          fill="#efefef"
+          stroke="#aaa"
+          style="cursor: default;"
+          @mousemove="mouseMoveEvent($event, stockCode)"
+          @mouseout="mouseOutEvent"
+        />
 
         <g :id="stockCode">
           <path
@@ -122,6 +131,28 @@
             @mousemove="mouseMoveEvent($event, d.name)"
             @mouseout="mouseOutEvent"
           />
+        </g>
+      </g>
+
+      <g id="knowledge_graph_circle_legend">
+        <text x="40" y="110" font-size="15px" font-weight="bold">Human</text>
+        <text x="455" y="110" font-size="15px" font-weight="bold">
+          Business
+        </text>
+        <text x="240" y="575" font-size="15px" font-weight="bold">
+          Location
+        </text>
+      </g>
+
+      <g id="knowledge_graph_category_legend" transform="translate(40, 40)">
+        <g :key="item" v-for="item in Object.keys(legendAttrs)">
+          <circle
+            :fill="legendAttrs[item].color"
+            r="5px"
+            :cx="legendAttrs[item].cxPos"
+            cy="550"
+          ></circle>
+          <text :x="legendAttrs[item].cxPos + 10" y="555">{{ item }}</text>
         </g>
       </g>
     </svg>
@@ -168,7 +199,7 @@ export default {
   data() {
     return {
       width: 550,
-      height: 550,
+      height: 600,
       margin: {
         left: 10,
         top: 10,
@@ -177,17 +208,17 @@ export default {
       },
       triangleRadius: 80,
       colorScale: {
-        bussiness: "#3E2D59",//"#44930F",
-        industry: "#7D5BB2",//"#69BC71",
-        concept: "#BEADD8",//"#69BC9A",
+        bussiness: "#3E2D59", //"#44930F",
+        industry: "#7D5BB2", //"#69BC71",
+        concept: "#BEADD8", //"#69BC9A",
 
-        people: "#592D33",//"#B1ABD5",//"#1a589c",
-        investor: "#D8ADB2",//"#6D77BE",//"#5C83B6",
-        management: "#B25B65",//"#8B6DBE",//"#5DA7B9",
+        people: "#592D33", //"#B1ABD5",//"#1a589c",
+        investor: "#D8ADB2", //"#6D77BE",//"#5C83B6",
+        management: "#B25B65", //"#8B6DBE",//"#5DA7B9",
 
-        location: "#49592D",//"#D5A9D1",//"#81770f",
-        city: "#C8D8AD",//"#B46DBE",//"#C8C390",
-        province: "#91B25B",//"#BE6D9F",//"#A3AE92",
+        location: "#49592D", //"#D5A9D1",//"#81770f",
+        city: "#C8D8AD", //"#B46DBE",//"#C8C390",
+        province: "#91B25B", //"#BE6D9F",//"#A3AE92",
       },
       // link的终点数组
       linkData: [
@@ -202,6 +233,15 @@ export default {
       // 股票的位置数组
       stockPos: [],
       highlightStock: null,
+
+      legendAttrs: {
+        Investor: { color: "#D8ADB2", cxPos: 10 },
+        Management: { color: "#B25B65", cxPos: 90 },
+        Industry: { color: "#7D5BB2", cxPos: 200 },
+        Concept: { color: "#BEADD8", cxPos: 275 },
+        Province: { color: "#91B25B", cxPos: 355 },
+        City: { color: "#C8D8AD", cxPos: 435 },
+      },
     };
   },
   mounted() {
@@ -455,7 +495,7 @@ export default {
 #knowledge-graph-container {
   position: relative;
   width: 550px;
-  height: 550px;
+  height: 600px;
 }
 
 #knowledge-graph-tooltip {
