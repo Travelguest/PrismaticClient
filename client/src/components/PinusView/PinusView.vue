@@ -81,7 +81,7 @@ export default {
   },
   watch: {
     correlationTriangle: function () {
-      // this.svg.select(".backGround").style("fill", "none"); //每次刷新为空
+      this.svg.select(".backGround").style("fill", "none"); //每次刷新为空
       this.bindPinus();
       let _this = this;
       let t = d3.timer(function (elapsed) {
