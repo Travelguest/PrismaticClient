@@ -89,7 +89,16 @@
           filter="url(#blur)"
         />
 
-        <circle cx="0" cy="0" r="10" fill="#efefef" stroke="#aaa" />
+        <circle
+          cx="0"
+          cy="0"
+          r="10"
+          fill="#efefef"
+          stroke="#aaa"
+          style="cursor: default;"
+          @mousemove="mouseMoveEvent($event, stockCode)"
+          @mouseout="mouseOutEvent"
+        />
 
         <g :id="stockCode">
           <path
@@ -125,12 +134,26 @@
         </g>
       </g>
 
-      <g id="knowlege_graph_circle_legend">
-        <text x="30" y="90" font-size="18px" font-weight="bold">Human</text>
-        <text x="460" y="90" font-size="18px" font-weight="bold">Business</text>
-        <text x="248" y="580" font-size="18px" font-weight="bold">
+      <g id="knowledge_graph_circle_legend">
+        <text x="40" y="110" font-size="15px" font-weight="bold">Human</text>
+        <text x="455" y="110" font-size="15px" font-weight="bold">
+          Business
+        </text>
+        <text x="240" y="575" font-size="15px" font-weight="bold">
           Location
         </text>
+      </g>
+
+      <g id="knowledge_graph_category_legend" transform="translate(40, 40)">
+        <g :key="item" v-for="item in Object.keys(legendAttrs)">
+          <circle
+            :fill="legendAttrs[item].color"
+            r="5px"
+            :cx="legendAttrs[item].cxPos"
+            cy="550"
+          ></circle>
+          <text :x="legendAttrs[item].cxPos + 10" y="555">{{ item }}</text>
+        </g>
       </g>
     </svg>
   </div>
@@ -154,8 +177,6 @@ const childrenHash = {
   location: ["city", "province"],
   people: ["investor", "management"],
 };
-
-// const legendNames = ["Investor", "Management"]
 
 /**
  * 已完成: 点击外圈的点, 请求获得的链接, 绘制出相应的股票的点;
@@ -212,6 +233,15 @@ export default {
       // 股票的位置数组
       stockPos: [],
       highlightStock: null,
+
+      legendAttrs: {
+        Investor: { color: "#D8ADB2", cxPos: 10 },
+        Management: { color: "#B25B65", cxPos: 90 },
+        Industry: { color: "#7D5BB2", cxPos: 200 },
+        Concept: { color: "#BEADD8", cxPos: 275 },
+        Province: { color: "#91B25B", cxPos: 355 },
+        City: { color: "#C8D8AD", cxPos: 435 },
+      },
     };
   },
   mounted() {

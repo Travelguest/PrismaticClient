@@ -275,15 +275,15 @@ export default {
         .attr("fill", `url(#pattern_stripe)`)
         .attr("stroke", "black");
 
-      // legend scale
+      // scale legend
       let legendWidth = 100;
       let legendHeight = 10;
       let legend = this.svg
         .append("g")
         .attr(
           "transform",
-          `translate(${this.width - legendWidth * 5.3},${this.margin.top -
-            legendHeight * 2})`
+          `translate(${this.width - legendWidth * 5.2},${this.margin.top -
+            legendHeight * 2.4})`
         );
       let colorScale = d3
         .scaleSequential()
@@ -320,7 +320,48 @@ export default {
         .style("font-size", "12")
         .text((d) => d);
 
-      // legend triangle
+      // circle legend
+      let legendCircle = this.svg
+        .append("g")
+        .attr("transform", `translate(475, 15)`);
+      legendCircle
+        .append("text")
+        .attr("x", 0)
+        .attr("y", -2)
+        .style("font-size", "10")
+        .attr("font-weight", "bold")
+        .text("Market");
+      let arc = d3
+        .arc()
+        .startAngle((d) => d[0])
+        .endAngle((d) => d[1])
+        .innerRadius(6)
+        .outerRadius((6 * 4) / 2.4)
+        .cornerRadius(5);
+      legendCircle
+        .append("circle")
+        .attr("cx", 15)
+        .attr("cy", 13)
+        .attr("r", (6 * 4) / 2.4 + 2)
+        .style("fill", colorScale(0.15));
+      legendCircle
+        .append("path")
+        .attr("d", arc([0, Math.PI]))
+        .attr("fill", colorScale(0.5))
+        .attr("transform", "translate(15, 13)");
+      legendCircle
+        .append("path")
+        .attr("d", arc([Math.PI, 2 * Math.PI]))
+        .attr("fill", "white")
+        .attr("transform", "translate(15, 13)");
+      legendCircle
+        .append("text")
+        .attr("x", 9)
+        .attr("y", 33)
+        .attr("font-size", "9")
+        .text("0.5");
+
+      // triangle legend
       let legendTriangle = this.svg
         .append("g")
         .attr("transform", `translate(530, 15)`);
@@ -334,8 +375,8 @@ export default {
         .attr("fill", colorScale(-0.75));
       legendTriangle
         .append("text")
-        .attr("x", -1)
-        .attr("y", 31)
+        .attr("x", 21)
+        .attr("y", 23)
         .style("font-size", "9")
         .text("-0.75");
       legendTriangle
@@ -349,33 +390,75 @@ export default {
         .attr("x", -8)
         .attr("y", -2)
         .style("font-size", "10")
+        .attr("font-weight", "bold")
         .text("Volume");
       legendTriangle
         .append("path")
-        .attr("d", `M 40 10 h 20 l -4 4 h -12 Z`)
+        .attr("d", `M 42 2 h 20 l -4 4 h -12 Z`)
         .attr("fill", colorScale(0.75));
       legendTriangle
         .append("path")
-        .attr("d", `M 60 10 v 20 l -4 -4 v -12 Z`)
+        .attr("d", `M 62 2 v 20 l -4 -4 v -12 Z`)
         .attr("fill", colorScale(0.5));
       legendTriangle
         .append("text")
-        .attr("x", 41)
+        .attr("x", 24)
         .attr("y", 8)
         .style("font-size", "9")
         .text("0.75");
       legendTriangle
         .append("text")
-        .attr("x", 61)
-        .attr("y", 23)
+        .attr("x", 63)
+        .attr("y", 15)
         .style("font-size", "9")
         .text("0.5");
       legendTriangle
         .append("text")
-        .attr("x", 39)
+        .attr("x", 42)
         .attr("y", -2)
         .style("font-size", "10")
+        .attr("font-weight", "bold")
         .text("Price");
+
+      // barchart legend
+      let legendBarchart = this.svg
+        .append("g")
+        .attr("transform", `translate(0, 565)`);
+      legendBarchart
+        .append("text")
+        .attr("x", 30)
+        .attr("y", 5)
+        .style("font-size", 10)
+        .style("font-weight", "bold")
+        .text("Rate of Return");
+      legendBarchart
+        .append("rect")
+        .attr("x", 35)
+        .attr("y", 10)
+        .attr("width", 10)
+        .attr("height", 10)
+        .attr("mask", "url(#mask_stripe)")
+        .attr("fill", colorScale(-0.5));
+      legendBarchart
+        .append("text")
+        .attr("x", 32)
+        .attr("y", 27)
+        .attr("font-size", 10)
+        .text("neg");
+      legendBarchart
+        .append("rect")
+        .attr("x", 80)
+        .attr("y", 10)
+        .attr("width", 10)
+        .attr("height", 10)
+        .attr("mask", "url(#mask_stripe)")
+        .attr("fill", colorScale(0.5));
+      legendBarchart
+        .append("text")
+        .attr("x", 77)
+        .attr("y", 27)
+        .attr("font-size", 10)
+        .text("pos");
 
       // upset
       this.upsetSvg = d3
