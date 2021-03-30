@@ -229,7 +229,7 @@ export default {
             for (let j in cnt) {
               if (j < i) start += cnt[j]; //不包含自己的长度
             }
-            return xScale[d](topNodes[d][start])
+            return xScale[d](topNodes[d][start]);
             //  - xScale[d].bandwidth() / 3;
           })
           .attr("y", -15)
@@ -245,20 +245,18 @@ export default {
             if (start !== end) {
               if (i === _.sum(cnt) - 1)
                 return (
-                  xScale[d](topNodes[d][end]) -
-                  xScale[d](topNodes[d][start]) 
+                  xScale[d](topNodes[d][end]) - xScale[d](topNodes[d][start])
                   // xScale[d].bandwidth() / 3
                 );
               else
                 return (
-                  xScale[d](topNodes[d][end]) -
-                  xScale[d](topNodes[d][start]) 
+                  xScale[d](topNodes[d][end]) - xScale[d](topNodes[d][start])
                   // xScale[d].bandwidth()
                 );
             } else return 0;
           })
           .style("fill", "none")
-          .style("stroke", "#5D83BE")
+          .style("stroke", "#607D8B")
           .style("stroke-width", 1);
 
         // draw the xAxis
@@ -266,8 +264,8 @@ export default {
           .append("g")
           .attr("class", "xAxis")
           .call(d3.axisBottom(xScale[d]).tickSizeOuter(0))
-        // .ticks(10)
-        .call((g) => g.selectAll(".tick").remove());
+          // .ticks(10)
+          .call((g) => g.selectAll(".tick").remove());
         // console.log(`${d}year,bandwidth:`, xScale[d].bandwidth())
 
         let resNodes = [];
@@ -292,7 +290,7 @@ export default {
           .attr("id", (node) => node)
           .attr("cx", (node) => xScale[d](node))
           .attr("r", "4px")
-          .style("fill", "cornflowerblue");
+          .style("fill", "#A1887F");
         resultNodes[d] = _.cloneDeep(resNodes);
         // console.log("resultNodes: ", resultNodes);
 
@@ -326,7 +324,7 @@ export default {
                 .x((d) => d.x)
                 .y((d) => d.y)(path);
             })
-            .attr("stroke", "cornflowerblue")
+            .attr("stroke", "#A1887F")
             .attr("fill", "none");
         }
       });
@@ -389,7 +387,11 @@ export default {
                 .attr("stroke-dasharray", "1,1")
             )
             .call((g) => {
-              g.selectAll(".tick text").attr("dx", 0).attr("dy", 0);
+              g.selectAll(".tick text")
+                .attr("dx", 0)
+                .attr("dy", 0)
+                .style("font-family", "Helvetica")
+                .style("color", "#546E7A");
               if (removedDistTickText) {
                 g.selectAll(".tick text").remove();
               } else {
@@ -402,6 +404,11 @@ export default {
             .attr("class", "yAxis")
             .attr("transform", `translate(${_this.distWidth},0)`)
             .call(d3.axisRight(distY).ticks(3));
+          container
+            .selectAll(".yAxis")
+            .selectAll(".tick text")
+            .style("font-family", "Helvetica")
+            .style("color", "#546E7A");
 
           let updateDate = ({ selection }) => {
             // console.log("selection:", selection);
@@ -434,8 +441,9 @@ export default {
           container
             .append("path")
             .datum(d[1].sci)
-            .style("stroke", "rgba(80,161,255,0.10)")
-            .style("fill", "rgba(80,161,255,0.10)")
+            .style("stroke", "#90A4AE")
+            .style("fill", "#90A4AE")
+            .style("opacity", 0.5)
             .attr("d", indexArea);
           // stock line plots
           container
@@ -450,7 +458,7 @@ export default {
             })
             .attr("fill", "none")
             .attr("stroke-width", "2px")
-            .attr("stroke", "cornflowerblue");
+            .attr("stroke", "#A1887F");
         });
     },
   },
