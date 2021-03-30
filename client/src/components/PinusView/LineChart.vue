@@ -4,12 +4,12 @@
       <a-menu
         mode="horizontal"
         @click="handleSwitchClick"
-        style="width: 300px; position: absolute"
+        style="width: 200px; position: absolute"
         v-model:selectedKeys="nowTag"
       >
         <a-menu-item key="close">close</a-menu-item>
-        <a-menu-item key="pct">pct</a-menu-item>
-        <a-menu-item key="log">pct*</a-menu-item>
+<!--        <a-menu-item key="pct">pct</a-menu-item>-->
+        <a-menu-item key="log">pct</a-menu-item>
       </a-menu>
     </div>
     <div :id="`line_chart_${id}`"></div>

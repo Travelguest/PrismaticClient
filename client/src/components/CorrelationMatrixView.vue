@@ -3,6 +3,7 @@
     <div id="knowledge_graph_title">Correlation Matrix</div>
     <div id="triangle"></div>
     <div id="matrix" style="height: 100%; width: 100%"></div>
+    <div id="date-text">Date:</div>
     <a-range-picker
       id="date-picker"
       v-model:value="periodRange"
@@ -283,15 +284,9 @@ export default {
         .attr("stroke", "black");
 
       // scale legend
-      let legendWidth = 100;
+      let legendWidth = 90;
       let legendHeight = 10;
-      let legend = this.svg
-        .append("g")
-        .attr(
-          "transform",
-          `translate(${this.width - legendWidth * 5.2},${this.margin.top -
-            legendHeight * 2.4})`
-        );
+      let legend = this.svg.append("g").attr("transform", `translate(354, 21)`);
       let colorScale = d3
         .scaleSequential()
         .domain([-1, 1])
@@ -330,7 +325,7 @@ export default {
       // circle legend
       let legendCircle = this.svg
         .append("g")
-        .attr("transform", `translate(475, 15)`);
+        .attr("transform", `translate(465, 15)`);
       legendCircle
         .append("text")
         .attr("x", 0)
@@ -354,7 +349,7 @@ export default {
       legendCircle
         .append("path")
         .attr("d", arc([0, Math.PI]))
-        .attr("fill", colorScale(0.5))
+        .attr("fill", colorScale(0.8))
         .attr("transform", "translate(15, 13)");
       legendCircle
         .append("path")
@@ -371,7 +366,7 @@ export default {
       // triangle legend
       let legendTriangle = this.svg
         .append("g")
-        .attr("transform", `translate(530, 15)`);
+        .attr("transform", `translate(520, 15)`);
       legendTriangle
         .append("path")
         .attr("d", `M 0 2 v 20 l 4 -4 v -12 Z`)
@@ -433,39 +428,39 @@ export default {
         .attr("transform", `translate(0, 565)`);
       legendBarchart
         .append("text")
-        .attr("x", 30)
+        .attr("x", 22)
         .attr("y", 5)
         .style("font-size", 10)
         .style("font-weight", "bold")
-        .text("Rate of Return");
+        .text("Rate of Change");
       legendBarchart
         .append("rect")
-        .attr("x", 35)
+        .attr("x", 17)
         .attr("y", 10)
-        .attr("width", 10)
-        .attr("height", 10)
-        .attr("mask", "url(#mask_stripe)")
-        .attr("fill", colorScale(-0.5));
-      legendBarchart
-        .append("text")
-        .attr("x", 32)
-        .attr("y", 27)
-        .attr("font-size", 10)
-        .text("neg");
-      legendBarchart
-        .append("rect")
-        .attr("x", 80)
-        .attr("y", 10)
-        .attr("width", 10)
+        .attr("width", 35)
         .attr("height", 10)
         .attr("mask", "url(#mask_stripe)")
         .attr("fill", colorScale(0.5));
       legendBarchart
         .append("text")
-        .attr("x", 77)
+        .attr("x", 17)
         .attr("y", 27)
         .attr("font-size", 10)
         .text("pos");
+      legendBarchart
+        .append("rect")
+        .attr("x", 67)
+        .attr("y", 10)
+        .attr("width", 35)
+        .attr("height", 10)
+        .attr("mask", "url(#mask_stripe)")
+        .attr("fill", colorScale(-0.5));
+      legendBarchart
+        .append("text")
+        .attr("x", 67)
+        .attr("y", 27)
+        .attr("font-size", 10)
+        .text("neg");
 
       // upset
       this.upsetSvg = d3
@@ -672,8 +667,10 @@ export default {
               `${this.lastSelect.row}_right`
             ).style.backgroundColor = "#B0BEC5";
           }
-          document.getElementById(`${d.col}_bottom`).style.backgroundColor = "#455A64";
-          document.getElementById(`${d.row}_right`).style.backgroundColor = "#455A64";
+          document.getElementById(`${d.col}_bottom`).style.backgroundColor =
+            "#455A64";
+          document.getElementById(`${d.row}_right`).style.backgroundColor =
+            "#455A64";
           this.$emit("selectedStockFromMatrix", d.row, d.col);
           this.lastSelect.col = d.col;
           this.lastSelect.row = d.row;
@@ -711,7 +708,7 @@ export default {
           d3
             .axisBottom(xScale)
             .tickSizeOuter(0)
-            .tickValues([3, 2, 1, 0])
+            .ticks(4)
         )
         .attr("transform", `translate(0, 495)`);
       // .selectAll(".tick text")
@@ -740,12 +737,12 @@ export default {
       for (let i = 0; i < 5; i++) {
         tickGroup
           .append("path")
-          .attr("stroke", "black")
+          .attr("stroke", "rgb(176, 190, 197)")
           .attr("fill", "none")
           .attr("d", `M ${30 * i + 10 * i} 0 v -495`);
         tickGroup
           .append("path")
-          .attr("stroke", "black")
+          .attr("stroke", "rgb(176, 190, 197)")
           .attr("fill", "none")
           .attr("id", this.labels[i])
           .attr("d", `M ${30 * i + 10 * i} 0 l 35 35`);
@@ -848,6 +845,13 @@ export default {
   position: absolute;
   top: 0;
   z-index: 0;
+}
+#date-text {
+  position: absolute;
+  top: 15px;
+  right: 235px;
+  width: 20px;
+  font-weight: bold;
 }
 #date-picker {
   position: absolute;

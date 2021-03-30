@@ -135,13 +135,9 @@
       </g>
 
       <g id="knowledge_graph_circle_legend">
-        <text x="40" y="110" font-size="15px" font-weight="bold">Human</text>
-        <text x="455" y="110" font-size="15px" font-weight="bold">
-          Business
-        </text>
-        <text x="240" y="575" font-size="15px" font-weight="bold">
-          Location
-        </text>
+        <text x="40" y="110" font-size="18px" font-weight="bold">Human</text>
+        <text x="455" y="110" font-size="18px" font-weight="bold">Business</text>
+        <text x="240" y="575" font-size="18px" font-weight="bold">Location</text>
       </g>
 
       <g id="knowledge_graph_category_legend" transform="translate(40, 40)">
@@ -235,12 +231,12 @@ export default {
       highlightStock: null,
 
       legendAttrs: {
-        Investor: { color: "#D8ADB2", cxPos: 10 },
-        Management: { color: "#B25B65", cxPos: 90 },
-        Industry: { color: "#7D5BB2", cxPos: 200 },
-        Concept: { color: "#BEADD8", cxPos: 275 },
-        Province: { color: "#91B25B", cxPos: 355 },
-        City: { color: "#C8D8AD", cxPos: 435 },
+        Management: { color: "#B25B65", cxPos: -30 },
+        Investor: { color: "#D8ADB2", cxPos: 90 },
+        Province: { color: "#91B25B", cxPos: 170 },
+        City: { color: "#C8D8AD", cxPos: 260 },
+        Industry: { color: "#7D5BB2", cxPos: 330 },
+        Concept: { color: "#BEADD8", cxPos: 420 },
       },
     };
   },
