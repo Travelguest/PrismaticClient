@@ -70,10 +70,7 @@ export default {
         .nice();
     },
     yScale() {
-      return d3
-        .scaleLinear()
-        .range([this.innerHeight - 28, 28])
-        .nice();
+      return d3.scaleLinear().range([this.innerHeight, 0]).nice();
     },
     linePath() {
       let path = d3
@@ -158,11 +155,32 @@ export default {
       //画y轴——左边dataA的
 
       if (this.nowTag[0] === "close") {
-        this.yScale.domain(d3.extent(this.dataA, (d) => d.close));
+        // this.yScale.domain(d3.extent(this.dataA, (d) => d.close));
+        this.yScale.domain([
+          d3.min(this.dataA, (d) => d.close) * 0.8,
+          d3.max(this.dataA, (d) => d.close) * 1.2,
+        ]);
       } else if (this.nowTag[0] === "pct") {
-        this.yScale.domain(d3.extent(this.dataA, (d) => d.pct));
+        // this.yScale.domain(d3.extent(this.dataA, (d) => d.pct));
+
+        let min = d3.min(this.dataA, (d) => d.pct);
+        if (min < 0) {
+          this.yScale.domain([
+            min * 1.2,
+            d3.max(this.dataA, (d) => d.pct) * 1.2,
+          ]);
+        } else {
+          this.yScale.domain([
+            min * 0.8,
+            d3.max(this.dataA, (d) => d.pct) * 1.2,
+          ]);
+        }
       } else {
-        this.yScale.domain(d3.extent(this.dataA, (d) => d.log));
+        // this.yScale.domain(d3.extent(this.dataA, (d) => d.log));
+        this.yScale.domain([
+          d3.min(this.dataA, (d) => d.log) * 0.9,
+          d3.max(this.dataA, (d) => d.log) * 1.1,
+        ]);
       }
 
       this.svg.append("g").attr("id", "yAxis_A").call(
@@ -207,11 +225,31 @@ export default {
 
       //右侧的Y轴
       if (this.nowTag[0] === "close") {
-        this.yScale.domain(d3.extent(this.dataB, (d) => d.close));
+        // this.yScale.domain(d3.extent(this.dataB, (d) => d.close));
+        this.yScale.domain([
+          d3.min(this.dataB, (d) => d.close) * 0.8,
+          d3.max(this.dataB, (d) => d.close) * 1.2,
+        ]);
       } else if (this.nowTag[0] === "pct") {
-        this.yScale.domain(d3.extent(this.dataB, (d) => d.pct));
+        // this.yScale.domain(d3.extent(this.dataB, (d) => d.pct));\
+        let min = d3.min(this.dataB, (d) => d.pct);
+        if (min < 0) {
+          this.yScale.domain([
+            min * 1.2,
+            d3.max(this.dataB, (d) => d.pct) * 1.2,
+          ]);
+        } else {
+          this.yScale.domain([
+            min * 0.8,
+            d3.max(this.dataB, (d) => d.pct) * 1.2,
+          ]);
+        }
       } else {
-        this.yScale.domain(d3.extent(this.dataB, (d) => d.log));
+        // this.yScale.domain(d3.extent(this.dataB, (d) => d.log));
+        this.yScale.domain([
+          d3.min(this.dataB, (d) => d.log) * 0.8,
+          d3.max(this.dataB, (d) => d.log) * 1.2,
+        ]);
       }
       this.svg
         .append("g")
@@ -250,10 +288,10 @@ export default {
         .attr("cy", -26)
         .attr("r", "6px")
         //.style("fill", (d) => this.colorScale(d));29A897
-        .style("fill", function(d,i){
-          if(i==0) return "#29A897";
-          else return "#A8293A"
-        })
+        .style("fill", function (d, i) {
+          if (i == 0) return "#29A897";
+          else return "#A8293A";
+        });
 
       this.svg
         .selectAll(".labels")

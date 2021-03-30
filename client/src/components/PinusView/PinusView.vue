@@ -102,7 +102,7 @@ export default {
       
       this.idSelectMap[this.id] = !this.idSelectMap[this.id];
       if (this.idSelectMap[this.id]) {
-        this.svg.select(".backGround").style("fill", "#2D5B81");
+        this.svg.select(".backGround").style("fill", "#455A64");
       } else this.svg.select(".backGround").style("fill", "none");
       // console.log("点击了：", this.id,this.idSelectMap);
 
@@ -212,7 +212,7 @@ export default {
         .attr("height", this.height / 3)
         .style("fill", "none")
         // .style("stroke", "#2D5B81")
-        .style("stroke", "#03204A")
+        .style("stroke", "#455A64")
         .style("stroke-width", "1px")
         // .style("font-weight", "500")
         // .style("opacity", 0.6);
@@ -225,7 +225,7 @@ export default {
         .attr("x", 8)
         .attr("y", 12)
         .text(()=> this.idDataMap[this.id])
-        .style("fill", "#03204A")
+        .style("fill", "#455A64")
         .style("font-size", "15px")
         // .style("stroke-width", "0.8px")
         // .style("font-weight", "500")
@@ -239,7 +239,7 @@ export default {
         .attr("x", 8)
         .attr("y", 29)
         .text(() => this.matrixCorr[0])
-        .style("fill", "#03204A")
+        .style("fill", "#455A64")
         .style("font-size", "11px");
 
       if (!this.correlationTriangle) this.svg.selectAll(".backGround").remove();

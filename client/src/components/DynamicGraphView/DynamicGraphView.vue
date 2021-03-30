@@ -265,7 +265,7 @@ export default {
           .append("g")
           .attr("class", "xAxis")
           .call(d3.axisBottom(xScale[d]).ticks(10).tickSizeOuter(0))
-          .call((g) => g.selectAll(".tick").remove());
+          // .call((g) => g.selectAll(".tick").remove());
 
         let resNodes = [];
         // draw node to the axis

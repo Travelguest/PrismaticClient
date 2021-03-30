@@ -230,7 +230,17 @@ export default {
         .attr("y", 5)
         .attr("width", 8)
         .attr("height", this.height / 3)
-        .style("fill", "#2D5B81");
+        .style("fill", "#455A64");
+
+      this.svg
+        .append("rect")
+        .attr("class", "brushBackGround")
+        .attr("x", 8)
+        .attr("y", 0)
+        .attr("width", this.width - 8)
+        .attr("height", "35")
+        .style("fill", " #CFD8DC ")
+        .attr("transform", `translate(0,${this.height - 6})`);
 
       this.svg
         .append("g")
@@ -238,8 +248,13 @@ export default {
         .call(
           d3
             .axisBottom(this.xScale)
+             .tickFormat(d => {
+               console.log("domain:",this.xScale.domain)
+               console.log("date:",d,d3.timeFormat("%y %b")(d),d3.timeFormat("%y")(d));
+               return d3.timeFormat("%y %b")(d);
+             })
             // .ticks(d3.timeMonth.every(1))
-            .tickFormat(d3.timeFormat("%b"))
+           
         )
         .attr("transform", `translate(-9,${this.height - 6})`)
         .select(".domain")
@@ -254,17 +269,6 @@ export default {
         .attr("transform", `translate(${this.height},0)`)
         .select(".domain")
         .remove();
-
-      this.svg
-        .append("rect")
-        .attr("class", "brushBackGround")
-        .attr("x", 8)
-        .attr("y", 20)
-        .attr("width", this.width - 8)
-        .attr("height", "15")
-        .style("fill", "#E9E9E9")
-        // .style("fill", "red")
-        .attr("transform", `translate(0,${this.height - 6})`);
 
       if (!this.correlationTriangle)
         this.svg.selectAll(".brushBackGround").remove();
@@ -304,7 +308,7 @@ export default {
         .attr("x", 15)
         .attr("y", 25)
         .text(title)
-        .style("fill", "#2D5B81")
+        .style("fill", "#455A64")
         .style("font-size", "20px");
 
       //文本2
@@ -314,7 +318,7 @@ export default {
         .attr("x", 15)
         .attr("y", 45)
         .text(() => (this.matrixRow[0] ? this.matrixRow[0] + "days" : ""))
-        .style("fill", "#2D5B81")
+        .style("fill", "#455A64")
         .style("font-size", "15px");
 
       //文本3
@@ -324,7 +328,7 @@ export default {
         .attr("x", 15)
         .attr("y", 67)
         .text(() => this.matrixCorr[0])
-        .style("fill", "#2D5B81")
+        .style("fill", "#455A64")
         .style("font-size", "15px");
     },
     renderPinus() {
