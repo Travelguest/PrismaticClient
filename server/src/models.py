@@ -142,7 +142,10 @@ class Model:
         return G
 
     def get_betweenness_centrality(self, graph):
-        return nx.algorithms.centrality.betweenness_centrality(graph, endpoints=True, weight='weight')
+        if len(graph) < 150:
+            return nx.algorithms.centrality.betweenness_centrality(graph, endpoints=True, weight='weight')
+        else:
+            return dict(graph.nodes(data="betweenness", default=0))
 
     def get_connected_components(self, graph, sort_dict):
         connected_components = sorted(nx.connected_components(graph), key=len, reverse=True)

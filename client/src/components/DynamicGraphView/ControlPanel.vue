@@ -376,10 +376,6 @@ export default {
       );
     },
     onYearClick(topNodes, year) {
-      // console.log("传过来了：", topNodes, year);
-      // TODO: put a button to select filter
-      // eslint-disable-next-line no-constant-condition
-      // let nodes = true ? topNodes : this.corrCluster[year].nodes;
       this.$emit("get-correlation-matrix", topNodes, year);
     },
 

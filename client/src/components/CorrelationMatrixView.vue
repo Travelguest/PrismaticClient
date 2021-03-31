@@ -192,25 +192,23 @@ export default {
           moment.utc("2020-01-01", "YYYY-MM-DD"),
           moment.utc("2020-12-31", "YYYY-MM-DD"),
         ],
+        "6M": [
+          moment.utc("2020-01-01", "YYYY-MM-DD"),
+          moment.utc("2020-06-30", "YYYY-MM-DD"),
+        ],
         "3M": [
           moment.utc("2020-01-01", "YYYY-MM-DD"),
           moment.utc("2020-03-31", "YYYY-MM-DD"),
         ],
-        Pork: [
-          moment.utc("2018-01-01", "YYYY-MM-DD"),
-          moment.utc("2019-03-31", "YYYY-MM-DD"),
+        "FaceMask": [//002351,603883,000150,000153;2019
+          moment.utc("2020-01-01", "YYYY-MM-DD"),
+          moment.utc("2020-03-31", "YYYY-MM-DD"),
         ],
-
-        // "FaceMask": [//002351,603883,000150,000153;2019
-        //   moment.utc("2020-01-01", "YYYY-MM-DD"),
-        //   moment.utc("2020-03-31", "YYYY-MM-DD"),
+        // FaceMask: [
+        //   //002351,603883,000150,000153;2019
+        //   moment.utc("2019-12-01", "YYYY-MM-DD"),
+        //   moment.utc("2020-06-30", "YYYY-MM-DD"),
         // ],
-
-        FaceMask: [
-          //002351,603883,000150,000153;2019
-          moment.utc("2019-12-01", "YYYY-MM-DD"),
-          moment.utc("2020-06-30", "YYYY-MM-DD"),
-        ],
       },
       periodDisabledRange: (cur) => {
         return (
@@ -359,7 +357,7 @@ export default {
       legendCircle
         .append("text")
         .attr("x", 9)
-        .attr("y", 33)
+        .attr("y", 32)
         .attr("font-size", "9")
         .text("0.5");
 
