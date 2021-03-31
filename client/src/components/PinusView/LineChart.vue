@@ -8,7 +8,7 @@
         v-model:selectedKeys="nowTag"
       >
         <a-menu-item key="close">close</a-menu-item>
-<!--        <a-menu-item key="pct">pct</a-menu-item>-->
+        <!--        <a-menu-item key="pct">pct</a-menu-item>-->
         <a-menu-item key="log">pct</a-menu-item>
       </a-menu>
     </div>
@@ -270,6 +270,28 @@ export default {
           .style("font-size", "10px")
           .style("color", "#546E7A");
       }
+
+      if (this.nowTag[0] === "log" || this.nowTag[0] === "pct") {
+        curveChart
+          .append("line")
+          .attr("x1", 15)
+          .attr("y1", this.yScale(0))
+          .attr("x2", this.innerWidth - 15)
+          .attr("y2", this.yScale(0))
+          .style("stroke", "#D4D4D4")
+          .style("stroke-width",1.5)
+          // .attr("stroke-dasharray", "1,1");
+      }
+      // curveChart
+      //   .append("rect")
+      //   .attr("class", "zero")
+      //   .attr("x", 15)
+      //   .attr("y", this.yScale(0))
+      //   .attr("width", this.innerWidth -15)
+      //   .attr("height", 1)
+      //   // .attr("stroke", "#D4D4D4")
+      //   .attr("opacity", 0.2)
+      //  .attr("stroke-dasharray", "1,1")
 
       curveChart
         .append("g")

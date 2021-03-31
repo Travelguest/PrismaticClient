@@ -240,7 +240,7 @@ export default {
         .attr("y", 0)
         .attr("width", this.width - 8)
         .attr("height", "35")
-        .style("fill", " #CFD8DC ")
+        .style("fill", " #E6EFF5")
         .attr("transform", `translate(0,${this.height - 6})`);
 
       this.svg

@@ -12,7 +12,7 @@
         <a-col :span="18">
           <a-row id="matrix_knowledge_graph_container" :gutter="2">
             <a-col :span="14">
-              <div id="correlation_matrix_view_container">
+              <div id="correlation_matrix_view_container" >
                 <CorrelationMatrixView
                   ref="correlation-matrix-view"
                   :selected-year="selectedYear"
@@ -29,7 +29,7 @@
               </div>
             </a-col>
             <a-col :span="10">
-              <div id="knowledge_graph_container">
+              <div id="knowledge_graph_container" style="margin-left:2px">
                 <KnowledgeGraphView
                   :isLoading="knowledgeGraphLoading"
                   :stock-code="selectedStockLeft"
@@ -342,7 +342,7 @@ export default {
 #correlation_matrix_view_container {
   box-sizing: border-box;
   height: 600px;
-  width: 100%;
+  width: 875px;
   border: 1px solid #455A64;
 }
 #knowledge_graph_container {
@@ -351,7 +351,7 @@ export default {
   border: 1px solid #455A64;
 }
 #detail_time_series_container {
-  height: 520px;
+  height: 521px;
   width: 100%;
   border: 1px solid #455A64;
 }
