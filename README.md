@@ -1,44 +1,16 @@
-# framework-flask-vue
-A framework using flask as backend and vue.js as frontend, powered by vue-cli. 
-The framework comes with demos to show typical frontend-backend communication, as well as vue components interaction.
-It also comes with two examples featuring the configuration of D3 and Echarts.
-
-
-## Server
-The server employs Flask to provide web services. 
-All codes below should be run under the "server" folder.
-
-### Server Setup
-This project is created using Python 3.8.5. It is recommended to use virtualenv to build the project. 
-For example, 
-``` 
-# Create a new virtualenv named "framework"
-$ python -m venv framework
-
-# Activate the virtualenv (OS X & Linux)
-$ source framework/bin/activate
-
-# Activate the virtualenv (Windows)
-$ framework\Scripts\activate
-
-# Deactivate the virtualenv
-$ deactivate
-```
-For this project, we will be installing flask and jupyter lab to facilitate development. Install the dependencies using:
-```
-# Install the specified dependencies
-$ pip install -r requirements.txt
-
-# Export your own dependencies
-$ pip freeze > requirements.txt
-```
-
-### Server activation
-The default address for the server is http://127.0.0.1:5000/
-```
-$ python run.py
-```
-
+# Abstract
+Exploring financial correlation clusters allows investors to avoid undertaking excessive risks and discover investment
+alternatives. 
+Strongly correlated assets suggest a tendency for them to gravitate towards a similar set of economic factors. Therefore, a
+plethora of research has focused on developing technical features to capture the dynamic comovement of stock prices. However, this
+analytical task faces substantial challenges arising from a large number of pairwise comparisons, the dynamic nature of correlation,
+and the ambiguity in understanding implication. When making investment decisions, investors also apply their knowledge of business
+relationships for extrapolation purposes, albeit promising technical analysis. In this work, we propose Prismatic, a visual analytics
+system that integrates historical performance analysis and business knowledge graph exploration to interactively cluster the dynamic
+financial correlations. Prismatic facilitates three key analytical processes: cluster exploration by holistically overviewing the changing
+structure of clusters, cluster verification by shedding lights on the temporal patterns in correlations at different time scales, and cluster
+generation by embedding the business knowledge graph to contextualize the underlying relationships. We evaluate the usefulness and
+effectiveness of Prismatic through two case studies and extensive interviews with domain experts.
 
 ## Client
 The client services are provided by Vue 3. 
